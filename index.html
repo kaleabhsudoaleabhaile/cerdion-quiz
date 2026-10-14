@@ -1,1 +1,538 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cerdion Quiz - Dashboard</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --accent: #10b981;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(79, 70, 229, 0.15);
+            color: #818cf8;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px 14px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-accent {
+            background: var(--accent);
+        }
+        .btn-accent:hover {
+            background: #059669;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+        }
+
+        .account-box {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid #334155;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .account-box strong {
+            color: var(--accent);
+        }
+
+        /* Dashboard Styles */
+        .wallet-card {
+            background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .wallet-card h3 {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 6px;
+        }
+
+        .wallet-card .amount {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .wallet-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .dashboard-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .timer-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #0f172a;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .timer {
+            color: var(--danger);
+        }
+
+        .question-card h2 {
+            font-size: 16px;
+            margin-bottom: 16px;
+            line-height: 1.4;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .option-btn {
+            width: 100%;
+            padding: 12px 14px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: var(--text);
+            text-align: left;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover {
+            border-color: var(--primary);
+            background: rgba(79, 70, 229, 0.05);
+        }
+
+        .option-btn.selected {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- STEP 1: REGISTRATION -->
+        <div id="step-1" class="step active">
+            <div class="header">
+                <span class="badge">Cerdion Quiz</span>
+                <h1>User Registration</h1>
+                <p>Test your knowledge & win rewards!</p>
+            </div>
+
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="reg-name" placeholder="Enter your full name">
+            </div>
+
+            <div class="form-group">
+                <label>National ID</label>
+                <input type="text" id="reg-nid" placeholder="Enter your National ID">
+            </div>
+
+            <button class="btn" onclick="registerUser()">Register & Continue</button>
+        </div>
+
+        <!-- STEP 2: DASHBOARD -->
+        <div id="step-2" class="step">
+            <div class="header">
+                <h1 id="welcome-user">Welcome</h1>
+                <p>User Dashboard</p>
+            </div>
+
+            <div class="wallet-card">
+                <h3>Current Balance</h3>
+                <div class="amount" id="user-balance">0.00 ETB</div>
+                <div class="wallet-stats">
+                    <div>Deposited: <br><strong id="deposited-amount">0 ETB</strong></div>
+                    <div>Won Prize: <br><strong id="won-amount">0 ETB</strong></div>
+                </div>
+            </div>
+
+            <div class="dashboard-actions">
+                <button class="btn btn-accent" onclick="goToStep(3)">Deposit Funds</button>
+                <button class="btn" onclick="startQuizCheck()">Start Quiz (50 ETB)</button>
+                <button class="btn btn-danger" onclick="goToStep(5)">Withdraw Funds</button>
+            </div>
+        </div>
+
+        <!-- STEP 3: DEPOSIT -->
+        <div id="step-3" class="step">
+            <div class="header">
+                <h2>Deposit Funds</h2>
+                <p>Deposit any amount starting from 50 ETB</p>
+            </div>
+
+            <div class="account-box">
+                <p><strong>CBE:</strong> 1000657786342 (Kaleab Haile W/Abrha)</p>
+                <p><strong>Telebirr:</strong> 0985625604 (Kaleab Haile W/Abrha)</p>
+            </div>
+
+            <div class="form-group">
+                <label>Deposit Amount (ETB)</label>
+                <input type="number" id="deposit-amount-input" placeholder="e.g. 500" min="50">
+            </div>
+
+            <div class="form-group">
+                <label>Transaction ID</label>
+                <input type="text" id="deposit-tx" placeholder="Enter transaction reference">
+            </div>
+
+            <button class="btn btn-accent" onclick="processDeposit()">Confirm & Add Balance</button>
+            <button class="btn" onclick="goToStep(2)" style="background: #334155; margin-top: 6px;">Back to Dashboard</button>
+        </div>
+
+        <!-- STEP 4: QUIZ -->
+        <div id="step-4" class="step">
+            <div class="timer-bar">
+                <span>Question <span id="q-num">1</span>/5</span>
+                <span class="timer" id="timer">05:00</span>
+            </div>
+
+            <div class="question-card">
+                <h2 id="question-text">Question...</h2>
+                <div class="options" id="options-container"></div>
+            </div>
+
+            <button class="btn" id="next-btn" onclick="nextQuestion()" style="display:none;">Next</button>
+        </div>
+
+        <!-- STEP 5: WITHDRAW -->
+        <div id="step-5" class="step">
+            <div class="header">
+                <h2>Withdraw Funds</h2>
+                <p>Withdraw via CBE or Telebirr</p>
+            </div>
+
+            <div class="form-group">
+                <label>Withdrawal Method</label>
+                <select id="withdraw-method">
+                    <option value="cbe">Commercial Bank of Ethiopia (CBE)</option>
+                    <option value="telebirr">Telebirr</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Account or Phone Number</label>
+                <input type="text" id="withdraw-account" placeholder="Enter account/phone number">
+            </div>
+
+            <div class="form-group">
+                <label>Withdrawal Amount (ETB)</label>
+                <input type="number" id="withdraw-amount" placeholder="Enter amount">
+            </div>
+
+            <button class="btn btn-danger" onclick="processWithdraw()">Withdraw</button>
+            <button class="btn" onclick="goToStep(2)" style="background: #334155; margin-top: 6px;">Back to Dashboard</button>
+        </div>
+
+        <!-- STEP 6: RESULT -->
+        <div id="step-6" class="step">
+            <div class="header">
+                <h2>Quiz Result</h2>
+                <p id="result-text">Congratulations!</p>
+            </div>
+            <button class="btn" onclick="goToStep(2)">Back to Dashboard</button>
+        </div>
+    </div>
+
+    <script>
+        let userData = {
+            name: "",
+            nid: "",
+            balance: 0,
+            deposited: 0,
+            won: 0
+        };
+
+        function goToStep(stepNum) {
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            document.getElementById('step-' + stepNum).classList.add('active');
+        }
+
+        function registerUser() {
+            const name = document.getElementById('reg-name').value;
+            const nid = document.getElementById('reg-nid').value;
+            if(!name || !nid) {
+                alert('Please fill in your name and National ID!');
+                return;
+            }
+            userData.name = name;
+            userData.nid = nid;
+            document.getElementById('welcome-user').textContent = `Welcome, ${name}`;
+            updateDashboard();
+            goToStep(2);
+        }
+
+        function updateDashboard() {
+            document.getElementById('user-balance').textContent = userData.balance + " ETB";
+            document.getElementById('deposited-amount').textContent = userData.deposited + " ETB";
+            document.getElementById('won-amount').textContent = userData.won + " ETB";
+        }
+
+        function processDeposit() {
+            const amt = parseInt(document.getElementById('deposit-amount-input').value);
+            const tx = document.getElementById('deposit-tx').value;
+            if(!amt || amt < 50 || !tx) {
+                alert('Please enter at least 50 ETB and a valid Transaction ID!');
+                return;
+            }
+            userData.balance += amt;
+            userData.deposited += amt;
+            updateDashboard();
+            alert('Deposit verified successfully! Funds added to your balance.');
+            goToStep(2);
+        }
+
+        function startQuizCheck() {
+            if(userData.balance < 50) {
+                alert('Game entry fee is 50 ETB! Please deposit funds first.');
+                goToStep(3);
+                return;
+            }
+            userData.balance -= 50;
+            updateDashboard();
+            startQuiz();
+        }
+
+        const questions = [
+            { q: "What is the first book of the Bible?", options: ["Genesis", "Matthew", "Acts", "Isaiah"], correct: 0 },
+            { q: "In which town was Jesus Christ born?", options: ["Nazareth", "Bethlehem", "Jerusalem", "Galilee"], correct: 1 },
+            { q: "What weapon did David use to fight Goliath?", options: ["Sword", "Spear", "Sling and stone", "Bow"], correct: 2 },
+            { q: "How many books are traditionally in the standard Bible?", options: ["66", "73", "81", "39"], correct: 2 },
+            { q: "Who appeared to the Apostle Paul on his way to Damascus?", options: ["Angels", "God in a great light", "Peter", "Roman soldiers"], correct: 1 }
+        ];
+
+        let currentQ = 0;
+        let score = 0;
+        let timerInterval;
+
+        function startQuiz() {
+            currentQ = 0;
+            score = 0;
+            goToStep(4);
+            loadQuestion();
+            startTimer(300);
+        }
+
+        function startTimer(duration) {
+            let timer = duration, minutes, seconds;
+            clearInterval(timerInterval);
+            timerInterval = setInterval(function () {
+                minutes = parseInt(timer / 60, 10);
+                seconds = parseInt(timer % 60, 10);
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+                document.getElementById('timer').textContent = minutes + ":" + seconds;
+
+                if (--timer < 0) {
+                    clearInterval(timerInterval);
+                    alert('Time is up!');
+                    finishQuiz();
+                }
+            }, 1000);
+        }
+
+        function loadQuestion() {
+            if(currentQ >= questions.length) {
+                clearInterval(timerInterval);
+                finishQuiz();
+                return;
+            }
+            document.getElementById('q-num').textContent = currentQ + 1;
+            const q = questions[currentQ];
+            document.getElementById('question-text').textContent = q.q;
+            
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = opt;
+                btn.onclick = () => selectOption(index, btn);
+                container.appendChild(btn);
+            });
+            document.getElementById('next-btn').style.display = 'none';
+        }
+
+        function selectOption(index, btn) {
+            document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            
+            if(index === questions[currentQ].correct) {
+                score++;
+            }
+            document.getElementById('next-btn').style.display = 'block';
+        }
+
+        function nextQuestion() {
+            currentQ++;
+            loadQuestion();
+        }
+
+        function finishQuiz() {
+            let msg = `Your score: ${score}/${questions.length}. `;
+            if(score >= 4) {
+                let prize = 300;
+                userData.won += prize;
+                userData.balance += prize;
+                msg += `Congratulations! You won 300 ETB prize!`;
+            } else {
+                msg += `Better luck next time!`;
+            }
+            updateDashboard();
+            document.getElementById('result-text').textContent = msg;
+            goToStep(6);
+        }
+
+        function processWithdraw() {
+            const amt = parseInt(document.getElementById('withdraw-amount').value);
+            if(!amt || amt <= 0) {
+                alert('Please enter a valid withdrawal amount!');
+                return;
+            }
+            if(amt > userData.balance) {
+                alert('Insufficient balance!');
+                return;
+            }
+            userData.balance -= amt;
+            updateDashboard();
+            alert(amt + ' ETB withdrawn successfully!');
+            goToStep(2);
+        }
+    </script>
+</body>
+</html>
