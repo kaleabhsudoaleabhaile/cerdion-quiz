@@ -1,578 +1,583 @@
 <!DOCTYPE html>
 <html lang="am">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ሰርድዮን ኪዩዝ - Cerdion Quiz App</title>
-    <style>
-        :root {
-            --primary: #4f46e5;
-            --primary-dark: #4338ca;
-            --accent: #10b981;
-            --bg: #0f172a;
-            --card-bg: #1e293b;
-            --text: #f8fafc;
-            --text-muted: #94a3b8;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cerdion Bible Quiz Platform</title>
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --accent-color: #f59e0b;
+      --text-color: #f8fafc;
+      --success-color: #10b981;
+      --danger-color: #ef4444;
+      --blue-btn: #3b82f6;
+    }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 15px;
+      text-align: center;
+    }
 
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            padding-bottom: 70px;
-        }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
 
-        .app-container {
-            width: 100%;
-            max-width: 480px;
-            padding: 20px;
-        }
+    .admin-secret-title {
+      color: var(--accent-color);
+      font-size: 32px;
+      font-weight: bold;
+      margin-bottom: 2px;
+      cursor: pointer;
+      user-select: none;
+    }
 
-        .card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            margin-bottom: 20px;
-        }
+    .card {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      text-align: left;
+    }
 
-        .header {
-            text-align: center;
-            margin-bottom: 16px;
-        }
+    .btn {
+      background-color: var(--accent-color);
+      color: #000;
+      border: none;
+      padding: 12px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+    }
 
-        .header h1 {
-            font-size: 22px;
-            color: var(--text);
-        }
+    .btn-secondary { background-color: var(--blue-btn); color: #fff; }
+    .btn-approve { background-color: var(--success-color); color: #fff; width: 48%; }
+    .btn-reject { background-color: var(--danger-color); color: #fff; width: 48%; }
 
-        .form-group {
-            margin-bottom: 14px;
-        }
+    .input-field, .file-input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      margin-bottom: 12px;
+      box-sizing: border-box;
+      border-radius: 6px;
+      border: 1px solid #475569;
+      background-color: #0f172a;
+      color: #fff;
+    }
 
-        label {
-            display: block;
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-        }
+    .nav-tabs {
+      display: flex;
+      justify-content: space-around;
+      background-color: #1e293b;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
 
-        input, select {
-            width: 100%;
-            padding: 10px 14px;
-            background: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 8px;
-            color: var(--text);
-            font-size: 14px;
-            outline: none;
-        }
+    .nav-tab {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 8px 12px;
+    }
 
-        .btn {
-            width: 100%;
-            padding: 12px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 10px;
-        }
+    .nav-tab.active {
+      color: var(--accent-color);
+      border-bottom: 2px solid var(--accent-color);
+    }
 
-        .btn-accent { background: var(--accent); }
-        .btn-danger { background: var(--danger); }
-        .btn-warning { background: var(--warning); color: #000; }
+    .boxes-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      max-height: 320px;
+      overflow-y: auto;
+      padding: 5px;
+    }
 
-        /* Grid for 1000+ Boxes */
-        .boxes-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            max-height: 400px;
-            overflow-y: auto;
-            padding: 10px;
-            background: #0f172a;
-            border-radius: 12px;
-        }
+    .box-item {
+      background-color: #334155;
+      border: 1px solid #475569;
+      border-radius: 6px;
+      padding: 12px 5px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: bold;
+      color: #f1f5f9;
+    }
+    .box-item:hover { background-color: var(--accent-color); color: #000; }
 
-        .quiz-box {
-            background: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 10px;
-            padding: 15px;
-            text-align: center;
-            cursor: pointer;
-            position: relative;
-        }
-
-        .quiz-box.locked::after {
-            content: "🔒 50 ብር";
-            display: block;
-            font-size: 11px;
-            color: var(--warning);
-            margin-top: 4px;
-        }
-
-        /* Bottom Navigation Bar */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            max-width: 480px;
-            background: #1e293b;
-            border-top: 1px solid #334155;
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            z-index: 1000;
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: var(--text-muted);
-            font-size: 12px;
-            cursor: pointer;
-            text-decoration: none;
-        }
-
-        .nav-item.active {
-            color: var(--primary);
-            font-weight: bold;
-        }
-
-        .nav-icon {
-            font-size: 18px;
-            margin-bottom: 2px;
-        }
-
-        .hidden { display: none !important; }
-
-        /* Wallet Display */
-        .wallet-card {
-            background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
-            padding: 20px;
-            border-radius: 12px;
-            color: white;
-            text-align: center;
-            margin-bottom: 15px;
-        }
-
-        .stat-row {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 10px;
-            font-size: 13px;
-            background: rgba(0,0,0,0.2);
-            padding: 8px 12px;
-            border-radius: 6px;
-        }
-
-        .admin-badge {
-            background: var(--danger);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            float: right;
-            cursor: pointer;
-        }
-    </style>
+    .hidden { display: none; }
+    
+    .admin-section {
+      background-color: #0f172a;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 15px;
+      border: 1px dashed var(--accent-color);
+    }
+  </style>
 </head>
 <body>
 
-    <div class="app-container">
-        
-        <!-- TOP ADMIN SWITCH -->
-        <span class="admin-badge" onclick="toggleAdminPanel()">Admin Mode</span>
+<div class="container">
+  <!-- Cerdion ርዕሱን 5 ጊዜ ሲነኩ የአድሚን መግቢያ ይከፈታል -->
+  <h1 class="admin-secret-title" onclick="handleCerdionClick()">Cerdion</h1>
+  <p style="color: #94a3b8; font-size: 14px; margin-top: 0;">ኦፊሴላዊ የመጽሐፍ ቅዱስ ጥያቄ እና ሽልማት ፕላትፎርም</p>
 
-        <!-- REGISTRATION SCREEN -->
-        <div id="screen-register" class="card">
-            <div class="header">
-                <h1>ሰርድዮን ኪዩዝ - ምዝገባ</h1>
-                <p>እባክዎን መረጃዎን ያስገቡ</p>
-            </div>
-            <div class="form-group">
-                <label>ሙሉ ስም</label>
-                <input type="text" id="reg-name" placeholder="ስምዎን ያስገቡ">
-            </div>
-            <div class="form-group">
-                <label>ናሽናል አይዲ (ፎቶ ብቻ)</label>
-                <input type="file" id="reg-id-file" accept="image/*">
-            </div>
-            <button class="btn" onclick="submitRegistration()">መዝገብና ቀጥል</button>
-        </div>
+  <!-- 1. USER REGISTRATION SECTION -->
+  <div id="auth-card" class="card">
+    <h3>📋 የተጠቃሚ ምዝገባ (ናሽናል አይዲ ፎቶ)</h3>
+    <label>ሙሉ ስም:</label>
+    <input type="text" id="reg-name" class="input-field" placeholder="ስምዎን ያስገቡ...">
+    
+    <label>ናሽናል አይዲ ቁጥር ወይም ፎቶ:</label>
+    <input type="text" id="reg-id-text" class="input-field" placeholder="አይዲ ቁጥር ብቻ ከሆነ ፎቶ እንዲያስገቡ ይጠየቃሉ...">
+    
+    <label>📸 ናሽናል አይዲ ፎቶ (ግዴታ ነው):</label>
+    <input type="file" id="reg-id-file" class="file-input" accept="image/*">
 
-        <!-- DEPOSIT SCREEN -->
-        <div id="screen-deposit" class="card hidden">
-            <div class="header">
-                <h2>ገንዘብ ማስገቢያ (Deposit)</h2>
-                <p>የተጠየቀውን የ 500 ብር ክፍያ ይፈጽሙ</p>
-            </div>
-            <div style="background:#0f172a; padding:12px; border-radius:8px; margin-bottom:12px; font-size:13px;">
-                <p><strong>CBE:</strong> 1000657786342 (Kaleab Haile W/Abrha)</p>
-                <p><strong>Telebirr:</strong> 0985625604 (Kaleab Haile W/Abrha)</p>
-            </div>
-            <div class="form-group">
-                <label>የሚያስገቡት መጠን (ብር)</label>
-                <input type="number" id="dep-amount" value="500">
-            </div>
-            <div class="form-group">
-                <label>የግብይት ደረሰኝ (Transaction Screenshot ፎቶ)</label>
-                <input type="file" id="dep-file" accept="image/*">
-            </div>
-            <button class="btn btn-accent" onclick="submitDeposit()">ክፍያውን ላክ</button>
-        </div>
+    <button class="btn" onclick="registerUser()">ይመዝገቡ</button>
+  </div>
 
-        <!-- PENDING SCREEN -->
-        <div id="screen-pending" class="card hidden" style="text-align: center;">
-            <h2 style="color:var(--warning);">እባክዎን ይጠብቁ...</h2>
-            <p style="margin: 15px 0; font-size: 14px;">አድሚኑ መረጃዎን እና የክፍያ ማረጋገጫውን እያረጋገጠ ነው። ሲረጋገጥ ቀጥታ ወደ አፑ ይገባሉ።</p>
-        </div>
-
-        <!-- MAIN APP CONTENT (WITH BOTTOM NAV) -->
-        <div id="main-app" class="hidden">
-
-            <!-- TAB 1: QUESTIONS / BOXES -->
-            <div id="tab-questions" class="card">
-                <div class="header">
-                    <h2>የጥያቄ ሳጥኖች</h2>
-                    <p>ከ 1000+ ሳጥኖች አንዱን መርጠው ይጫወቱ</p>
-                </div>
-                <div class="boxes-grid" id="boxes-container">
-                    <!-- 1000 Boxes generated via JS -->
-                </div>
-            </div>
-
-            <!-- QUIZ PLAY SCREEN -->
-            <div id="quiz-play-screen" class="card hidden">
-                <div style="display:flex; justify-size:space-between; margin-bottom:10px;">
-                    <span>ጥያቄ <span id="q-idx">1</span>/5</span>
-                    <span style="color:var(--danger);" id="q-timer">05:00</span>
-                </div>
-                <h3 id="q-text" style="margin-bottom:15px;">ጥያቄ ይጫናል...</h3>
-                <div id="q-options" style="display:flex; flex-direction:column; gap:10px;"></div>
-                <button class="btn hidden" id="q-next-btn" onclick="nextQuestion()">ቀጥል</button>
-            </div>
-
-            <!-- TAB 2: MESSAGES -->
-            <div id="tab-messages" class="card hidden">
-                <div class="header">
-                    <h2>መልእክቶች እና ማሳወቂያዎች</h2>
-                </div>
-                <div id="messages-list">
-                    <p style="font-size:13px; color:var(--text-muted);">ምንም አዲስ መልእክት የለም።</p>
-                </div>
-            </div>
-
-            <!-- TAB 3: MY ACCOUNT -->
-            <div id="tab-account" class="card hidden">
-                <div class="header">
-                    <h2 id="acc-name">የኔ አካውንት</h2>
-                </div>
-                
-                <div class="wallet-card">
-                    <div style="font-size:12px;">ማውጣት የሚችሉት ሂሳብ</div>
-                    <div style="font-size:26px; font-weight:bold;" id="acc-withdrawable">750 ETB</div>
-                    
-                    <div class="stat-row">
-                        <span>Deposited:</span>
-                        <strong id="acc-deposited">500 ETB</strong>
-                    </div>
-                    <div class="stat-row">
-                        <span>ያሸነፉት:</span>
-                        <strong id="acc-won">300 ETB</strong>
-                    </div>
-                </div>
-
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                    <button class="btn btn-danger" onclick="showWithdrawForm()">Withdraw</button>
-                    <button class="btn btn-accent" onclick="showDepositForm()">Deposit</button>
-                    <button class="btn btn-warning" onclick="shareInvite()">Invite</button>
-                    <button class="btn" onclick="showReferralLink()">My Referral</button>
-                </div>
-
-                <!-- WITHDRAW FORM -->
-                <div id="withdraw-box" class="hidden" style="margin-top:15px; background:#0f172a; padding:12px; border-radius:8px;">
-                    <h4>ገንዘብ ማውጫ (Withdraw)</h4>
-                    <select id="w-method" style="margin: 8px 0;">
-                        <option>CBE Bank</option>
-                        <option>Telebirr</option>
-                    </select>
-                    <input type="text" id="w-acc" placeholder="አካውንት / ስልክ ቁጥር" style="margin-bottom:8px;">
-                    <input type="number" id="w-amt" placeholder="የማውጫ መጠን (ብር)">
-                    <button class="btn btn-danger" onclick="submitWithdrawReq()">አውጣ</button>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- ADMIN PANEL SIMULATION -->
-        <div id="admin-panel" class="card hidden" style="border: 2px solid var(--danger);">
-            <div class="header">
-                <h2 style="color:var(--danger);">የአድሚን መቆጣጠሪያ (Admin)</h2>
-            </div>
-            <div id="admin-content">
-                <p>የተላከ ጥያቄ አለ፡</p>
-                <p><strong>ተጠቃሚ፡</strong> <span id="adm-user-name">Kaleab</span></p>
-                <p><strong>የቀረበ ጥያቄ፡</strong> Registration & 500 ETB Deposit</p>
-                <div style="display:flex; gap:10px; margin-top:15px;">
-                    <button class="btn btn-accent" onclick="adminApprove()">Approve</button>
-                    <button class="btn btn-danger" onclick="adminReject()">Reject</button>
-                </div>
-            </div>
-        </div>
-
+  <!-- 2. MAIN USER INTERFACE -->
+  <div id="app-interface" class="hidden">
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="switchTab('quiz')">❓ ጥያቄ</button>
+      <button class="nav-tab" onclick="switchTab('messages')">🔔 መልእክት (<span id="msg-count">0</span>)</button>
+      <button class="nav-tab" onclick="switchTab('account')">👤 የኔ አካውንት</button>
     </div>
 
-    <!-- BOTTOM NAVIGATION BAR -->
-    <div id="bottom-nav-bar" class="bottom-nav hidden">
-        <div class="nav-item active" onclick="switchTab('questions', this)">
-            <div class="nav-icon">❓</div>
-            <div>ጥያቄ</div>
-        </div>
-        <div class="nav-item" onclick="switchTab('messages', this)">
-            <div class="nav-icon">💬</div>
-            <div>መልእክት</div>
-        </div>
-        <div class="nav-item" onclick="switchTab('account', this)">
-            <div class="nav-icon">👤</div>
-            <div>የኔ አካውንት</div>
-        </div>
+    <!-- TAB 1: QUIZ BOXES -->
+    <div id="tab-quiz" class="card">
+      <h3>📚 የመጽሐፍ ቅዱስ ጥያቄ ሳጥኖች (ከ1000 በላይ)</h3>
+      <p style="font-size: 13px; color: #cbd5e1;">ሳጥን ሲመርጡ <b>50 ብር</b> ከሂሳብዎ ይቀነሳል፤ 5ቱን ጥያቄዎች ሲመልሱ ይሸለማሉ!</p>
+      
+      <div id="boxes-container" class="boxes-grid"></div>
     </div>
 
-    <script>
-        let userData = {
-            name: "",
-            deposited: 500,
-            won: 300,
-            withdrawable: 750,
-            pendingApproval: false,
-            messages: ["እንኳን ወደ ሰርድዮን ኪዩዝ ደህና መጡ!"]
-        };
+    <!-- TAB 2: MESSAGES -->
+    <div id="tab-messages" class="card hidden">
+      <h3>🔔 የማስታወቂያ እና የክፍያ መልእክቶች</h3>
+      <div id="messages-list">
+        <p style="color: #94a3b8;">ምንም አዲስ መልእክት የለም።</p>
+      </div>
+    </div>
 
-        function submitRegistration() {
-            const name = document.getElementById('reg-name').value;
-            const file = document.getElementById('reg-id-file').files[0];
-            if(!name || !file) {
-                alert('እባክዎን ስምዎን እና የናሽናል አይዲ ፎቶ ያስገቡ!');
-                return;
-            }
-            userData.name = name;
-            showScreen('screen-deposit');
-        }
+    <!-- TAB 3: MY ACCOUNT -->
+    <div id="tab-account" class="card hidden">
+      <h3>💼 የሂሳብ መግለጫ እና አገልግሎቶች</h3>
+      <div style="background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 15px;">
+        <p style="margin: 5px 0;">💰 የዲፖዚት ሂሳብ: <b id="bal-deposit" style="color: var(--success-color);">0 ብር</b></p>
+        <p style="margin: 5px 0;">🎁 ሊወጣ የሚችል ሂሳብ: <b id="bal-withdrawable" style="color: var(--accent-color);">0 ብር</b></p>
+      </div>
 
-        function submitDeposit() {
-            const file = document.getElementById('dep-file').files[0];
-            if(!file) {
-                alert('እባክዎን የግብይቱን ፎቶ ያስገቡ!');
-                return;
-            }
-            userData.pendingApproval = true;
-            document.getElementById('adm-user-name').textContent = userData.name;
-            showScreen('screen-pending');
-        }
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-secondary" style="flex: 1;" onclick="openModal('deposit')">💳 Deposit</button>
+        <button class="btn btn-secondary" style="flex: 1;" onclick="openModal('withdraw')">💸 Withdraw</button>
+      </div>
+      <button class="btn" style="background-color: #8b5cf6; margin-top: 10px;" onclick="openModal('referral')">🤝 My Referral & Invite</button>
+    </div>
+  </div>
 
-        function toggleAdminPanel() {
-            document.getElementById('admin-panel').classList.toggle('hidden');
-        }
+  <!-- 3. SECRET ADMIN CONTROL PANEL (ለሌላ ደንበኛ የማይታይ) -->
+  <div id="admin-panel" class="card hidden" style="border: 2px solid var(--accent-color);">
+    <h2 style="color: var(--accent-color); margin-top:0;">⚙️ Cerdion Admin System</h2>
+    
+    <!-- 3A. የደንበኞች ጥያቄ ማረጋገጫ -->
+    <div class="admin-section">
+      <h4>📥 የደንበኞች Deposit / Withdraw ጥያቄዎች</h4>
+      <div id="admin-requests-list">
+        <p style="color: #94a3b8;">ምንም የሚጠብቅ ጥያቄ የለም።</p>
+      </div>
+    </div>
 
-        function adminApprove() {
-            alert('ተጠቃሚው በስኬት ጸድቋል (Approved)!');
-            userData.pendingApproval = false;
-            document.getElementById('admin-panel').classList.add('hidden');
-            document.getElementById('main-app').classList.remove('hidden');
-            document.getElementById('bottom-nav-bar').classList.remove('hidden');
-            showScreen('main-app');
-            initApp();
-        }
+    <!-- 3B. ጥያቄዎችን መቀያየሪያ/ማስተካከያ -->
+    <div class="admin-section">
+      <h4>✏️ የመጽሐፍ ቅዱስ ጥያቄዎችን መቀያየሪያ</h4>
+      <label>የሳጥን ቁጥር ይምረጡ (1 - 1000):</label>
+      <input type="number" id="adm-box-num" class="input-field" placeholder="ምሳሌ: 1" value="1">
+      
+      <label>ጥያቄ 1:</label>
+      <input type="text" id="adm-q1" class="input-field" placeholder="ጥያቄ 1 ጻፍ...">
+      
+      <label>ጥያቄ 2:</label>
+      <input type="text" id="adm-q2" class="input-field" placeholder="ጥያቄ 2 ጻፍ...">
 
-        function adminReject() {
-            alert('ተጠቃሚው Reject ተደርጓል!');
-            showScreen('screen-register');
-        }
+      <label>ጥያቄ 3:</label>
+      <input type="text" id="adm-q3" class="input-field" placeholder="ጥያቄ 3 ጻፍ...">
 
-        function showScreen(id) {
-            ['screen-register', 'screen-deposit', 'screen-pending', 'main-app'].forEach(s => {
-                document.getElementById(s).classList.add('hidden');
-            });
-            document.getElementById(id).classList.remove('hidden');
-        }
+      <button class="btn" onclick="saveCustomQuestions()">💾 አዲሱን ጥያቄ መዝግብ</button>
+    </div>
+  </div>
 
-        function switchTab(tabName, el) {
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            if(el) el.classList.add('active');
+  <!-- MODALS -->
+  <div id="modal-container" class="card hidden" style="border: 1px solid var(--blue-btn);">
+    <h3 id="modal-title">አርእስት</h3>
+    <div id="modal-body"></div>
+    <button class="btn" style="background-color: #475569; margin-top: 10px;" onclick="closeModal()">ዝጋ</button>
+  </div>
 
-            ['tab-questions', 'tab-messages', 'tab-account'].forEach(t => {
-                document.getElementById(t).classList.add('hidden');
-            });
-            document.getElementById('tab-' + tabName).classList.remove('hidden');
-        }
+  <div id="quiz-modal" class="card hidden" style="border: 1px solid var(--accent-color);">
+    <h3 id="quiz-box-title">ሳጥን #</h3>
+    <div id="quiz-question-body"></div>
+  </div>
+</div>
 
-        function initApp() {
-            document.getElementById('acc-name').textContent = userData.name;
-            updateWalletUI();
-            generateBoxes();
-        }
+<script>
+  let clickCounter = 0;
+  let clickTimer = null;
+  let isAdminLoggedIn = false;
 
-        function updateWalletUI() {
-            document.getElementById('acc-withdrawable').textContent = userData.withdrawable + " ETB";
-            document.getElementById('acc-deposited').textContent = userData.deposited + " ETB";
-            document.getElementById('acc-won').textContent = userData.won + " ETB";
-            
-            // Update messages list
-            const msgContainer = document.getElementById('messages-list');
-            msgContainer.innerHTML = '';
-            userData.messages.forEach(m => {
-                const p = document.createElement('p');
-                p.style.cssText = "background:#0f172a; padding:10px; border-radius:6px; margin-bottom:8px; font-size:13px;";
-                p.textContent = m;
-                msgContainer.appendChild(p);
-            });
-        }
+  let userData = JSON.parse(localStorage.getItem('cerdion_user')) || null;
+  let adminRequests = JSON.parse(localStorage.getItem('cerdion_admin_req')) || [];
+  let userMessages = JSON.parse(localStorage.getItem('cerdion_messages')) || [];
+  let customQuestions = JSON.parse(localStorage.getItem('cerdion_questions')) || {};
 
-        function generateBoxes() {
-            const container = document.getElementById('boxes-container');
-            container.innerHTML = '';
-            for(let i=1; i<=100; i++) {
-                const box = document.createElement('div');
-                box.className = 'quiz-box locked';
-                box.textContent = 'ሳጥን #' + i;
-                box.onclick = () => playQuizBox(i);
-                container.appendChild(box);
-            }
-        }
+  // Cerdion ርዕስን 5 ጊዜ ስትነካ አድሚን መግቢያ ይከፈታል
+  function handleCerdionClick() {
+    clickCounter++;
+    if (clickCounter === 1) {
+      clickTimer = setTimeout(() => { clickCounter = 0; }, 1500);
+    } else if (clickCounter === 5) {
+      clearTimeout(clickTimer);
+      clickCounter = 0;
+      const pass = prompt("እባክዎን የአድሚን ይለፍ ቃል (Password) ያስገቡ:");
+      if (pass === "182418") {
+        isAdminLoggedIn = true;
+        document.getElementById('admin-panel').classList.remove('hidden');
+        renderAdminPanel();
+        alert("እንኳን ደህና መጡ! በአድሚንነት ገብተዋል።");
+      } else {
+        alert("የተሳሳተ ይለፍ ቃል!");
+      }
+    }
+  }
 
-        function playQuizBox(num) {
-            if(userData.withdrawable < 50) {
-                alert('የጨዋታ ሂሳብዎ በቂ አይደለም! እባክዎን Deposit ያድርጉ።');
-                return;
-            }
-            if(confirm(`ከአካውንትዎ 50 ብር ተቀንሶ ሳጥን #${num}ን መጫወት ይፈልጋሉ?`)) {
-                userData.withdrawable -= 50;
-                updateWalletUI();
-                startQuizGame();
-            }
-        }
+  window.onload = function() {
+    if (userData) {
+      document.getElementById('auth-card').classList.add('hidden');
+      document.getElementById('app-interface').classList.remove('hidden');
+      updateAccountUI();
+      renderBoxes();
+    }
+    renderMessages();
+  };
 
-        const bibleQuestions = [
-            { q: "መጽሐፍ ቅዱስ መጀመሪያ ላይ የሚገኘው የመጀመሪያው መጽሐፍ ማን ይባላል?", options: ["ኦሪት ዘፍጥረት", "ማቴዎስ", "የሐዋርያት ሥራ", "ትንቢተ ኢሳይያስ"], correct: 0 },
-            { q: "ኢየሱስ ክርስቶስ የተወለደበት ከተማ ማን ይባላል?", options: ["ናዝሬት", "ቤተልሔም", "ኢየሩሳሌም", "ገሊላ"], correct: 1 },
-            { q: "ዳዊት ከፍልስጤማዊው ግዙፍ ሰው ጋር ሲዋጋ የተጠቀመው መሣሪያ ምን ነበረ?", options: ["ሰይፍ", "ጦር", "ወንንጭፍና ድንጋይ", "ቀስት"], correct: 2 },
-            { q: "መጽሐፍ ቅዱስ በአጠቃላይ ስንት መጽሐፍትን ይይዛል?", options: ["66", "73", "81", "39"], correct: 2 },
-            { q: "ሐዋርያው ​​ጳውሎስ ወደ ደማስቆ ሲጓዝ የገጠመው አካል ማን ነበር?", options: ["መላእክት", "እግዚአብሔር በብርሃን", "ጴጥሮስ", "ሮማውያን ወታደሮች"], correct: 1 }
-        ];
+  function registerUser() {
+    const name = document.getElementById('reg-name').value.trim();
+    const idText = document.getElementById('reg-id-text').value.trim();
+    const idFile = document.getElementById('reg-id-file').files[0];
 
-        let currentQ = 0;
-        let score = 0;
+    if (!name) {
+      alert("እባክዎን ስምዎን ያስገቡ!");
+      return;
+    }
+    if (!idFile) {
+      alert("⚠️ እባክዎ ናሽናል አይዲ ፎቶውን ያስገቡ! (ቁጥር ብቻ መቀበል አይቻልም)");
+      return;
+    }
 
-        function startQuizGame() {
-            currentQ = 0;
-            score = 0;
-            document.getElementById('tab-questions').classList.add('hidden');
-            document.getElementById('quiz-play-screen').classList.remove('hidden');
-            loadQ();
-        }
+    userData = {
+      name: name,
+      depositBalance: 0,
+      withdrawableBalance: 750,
+      idPhoto: idFile.name
+    };
 
-        function loadQ() {
-            if(currentQ >= bibleQuestions.length) {
-                finishQuizGame();
-                return;
-            }
-            document.getElementById('q-idx').textContent = currentQ + 1;
-            const q = bibleQuestions[currentQ];
-            document.getElementById('q-text').textContent = q.q;
-            
-            const opts = document.getElementById('q-options');
-            opts.innerHTML = '';
-            q.options.forEach((opt, idx) => {
-                const btn = document.createElement('button');
-                btn.className = 'btn';
-                btn.style.background = '#0f172a';
-                btn.textContent = opt;
-                btn.onclick = () => {
-                    if(idx === q.correct) score++;
-                    currentQ++;
-                    loadQ();
-                };
-                opts.appendChild(btn);
-            });
-        }
+    localStorage.setItem('cerdion_user', JSON.stringify(userData));
+    document.getElementById('auth-card').classList.add('hidden');
+    document.getElementById('app-interface').classList.remove('hidden');
+    updateAccountUI();
+    renderBoxes();
+    alert("ምዝገባዎ በስኬት ተጠናቋል!");
+  }
 
-        function finishQuizGame() {
-            document.getElementById('quiz-play-screen').classList.add('hidden');
-            document.getElementById('tab-questions').classList.remove('hidden');
-            if(score >= 4) {
-                userData.won += 300;
-                userData.withdrawable += 300;
-                alert(`እንኳን ደስ አለዎት! 300 ብር አሸንፈዋል። ውጤት: ${score}/5`);
-            } else {
-                alert(`አልተሳካልዎትም! ውጤት: ${score}/5`);
-            }
-            updateWalletUI();
-        }
+  function updateAccountUI() {
+    if(!userData) return;
+    document.getElementById('bal-deposit').innerText = userData.depositBalance + " ብር";
+    document.getElementById('bal-withdrawable').innerText = userData.withdrawableBalance + " ብር";
+  }
 
-        function showWithdrawForm() {
-            document.getElementById('withdraw-box').classList.toggle('hidden');
-        }
+  function switchTab(tabName) {
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-quiz').classList.add('hidden');
+    document.getElementById('tab-messages').classList.add('hidden');
+    document.getElementById('tab-account').classList.add('hidden');
 
-        function showDepositForm() {
-            switchTab('account', null);
-            showScreen('screen-deposit');
-        }
+    if(tabName === 'quiz') {
+      document.getElementById('tab-quiz').classList.remove('hidden');
+      event.target.classList.add('active');
+    } else if(tabName === 'messages') {
+      document.getElementById('tab-messages').classList.remove('hidden');
+      event.target.classList.add('active');
+    } else if(tabName === 'account') {
+      document.getElementById('tab-account').classList.remove('hidden');
+      event.target.classList.add('active');
+    }
+  }
 
-        function submitWithdrawReq() {
-            const amt = parseInt(document.getElementById('w-amt').value);
-            const acc = document.getElementById('w-acc').value;
-            if(!amt || !acc) {
-                alert('እባክዎን መረጃዎችን ይሙሉ!');
-                return;
-            }
-            if(amt > userData.withdrawable) {
-                alert('በቂ ሂሳብ የለም!');
-                return;
-            }
-            alert('የማውጣት ጥያቄዎ ለአድሚን ተልኳል! (Pending)');
-            document.getElementById('withdraw-box').classList.add('hidden');
-            
-            // Simulating admin approval notification
-            setTimeout(() => {
-                userData.withdrawable -= amt;
-                userData.messages.unshift(`የ ${amt} ብር ማውጣት ጥያቄዎ ጸድቋል (Approved)! ${amt} ብር ገቢ ሆኗል።`);
-                updateWalletUI();
-            }, 3000);
-        }
+  function renderBoxes() {
+    const container = document.getElementById('boxes-container');
+    container.innerHTML = '';
+    for(let i=1; i<=1000; i++) {
+      const box = document.createElement('div');
+      box.className = 'box-item';
+      box.innerText = `ሳጥን ${i}`;
+      box.onclick = () => openBoxQuiz(i);
+      container.appendChild(box);
+    }
+  }
 
-        function showReferralLink() {
-            alert(`የእርስዎ Referral Link:\nhttps://kaleabhsudoaleabhaile.github.io/cerdion-quiz/?ref=${userData.name}`);
-        }
+  function openBoxQuiz(boxNum) {
+    if(userData.withdrawableBalance < 50 && userData.depositBalance < 50) {
+      alert("⚠️ በቂ ሂሳብ የለዎትም (50 ብር ያስፈልጋል)!");
+      return;
+    }
 
-        function shareInvite() {
-            const url = `https://kaleabhsudoaleabhaile.github.io/cerdion-quiz/?ref=${userData.name}`;
-            const text = `በሰርድዮን ኪዩዝ ተጫውተው ይሸለሙ! መመዝገቢያ ሊንክ፡ ${url}`;
-            if(navigator.share) {
-                navigator.share({ title: 'Cerdion Quiz', text: text, url: url });
-            } else {
-                alert('ሊንኩ ተኮፒ አድርጓል! በ Telegram/WhatsApp ለጓደኞችዎ ይላኩ፡\n' + url);
-            }
-        }
-    </script>
+    if(userData.withdrawableBalance >= 50) {
+      userData.withdrawableBalance -= 50;
+    } else {
+      userData.depositBalance -= 50;
+    }
+    updateAccountUI();
+    localStorage.setItem('cerdion_user', JSON.stringify(userData));
+
+    const qModal = document.getElementById('quiz-modal');
+    qModal.classList.remove('hidden');
+    document.getElementById('quiz-box-title').innerText = `ሳጥን #${boxNum} - የመጽሐፍ ቅዱስ ጥያቄዎች`;
+    
+    // አድሚኑ የቀየረው ጥያቄ ካለ እሱን ማሳየት ካልሆነ ነባሪውን ማሳየት
+    const qData = customQuestions[boxNum] || {
+      q1: "መጽሐፍ ቅዱስ በአጠቃላይ ስንት መጻሕፍት አሉት?",
+      q2: "ሰሎሞን የሰለጠነው ማንን በመተካት ነው?",
+      q3: "ጌታችን ኢየሱስ ክርስቶስ የተወለደበት ከተማ ማናት?"
+    };
+
+    document.getElementById('quiz-question-body').innerHTML = `
+      <p><b>ጥያቄ 1:</b> ${qData.q1}</p>
+      <input type="text" class="input-field" placeholder="መልስዎ...">
+      
+      <p><b>ጥያቄ 2:</b> ${qData.q2}</p>
+      <input type="text" class="input-field" placeholder="መልስዎ...">
+
+      <p><b>ጥያቄ 3:</b> ${qData.q3}</p>
+      <input type="text" class="input-field" placeholder="መልስዎ...">
+
+      <button class="btn" onclick="submitQuizAnswers(${boxNum})">መልሶችን አስረክብ</button>
+    `;
+  }
+
+  function submitQuizAnswers(boxNum) {
+    alert("መልሶችዎ ተቀብለዋል! አሸንፈዋል 🎉 (50 ብር ክፍያ ተቆርጧል)።");
+    userData.withdrawableBalance += 100;
+    updateAccountUI();
+    localStorage.setItem('cerdion_user', JSON.stringify(userData));
+    document.getElementById('quiz-modal').classList.add('hidden');
+  }
+
+  function openModal(type) {
+    const container = document.getElementById('modal-container');
+    container.classList.remove('hidden');
+    const title = document.getElementById('modal-title');
+    const body = document.getElementById('modal-body');
+
+    if(type === 'deposit') {
+      title.innerText = "💳 ገንዘብ ማስገባት (Deposit)";
+      body.innerHTML = `
+        <p>እባክዎን በ CBE ወይም Telebirr 500 ብር ወይም የሚፈልጉትን ያስገቡና የትራንዛክሽን ፎቶ ያያይዙ።</p>
+        <label>የባንክ/ቴሌብር የትራንዛክሽን ፎቶ (Receipt):</label>
+        <input type="file" id="dep-file" class="file-input" accept="image/*">
+        <label>የመጠኑ መጠን (ብር):</label>
+        <input type="number" id="dep-amount" class="input-field" placeholder="ለምሳሌ 500">
+        <button class="btn" onclick="submitDepositRequest()">ጥያቄውን ላክ (Pending)</button>
+      `;
+    } else if(type === 'withdraw') {
+      title.innerText = "💸 ገንዘብ ማውጣት (Withdraw)";
+      body.innerHTML = `
+        <p>ሊወጣ የሚችል ሂሳብ: <b>${userData.withdrawableBalance} ብር</b></p>
+        <label>የባንክ ዓይነት (CBE / Telebirr):</label>
+        <select id="w-bank" class="input-field">
+          <option value="CBE">ንግድ ባንክ (CBE)</option>
+          <option value="Telebirr">ቴሌብር (Telebirr)</option>
+        </select>
+        <label>አካውንት ቁጥር / ስልክ:</label>
+        <input type="text" id="w-acc" class="input-field" placeholder="ቁጥርዎን ያስገቡ...">
+        <label>የሚወጣው መጠን (ብር):</label>
+        <input type="number" id="w-amount" class="input-field" placeholder="ብር መጠን...">
+        <button class="btn" onclick="submitWithdrawRequest()">ማውጣት አዝዝ (Pending)</button>
+      `;
+    } else if(type === 'referral') {
+      title.innerText = "🤝 ጓደኛ ጋብዝ (Referral & Invite)";
+      const refLink = "https://kaleabhsudoaleabhaile.github.io/cerdion-quiz/?ref=" + encodeURIComponent(userData.name);
+      body.innerHTML = `
+        <p>የእርስዎ ልዩ መጋበዣ ሊንክ (Referral Link):</p>
+        <input type="text" class="input-field" value="${refLink}" readonly>
+        <p>ሰዎችን በቀጥታ ጋብዝ:</p>
+        <div style="display: flex; gap: 5px;">
+          <a href="https://t.me/share/url?url=${encodeURIComponent(refLink)}" target="_blank" class="btn" style="background:#229ed9; color:#fff; text-decoration:none; flex:1; text-align:center;">Telegram</a>
+          <a href="whatsapp://send?text=${encodeURIComponent(refLink)}" class="btn" style="background:#25d366; color:#fff; text-decoration:none; flex:1; text-align:center;">WhatsApp</a>
+        </div>
+      `;
+    }
+  }
+
+  function closeModal() {
+    document.getElementById('modal-container').classList.add('hidden');
+  }
+
+  function submitDepositRequest() {
+    const amount = document.getElementById('dep-amount').value;
+    const file = document.getElementById('dep-file').files[0];
+    if(!amount || !file) {
+      alert("እባክዎን መጠኑን እና የትራንዛክሽን ፎቶ ያስገቡ!");
+      return;
+    }
+    
+    adminRequests.push({
+      type: 'Deposit',
+      user: userData.name,
+      amount: amount,
+      file: file.name,
+      status: 'Pending'
+    });
+    localStorage.setItem('cerdion_admin_req', JSON.stringify(adminRequests));
+    closeModal();
+    alert("ጥያቄዎ ተልኳል! አድሚኑ እስኪያረጋግጥ Pending ይላል።");
+    if(isAdminLoggedIn) renderAdminPanel();
+  }
+
+  function submitWithdrawRequest() {
+    const amount = Number(document.getElementById('w-amount').value);
+    const acc = document.getElementById('w-acc').value;
+    if(!amount || !acc) {
+      alert("እባክዎን መረጃዎችን በትክክል ይሙሉ!");
+      return;
+    }
+    if(amount > userData.withdrawableBalance) {
+      alert("⚠️ በቂ ሊወጣ የሚችል ሂሳብ የለዎትም!");
+      return;
+    }
+
+    adminRequests.push({
+      type: 'Withdraw',
+      user: userData.name,
+      amount: amount,
+      account: acc,
+      status: 'Pending'
+    });
+    localStorage.setItem('cerdion_admin_req', JSON.stringify(adminRequests));
+    closeModal();
+    alert("የማውጣት ጥያቄዎ ተልኳል! አድሚኑ እስኪያረጋግጥ Pending ይላል።");
+    if(isAdminLoggedIn) renderAdminPanel();
+  }
+
+  // ADMIN CONTROL FUNCTIONS
+  function renderAdminPanel() {
+    const list = document.getElementById('admin-requests-list');
+    const pendingReqs = adminRequests.filter(r => r.status === 'Pending');
+
+    if(pendingReqs.length === 0) {
+      list.innerHTML = `<p style="color: #94a3b8;">ምንም የሚጠብቅ ጥያቄ የለም።</p>`;
+      return;
+    }
+
+    list.innerHTML = '';
+    adminRequests.forEach((req, idx) => {
+      if(req.status === 'Pending') {
+        const item = document.createElement('div');
+        item.style = "background:#1e293b; padding:10px; border-radius:6px; margin-bottom:10px;";
+        item.innerHTML = `
+          <p><b>አይነት:</b> ${req.type} | <b>ተጠቃሚ:</b> ${req.user} | <b>መጠን:</b> ${req.amount} ብር</p>
+          <p><b>መረጃ:</b> ${req.file || req.account}</p>
+          <div style="display:flex; gap:10px;">
+            <button class="btn btn-approve" onclick="adminAction(${idx}, 'Approve')">Approve</button>
+            <button class="btn btn-reject" onclick="adminAction(${idx}, 'Reject')">Reject</button>
+          </div>
+        `;
+        list.appendChild(item);
+      }
+    });
+  }
+
+  function adminAction(index, action) {
+    const req = adminRequests[index];
+    req.status = action;
+    localStorage.setItem('cerdion_admin_req', JSON.stringify(adminRequests));
+
+    let msgText = "";
+    if(req.type === 'Withdraw') {
+      if(action === 'Approve') {
+        msgText = `የጠየቁት ${req.amount} ብር ማውጣት ጥያቄ በአድሚን ጸድቋል (Approve)፤ የጠየቁት ገንዘብ ገቢ ሆኗል!`;
+        userData.withdrawableBalance -= Number(req.amount);
+        updateAccountUI();
+        localStorage.setItem('cerdion_user', JSON.stringify(userData));
+      } else {
+        msgText = `የጠየቁት ${req.amount} ብር ማውጣት ጥያቄ በአድሚን ተቀባይነት አላገኘም (Reject)።`;
+      }
+    } else {
+      if(action === 'Approve') {
+        msgText = `የዲፖዚት ${req.amount} ብር ጥያቄዎ ጸድቋል (Approve)!`;
+        userData.depositBalance += Number(req.amount);
+        updateAccountUI();
+        localStorage.setItem('cerdion_user', JSON.stringify(userData));
+      } else {
+        msgText = `የዲፖዚት ${req.amount} ብር ጥያቄዎ ተቀባይነት አላገኘም (Reject)።`;
+      }
+    }
+
+    userMessages.push(msgText);
+    localStorage.setItem('cerdion_messages', JSON.stringify(userMessages));
+    renderMessages();
+    renderAdminPanel();
+    alert(`ጥያቄው በስኬት ተደርጓል: ${action}`);
+  }
+
+  function saveCustomQuestions() {
+    const boxNum = document.getElementById('adm-box-num').value;
+    const q1 = document.getElementById('adm-q1').value.trim();
+    const q2 = document.getElementById('adm-q2').value.trim();
+    const q3 = document.getElementById('adm-q3').value.trim();
+
+    if(!boxNum || !q1) {
+      alert("እባክዎን የሳጥን ቁጥር እና ቢያንስ አንደኛውን ጥያቄ ይጻፉ!");
+      return;
+    }
+
+    customQuestions[boxNum] = { q1, q2, q3 };
+    localStorage.setItem('cerdion_questions', JSON.stringify(customQuestions));
+    alert(`የሳጥን #${boxNum} ጥያቄዎች በስኬት ተቀይረዋል!`);
+  }
+
+  function renderMessages() {
+    const list = document.getElementById('messages-list');
+    document.getElementById('msg-count').innerText = userMessages.length;
+    if(userMessages.length === 0) return;
+
+    list.innerHTML = '';
+    userMessages.forEach(msg => {
+      const p = document.createElement('p');
+      p.style = "background:#0f172a; padding:10px; border-radius:6px; border-left:4px solid var(--accent-color); margin-bottom:8px;";
+      p.innerText = msg;
+      list.appendChild(p);
+    });
+  }
+</script>
+
 </body>
 </html>
