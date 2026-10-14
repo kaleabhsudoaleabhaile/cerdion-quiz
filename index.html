@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="am">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cerdion Quiz - Dashboard</title>
+    <title>ሰርድዮን ኪዩዝ - Cerdion Quiz App</title>
     <style>
         :root {
             --primary: #4f46e5;
@@ -32,53 +31,33 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
+            padding-bottom: 70px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 480px;
             padding: 20px;
         }
 
-        .container {
-            width: 100%;
-            max-width: 500px;
+        .card {
             background: var(--card-bg);
             border-radius: 16px;
-            padding: 24px;
+            padding: 20px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
             border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 20px;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         .header h1 {
-            font-size: 24px;
+            font-size: 22px;
             color: var(--text);
-            margin-bottom: 6px;
-        }
-
-        .header p {
-            color: var(--text-muted);
-            font-size: 13px;
-        }
-
-        .badge {
-            display: inline-block;
-            background: rgba(79, 70, 229, 0.15);
-            color: #818cf8;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        .step {
-            display: none;
-        }
-
-        .step.active {
-            display: block;
         }
 
         .form-group {
@@ -101,11 +80,6 @@
             color: var(--text);
             font-size: 14px;
             outline: none;
-            transition: border-color 0.2s;
-        }
-
-        input:focus {
-            border-color: var(--primary);
         }
 
         .btn {
@@ -118,420 +92,486 @@
             font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s;
             margin-top: 10px;
         }
 
-        .btn:hover {
-            background: var(--primary-dark);
+        .btn-accent { background: var(--accent); }
+        .btn-danger { background: var(--danger); }
+        .btn-warning { background: var(--warning); color: #000; }
+
+        /* Grid for 1000+ Boxes */
+        .boxes-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+            background: #0f172a;
+            border-radius: 12px;
         }
 
-        .btn-accent {
-            background: var(--accent);
-        }
-        .btn-accent:hover {
-            background: #059669;
-        }
-
-        .btn-danger {
-            background: var(--danger);
-        }
-
-        .account-box {
-            background: rgba(15, 23, 42, 0.7);
+        .quiz-box {
+            background: #1e293b;
             border: 1px solid #334155;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 16px;
-            font-size: 13px;
-            line-height: 1.6;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
         }
 
-        .account-box strong {
-            color: var(--accent);
+        .quiz-box.locked::after {
+            content: "🔒 50 ብር";
+            display: block;
+            font-size: 11px;
+            color: var(--warning);
+            margin-top: 4px;
         }
 
-        /* Dashboard Styles */
+        /* Bottom Navigation Bar */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            max-width: 480px;
+            background: #1e293b;
+            border-top: 1px solid #334155;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-muted);
+            font-size: 12px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .nav-icon {
+            font-size: 18px;
+            margin-bottom: 2px;
+        }
+
+        .hidden { display: none !important; }
+
+        /* Wallet Display */
         .wallet-card {
             background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
             padding: 20px;
             border-radius: 12px;
-            margin-bottom: 20px;
+            color: white;
             text-align: center;
-        }
-
-        .wallet-card h3 {
-            font-size: 14px;
-            opacity: 0.9;
-            margin-bottom: 6px;
-        }
-
-        .wallet-card .amount {
-            font-size: 28px;
-            font-weight: bold;
             margin-bottom: 15px;
         }
 
-        .wallet-stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 10px;
-            font-size: 12px;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 10px;
-            border-radius: 8px;
-        }
-
-        .dashboard-actions {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .timer-bar {
+        .stat-row {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            background: #0f172a;
-            padding: 10px 14px;
-            border-radius: 8px;
-            margin-bottom: 16px;
-            font-weight: 600;
-            font-size: 14px;
+            margin-top: 10px;
+            font-size: 13px;
+            background: rgba(0,0,0,0.2);
+            padding: 8px 12px;
+            border-radius: 6px;
         }
 
-        .timer {
-            color: var(--danger);
-        }
-
-        .question-card h2 {
-            font-size: 16px;
-            margin-bottom: 16px;
-            line-height: 1.4;
-        }
-
-        .options {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 16px;
-        }
-
-        .option-btn {
-            width: 100%;
-            padding: 12px 14px;
-            background: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 8px;
-            color: var(--text);
-            text-align: left;
+        .admin-badge {
+            background: var(--danger);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            float: right;
             cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-
-        .option-btn:hover {
-            border-color: var(--primary);
-            background: rgba(79, 70, 229, 0.05);
-        }
-
-        .option-btn.selected {
-            background: var(--primary);
-            border-color: var(--primary);
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <!-- STEP 1: REGISTRATION -->
-        <div id="step-1" class="step active">
+    <div class="app-container">
+        
+        <!-- TOP ADMIN SWITCH -->
+        <span class="admin-badge" onclick="toggleAdminPanel()">Admin Mode</span>
+
+        <!-- REGISTRATION SCREEN -->
+        <div id="screen-register" class="card">
             <div class="header">
-                <span class="badge">Cerdion Quiz</span>
-                <h1>User Registration</h1>
-                <p>Test your knowledge & win rewards!</p>
+                <h1>ሰርድዮን ኪዩዝ - ምዝገባ</h1>
+                <p>እባክዎን መረጃዎን ያስገቡ</p>
             </div>
-
             <div class="form-group">
-                <label>Full Name</label>
-                <input type="text" id="reg-name" placeholder="Enter your full name">
+                <label>ሙሉ ስም</label>
+                <input type="text" id="reg-name" placeholder="ስምዎን ያስገቡ">
             </div>
-
             <div class="form-group">
-                <label>National ID</label>
-                <input type="text" id="reg-nid" placeholder="Enter your National ID">
+                <label>ናሽናል አይዲ (ፎቶ ብቻ)</label>
+                <input type="file" id="reg-id-file" accept="image/*">
             </div>
-
-            <button class="btn" onclick="registerUser()">Register & Continue</button>
+            <button class="btn" onclick="submitRegistration()">መዝገብና ቀጥል</button>
         </div>
 
-        <!-- STEP 2: DASHBOARD -->
-        <div id="step-2" class="step">
+        <!-- DEPOSIT SCREEN -->
+        <div id="screen-deposit" class="card hidden">
             <div class="header">
-                <h1 id="welcome-user">Welcome</h1>
-                <p>User Dashboard</p>
+                <h2>ገንዘብ ማስገቢያ (Deposit)</h2>
+                <p>የተጠየቀውን የ 500 ብር ክፍያ ይፈጽሙ</p>
             </div>
-
-            <div class="wallet-card">
-                <h3>Current Balance</h3>
-                <div class="amount" id="user-balance">0.00 ETB</div>
-                <div class="wallet-stats">
-                    <div>Deposited: <br><strong id="deposited-amount">0 ETB</strong></div>
-                    <div>Won Prize: <br><strong id="won-amount">0 ETB</strong></div>
-                </div>
-            </div>
-
-            <div class="dashboard-actions">
-                <button class="btn btn-accent" onclick="goToStep(3)">Deposit Funds</button>
-                <button class="btn" onclick="startQuizCheck()">Start Quiz (50 ETB)</button>
-                <button class="btn btn-danger" onclick="goToStep(5)">Withdraw Funds</button>
-            </div>
-        </div>
-
-        <!-- STEP 3: DEPOSIT -->
-        <div id="step-3" class="step">
-            <div class="header">
-                <h2>Deposit Funds</h2>
-                <p>Deposit any amount starting from 50 ETB</p>
-            </div>
-
-            <div class="account-box">
+            <div style="background:#0f172a; padding:12px; border-radius:8px; margin-bottom:12px; font-size:13px;">
                 <p><strong>CBE:</strong> 1000657786342 (Kaleab Haile W/Abrha)</p>
                 <p><strong>Telebirr:</strong> 0985625604 (Kaleab Haile W/Abrha)</p>
             </div>
-
             <div class="form-group">
-                <label>Deposit Amount (ETB)</label>
-                <input type="number" id="deposit-amount-input" placeholder="e.g. 500" min="50">
+                <label>የሚያስገቡት መጠን (ብር)</label>
+                <input type="number" id="dep-amount" value="500">
             </div>
-
             <div class="form-group">
-                <label>Transaction ID</label>
-                <input type="text" id="deposit-tx" placeholder="Enter transaction reference">
+                <label>የግብይት ደረሰኝ (Transaction Screenshot ፎቶ)</label>
+                <input type="file" id="dep-file" accept="image/*">
             </div>
-
-            <button class="btn btn-accent" onclick="processDeposit()">Confirm & Add Balance</button>
-            <button class="btn" onclick="goToStep(2)" style="background: #334155; margin-top: 6px;">Back to Dashboard</button>
+            <button class="btn btn-accent" onclick="submitDeposit()">ክፍያውን ላክ</button>
         </div>
 
-        <!-- STEP 4: QUIZ -->
-        <div id="step-4" class="step">
-            <div class="timer-bar">
-                <span>Question <span id="q-num">1</span>/5</span>
-                <span class="timer" id="timer">05:00</span>
-            </div>
-
-            <div class="question-card">
-                <h2 id="question-text">Question...</h2>
-                <div class="options" id="options-container"></div>
-            </div>
-
-            <button class="btn" id="next-btn" onclick="nextQuestion()" style="display:none;">Next</button>
+        <!-- PENDING SCREEN -->
+        <div id="screen-pending" class="card hidden" style="text-align: center;">
+            <h2 style="color:var(--warning);">እባክዎን ይጠብቁ...</h2>
+            <p style="margin: 15px 0; font-size: 14px;">አድሚኑ መረጃዎን እና የክፍያ ማረጋገጫውን እያረጋገጠ ነው። ሲረጋገጥ ቀጥታ ወደ አፑ ይገባሉ።</p>
         </div>
 
-        <!-- STEP 5: WITHDRAW -->
-        <div id="step-5" class="step">
+        <!-- MAIN APP CONTENT (WITH BOTTOM NAV) -->
+        <div id="main-app" class="hidden">
+
+            <!-- TAB 1: QUESTIONS / BOXES -->
+            <div id="tab-questions" class="card">
+                <div class="header">
+                    <h2>የጥያቄ ሳጥኖች</h2>
+                    <p>ከ 1000+ ሳጥኖች አንዱን መርጠው ይጫወቱ</p>
+                </div>
+                <div class="boxes-grid" id="boxes-container">
+                    <!-- 1000 Boxes generated via JS -->
+                </div>
+            </div>
+
+            <!-- QUIZ PLAY SCREEN -->
+            <div id="quiz-play-screen" class="card hidden">
+                <div style="display:flex; justify-size:space-between; margin-bottom:10px;">
+                    <span>ጥያቄ <span id="q-idx">1</span>/5</span>
+                    <span style="color:var(--danger);" id="q-timer">05:00</span>
+                </div>
+                <h3 id="q-text" style="margin-bottom:15px;">ጥያቄ ይጫናል...</h3>
+                <div id="q-options" style="display:flex; flex-direction:column; gap:10px;"></div>
+                <button class="btn hidden" id="q-next-btn" onclick="nextQuestion()">ቀጥል</button>
+            </div>
+
+            <!-- TAB 2: MESSAGES -->
+            <div id="tab-messages" class="card hidden">
+                <div class="header">
+                    <h2>መልእክቶች እና ማሳወቂያዎች</h2>
+                </div>
+                <div id="messages-list">
+                    <p style="font-size:13px; color:var(--text-muted);">ምንም አዲስ መልእክት የለም።</p>
+                </div>
+            </div>
+
+            <!-- TAB 3: MY ACCOUNT -->
+            <div id="tab-account" class="card hidden">
+                <div class="header">
+                    <h2 id="acc-name">የኔ አካውንት</h2>
+                </div>
+                
+                <div class="wallet-card">
+                    <div style="font-size:12px;">ማውጣት የሚችሉት ሂሳብ</div>
+                    <div style="font-size:26px; font-weight:bold;" id="acc-withdrawable">750 ETB</div>
+                    
+                    <div class="stat-row">
+                        <span>Deposited:</span>
+                        <strong id="acc-deposited">500 ETB</strong>
+                    </div>
+                    <div class="stat-row">
+                        <span>ያሸነፉት:</span>
+                        <strong id="acc-won">300 ETB</strong>
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <button class="btn btn-danger" onclick="showWithdrawForm()">Withdraw</button>
+                    <button class="btn btn-accent" onclick="showDepositForm()">Deposit</button>
+                    <button class="btn btn-warning" onclick="shareInvite()">Invite</button>
+                    <button class="btn" onclick="showReferralLink()">My Referral</button>
+                </div>
+
+                <!-- WITHDRAW FORM -->
+                <div id="withdraw-box" class="hidden" style="margin-top:15px; background:#0f172a; padding:12px; border-radius:8px;">
+                    <h4>ገንዘብ ማውጫ (Withdraw)</h4>
+                    <select id="w-method" style="margin: 8px 0;">
+                        <option>CBE Bank</option>
+                        <option>Telebirr</option>
+                    </select>
+                    <input type="text" id="w-acc" placeholder="አካውንት / ስልክ ቁጥር" style="margin-bottom:8px;">
+                    <input type="number" id="w-amt" placeholder="የማውጫ መጠን (ብር)">
+                    <button class="btn btn-danger" onclick="submitWithdrawReq()">አውጣ</button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ADMIN PANEL SIMULATION -->
+        <div id="admin-panel" class="card hidden" style="border: 2px solid var(--danger);">
             <div class="header">
-                <h2>Withdraw Funds</h2>
-                <p>Withdraw via CBE or Telebirr</p>
+                <h2 style="color:var(--danger);">የአድሚን መቆጣጠሪያ (Admin)</h2>
             </div>
-
-            <div class="form-group">
-                <label>Withdrawal Method</label>
-                <select id="withdraw-method">
-                    <option value="cbe">Commercial Bank of Ethiopia (CBE)</option>
-                    <option value="telebirr">Telebirr</option>
-                </select>
+            <div id="admin-content">
+                <p>የተላከ ጥያቄ አለ፡</p>
+                <p><strong>ተጠቃሚ፡</strong> <span id="adm-user-name">Kaleab</span></p>
+                <p><strong>የቀረበ ጥያቄ፡</strong> Registration & 500 ETB Deposit</p>
+                <div style="display:flex; gap:10px; margin-top:15px;">
+                    <button class="btn btn-accent" onclick="adminApprove()">Approve</button>
+                    <button class="btn btn-danger" onclick="adminReject()">Reject</button>
+                </div>
             </div>
-
-            <div class="form-group">
-                <label>Account or Phone Number</label>
-                <input type="text" id="withdraw-account" placeholder="Enter account/phone number">
-            </div>
-
-            <div class="form-group">
-                <label>Withdrawal Amount (ETB)</label>
-                <input type="number" id="withdraw-amount" placeholder="Enter amount">
-            </div>
-
-            <button class="btn btn-danger" onclick="processWithdraw()">Withdraw</button>
-            <button class="btn" onclick="goToStep(2)" style="background: #334155; margin-top: 6px;">Back to Dashboard</button>
         </div>
 
-        <!-- STEP 6: RESULT -->
-        <div id="step-6" class="step">
-            <div class="header">
-                <h2>Quiz Result</h2>
-                <p id="result-text">Congratulations!</p>
-            </div>
-            <button class="btn" onclick="goToStep(2)">Back to Dashboard</button>
+    </div>
+
+    <!-- BOTTOM NAVIGATION BAR -->
+    <div id="bottom-nav-bar" class="bottom-nav hidden">
+        <div class="nav-item active" onclick="switchTab('questions', this)">
+            <div class="nav-icon">❓</div>
+            <div>ጥያቄ</div>
+        </div>
+        <div class="nav-item" onclick="switchTab('messages', this)">
+            <div class="nav-icon">💬</div>
+            <div>መልእክት</div>
+        </div>
+        <div class="nav-item" onclick="switchTab('account', this)">
+            <div class="nav-icon">👤</div>
+            <div>የኔ አካውንት</div>
         </div>
     </div>
 
     <script>
         let userData = {
             name: "",
-            nid: "",
-            balance: 0,
-            deposited: 0,
-            won: 0
+            deposited: 500,
+            won: 300,
+            withdrawable: 750,
+            pendingApproval: false,
+            messages: ["እንኳን ወደ ሰርድዮን ኪዩዝ ደህና መጡ!"]
         };
 
-        function goToStep(stepNum) {
-            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-            document.getElementById('step-' + stepNum).classList.add('active');
-        }
-
-        function registerUser() {
+        function submitRegistration() {
             const name = document.getElementById('reg-name').value;
-            const nid = document.getElementById('reg-nid').value;
-            if(!name || !nid) {
-                alert('Please fill in your name and National ID!');
+            const file = document.getElementById('reg-id-file').files[0];
+            if(!name || !file) {
+                alert('እባክዎን ስምዎን እና የናሽናል አይዲ ፎቶ ያስገቡ!');
                 return;
             }
             userData.name = name;
-            userData.nid = nid;
-            document.getElementById('welcome-user').textContent = `Welcome, ${name}`;
-            updateDashboard();
-            goToStep(2);
+            showScreen('screen-deposit');
         }
 
-        function updateDashboard() {
-            document.getElementById('user-balance').textContent = userData.balance + " ETB";
-            document.getElementById('deposited-amount').textContent = userData.deposited + " ETB";
-            document.getElementById('won-amount').textContent = userData.won + " ETB";
-        }
-
-        function processDeposit() {
-            const amt = parseInt(document.getElementById('deposit-amount-input').value);
-            const tx = document.getElementById('deposit-tx').value;
-            if(!amt || amt < 50 || !tx) {
-                alert('Please enter at least 50 ETB and a valid Transaction ID!');
+        function submitDeposit() {
+            const file = document.getElementById('dep-file').files[0];
+            if(!file) {
+                alert('እባክዎን የግብይቱን ፎቶ ያስገቡ!');
                 return;
             }
-            userData.balance += amt;
-            userData.deposited += amt;
-            updateDashboard();
-            alert('Deposit verified successfully! Funds added to your balance.');
-            goToStep(2);
+            userData.pendingApproval = true;
+            document.getElementById('adm-user-name').textContent = userData.name;
+            showScreen('screen-pending');
         }
 
-        function startQuizCheck() {
-            if(userData.balance < 50) {
-                alert('Game entry fee is 50 ETB! Please deposit funds first.');
-                goToStep(3);
+        function toggleAdminPanel() {
+            document.getElementById('admin-panel').classList.toggle('hidden');
+        }
+
+        function adminApprove() {
+            alert('ተጠቃሚው በስኬት ጸድቋል (Approved)!');
+            userData.pendingApproval = false;
+            document.getElementById('admin-panel').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            document.getElementById('bottom-nav-bar').classList.remove('hidden');
+            showScreen('main-app');
+            initApp();
+        }
+
+        function adminReject() {
+            alert('ተጠቃሚው Reject ተደርጓል!');
+            showScreen('screen-register');
+        }
+
+        function showScreen(id) {
+            ['screen-register', 'screen-deposit', 'screen-pending', 'main-app'].forEach(s => {
+                document.getElementById(s).classList.add('hidden');
+            });
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function switchTab(tabName, el) {
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            if(el) el.classList.add('active');
+
+            ['tab-questions', 'tab-messages', 'tab-account'].forEach(t => {
+                document.getElementById(t).classList.add('hidden');
+            });
+            document.getElementById('tab-' + tabName).classList.remove('hidden');
+        }
+
+        function initApp() {
+            document.getElementById('acc-name').textContent = userData.name;
+            updateWalletUI();
+            generateBoxes();
+        }
+
+        function updateWalletUI() {
+            document.getElementById('acc-withdrawable').textContent = userData.withdrawable + " ETB";
+            document.getElementById('acc-deposited').textContent = userData.deposited + " ETB";
+            document.getElementById('acc-won').textContent = userData.won + " ETB";
+            
+            // Update messages list
+            const msgContainer = document.getElementById('messages-list');
+            msgContainer.innerHTML = '';
+            userData.messages.forEach(m => {
+                const p = document.createElement('p');
+                p.style.cssText = "background:#0f172a; padding:10px; border-radius:6px; margin-bottom:8px; font-size:13px;";
+                p.textContent = m;
+                msgContainer.appendChild(p);
+            });
+        }
+
+        function generateBoxes() {
+            const container = document.getElementById('boxes-container');
+            container.innerHTML = '';
+            for(let i=1; i<=100; i++) {
+                const box = document.createElement('div');
+                box.className = 'quiz-box locked';
+                box.textContent = 'ሳጥን #' + i;
+                box.onclick = () => playQuizBox(i);
+                container.appendChild(box);
+            }
+        }
+
+        function playQuizBox(num) {
+            if(userData.withdrawable < 50) {
+                alert('የጨዋታ ሂሳብዎ በቂ አይደለም! እባክዎን Deposit ያድርጉ።');
                 return;
             }
-            userData.balance -= 50;
-            updateDashboard();
-            startQuiz();
+            if(confirm(`ከአካውንትዎ 50 ብር ተቀንሶ ሳጥን #${num}ን መጫወት ይፈልጋሉ?`)) {
+                userData.withdrawable -= 50;
+                updateWalletUI();
+                startQuizGame();
+            }
         }
 
-        const questions = [
-            { q: "What is the first book of the Bible?", options: ["Genesis", "Matthew", "Acts", "Isaiah"], correct: 0 },
-            { q: "In which town was Jesus Christ born?", options: ["Nazareth", "Bethlehem", "Jerusalem", "Galilee"], correct: 1 },
-            { q: "What weapon did David use to fight Goliath?", options: ["Sword", "Spear", "Sling and stone", "Bow"], correct: 2 },
-            { q: "How many books are traditionally in the standard Bible?", options: ["66", "73", "81", "39"], correct: 2 },
-            { q: "Who appeared to the Apostle Paul on his way to Damascus?", options: ["Angels", "God in a great light", "Peter", "Roman soldiers"], correct: 1 }
+        const bibleQuestions = [
+            { q: "መጽሐፍ ቅዱስ መጀመሪያ ላይ የሚገኘው የመጀመሪያው መጽሐፍ ማን ይባላል?", options: ["ኦሪት ዘፍጥረት", "ማቴዎስ", "የሐዋርያት ሥራ", "ትንቢተ ኢሳይያስ"], correct: 0 },
+            { q: "ኢየሱስ ክርስቶስ የተወለደበት ከተማ ማን ይባላል?", options: ["ናዝሬት", "ቤተልሔም", "ኢየሩሳሌም", "ገሊላ"], correct: 1 },
+            { q: "ዳዊት ከፍልስጤማዊው ግዙፍ ሰው ጋር ሲዋጋ የተጠቀመው መሣሪያ ምን ነበረ?", options: ["ሰይፍ", "ጦር", "ወንንጭፍና ድንጋይ", "ቀስት"], correct: 2 },
+            { q: "መጽሐፍ ቅዱስ በአጠቃላይ ስንት መጽሐፍትን ይይዛል?", options: ["66", "73", "81", "39"], correct: 2 },
+            { q: "ሐዋርያው ​​ጳውሎስ ወደ ደማስቆ ሲጓዝ የገጠመው አካል ማን ነበር?", options: ["መላእክት", "እግዚአብሔር በብርሃን", "ጴጥሮስ", "ሮማውያን ወታደሮች"], correct: 1 }
         ];
 
         let currentQ = 0;
         let score = 0;
-        let timerInterval;
 
-        function startQuiz() {
+        function startQuizGame() {
             currentQ = 0;
             score = 0;
-            goToStep(4);
-            loadQuestion();
-            startTimer(300);
+            document.getElementById('tab-questions').classList.add('hidden');
+            document.getElementById('quiz-play-screen').classList.remove('hidden');
+            loadQ();
         }
 
-        function startTimer(duration) {
-            let timer = duration, minutes, seconds;
-            clearInterval(timerInterval);
-            timerInterval = setInterval(function () {
-                minutes = parseInt(timer / 60, 10);
-                seconds = parseInt(timer % 60, 10);
-                minutes = minutes < 10 ? "0" + minutes : minutes;
-                seconds = seconds < 10 ? "0" + seconds : seconds;
-                document.getElementById('timer').textContent = minutes + ":" + seconds;
-
-                if (--timer < 0) {
-                    clearInterval(timerInterval);
-                    alert('Time is up!');
-                    finishQuiz();
-                }
-            }, 1000);
-        }
-
-        function loadQuestion() {
-            if(currentQ >= questions.length) {
-                clearInterval(timerInterval);
-                finishQuiz();
+        function loadQ() {
+            if(currentQ >= bibleQuestions.length) {
+                finishQuizGame();
                 return;
             }
-            document.getElementById('q-num').textContent = currentQ + 1;
-            const q = questions[currentQ];
-            document.getElementById('question-text').textContent = q.q;
+            document.getElementById('q-idx').textContent = currentQ + 1;
+            const q = bibleQuestions[currentQ];
+            document.getElementById('q-text').textContent = q.q;
             
-            const container = document.getElementById('options-container');
-            container.innerHTML = '';
-            q.options.forEach((opt, index) => {
+            const opts = document.getElementById('q-options');
+            opts.innerHTML = '';
+            q.options.forEach((opt, idx) => {
                 const btn = document.createElement('button');
-                btn.className = 'option-btn';
+                btn.className = 'btn';
+                btn.style.background = '#0f172a';
                 btn.textContent = opt;
-                btn.onclick = () => selectOption(index, btn);
-                container.appendChild(btn);
+                btn.onclick = () => {
+                    if(idx === q.correct) score++;
+                    currentQ++;
+                    loadQ();
+                };
+                opts.appendChild(btn);
             });
-            document.getElementById('next-btn').style.display = 'none';
         }
 
-        function selectOption(index, btn) {
-            document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
-            btn.classList.add('selected');
-            
-            if(index === questions[currentQ].correct) {
-                score++;
-            }
-            document.getElementById('next-btn').style.display = 'block';
-        }
-
-        function nextQuestion() {
-            currentQ++;
-            loadQuestion();
-        }
-
-        function finishQuiz() {
-            let msg = `Your score: ${score}/${questions.length}. `;
+        function finishQuizGame() {
+            document.getElementById('quiz-play-screen').classList.add('hidden');
+            document.getElementById('tab-questions').classList.remove('hidden');
             if(score >= 4) {
-                let prize = 300;
-                userData.won += prize;
-                userData.balance += prize;
-                msg += `Congratulations! You won 300 ETB prize!`;
+                userData.won += 300;
+                userData.withdrawable += 300;
+                alert(`እንኳን ደስ አለዎት! 300 ብር አሸንፈዋል። ውጤት: ${score}/5`);
             } else {
-                msg += `Better luck next time!`;
+                alert(`አልተሳካልዎትም! ውጤት: ${score}/5`);
             }
-            updateDashboard();
-            document.getElementById('result-text').textContent = msg;
-            goToStep(6);
+            updateWalletUI();
         }
 
-        function processWithdraw() {
-            const amt = parseInt(document.getElementById('withdraw-amount').value);
-            if(!amt || amt <= 0) {
-                alert('Please enter a valid withdrawal amount!');
+        function showWithdrawForm() {
+            document.getElementById('withdraw-box').classList.toggle('hidden');
+        }
+
+        function showDepositForm() {
+            switchTab('account', null);
+            showScreen('screen-deposit');
+        }
+
+        function submitWithdrawReq() {
+            const amt = parseInt(document.getElementById('w-amt').value);
+            const acc = document.getElementById('w-acc').value;
+            if(!amt || !acc) {
+                alert('እባክዎን መረጃዎችን ይሙሉ!');
                 return;
             }
-            if(amt > userData.balance) {
-                alert('Insufficient balance!');
+            if(amt > userData.withdrawable) {
+                alert('በቂ ሂሳብ የለም!');
                 return;
             }
-            userData.balance -= amt;
-            updateDashboard();
-            alert(amt + ' ETB withdrawn successfully!');
-            goToStep(2);
+            alert('የማውጣት ጥያቄዎ ለአድሚን ተልኳል! (Pending)');
+            document.getElementById('withdraw-box').classList.add('hidden');
+            
+            // Simulating admin approval notification
+            setTimeout(() => {
+                userData.withdrawable -= amt;
+                userData.messages.unshift(`የ ${amt} ብር ማውጣት ጥያቄዎ ጸድቋል (Approved)! ${amt} ብር ገቢ ሆኗል።`);
+                updateWalletUI();
+            }, 3000);
+        }
+
+        function showReferralLink() {
+            alert(`የእርስዎ Referral Link:\nhttps://kaleabhsudoaleabhaile.github.io/cerdion-quiz/?ref=${userData.name}`);
+        }
+
+        function shareInvite() {
+            const url = `https://kaleabhsudoaleabhaile.github.io/cerdion-quiz/?ref=${userData.name}`;
+            const text = `በሰርድዮን ኪዩዝ ተጫውተው ይሸለሙ! መመዝገቢያ ሊንክ፡ ${url}`;
+            if(navigator.share) {
+                navigator.share({ title: 'Cerdion Quiz', text: text, url: url });
+            } else {
+                alert('ሊንኩ ተኮፒ አድርጓል! በ Telegram/WhatsApp ለጓደኞችዎ ይላኩ፡\n' + url);
+            }
         }
     </script>
 </body>
