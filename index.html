@@ -235,7 +235,7 @@
     let isQuizActive = false;
 
     let usersList = [
-      { id: 1, name: "Abenezer Beju", status: "pending", date: "10/15/2026", tx: "TX982341", amount: 100, img: "", reqStatus: "pending" },
+      { id: 1, name: "Abenezer Beju", status: "active", date: "10/15/2026", tx: "TX982341", amount: 100, img: "", reqStatus: "approved" },
       { id: 2, name: "Haile Kassa", status: "pending", date: "10/15/2026", tx: "TX871239", amount: 200, img: "", reqStatus: "pending" }
     ];
 
@@ -455,10 +455,21 @@
         let initial = usr.name ? usr.name.charAt(0).toUpperCase() : 'U';
         let statusBadge = usr.reqStatus === 'approved' 
           ? '<span class="badge-status">active</span>' 
-          : (usr.reqStatus === 'rejected' ? '<span class="badge-pending" style="background:#831843; color:#fbcfe8;">Rejected</span>' : '<span class="badge-pending">Pending Deposit</span>');
+          : '<span class="badge-pending">Pending Deposit</span>';
 
         let card = document.createElement('div');
         card.className = 'user-card';
+
+        let actionButtonsHtml = '';
+        if (usr.reqStatus === 'pending') {
+          actionButtonsHtml = `
+            <div style="display: flex; gap: 8px; margin-top: 5px;">
+              <button class="btn btn-approve" onclick="approveUserDeposit(${usr.id})">Approve</button>
+              <button class="btn btn-reject" onclick="rejectUserDeposit(${usr.id})">Reject</button>
+            </div>
+          `;
+        }
+
         card.innerHTML = `
           <div class="user-header">
             <div class="user-avatar">${initial}</div>
@@ -471,10 +482,7 @@
             </div>
           </div>
           ${usr.img ? `<img src="${usr.img}" class="receipt-img">` : ''}
-          <div style="display: flex; gap: 8px; margin-top: 5px;">
-            <button class="btn btn-approve" onclick="approveUserDeposit(${usr.id})">Approve</button>
-            <button class="btn btn-reject" onclick="rejectUserDeposit(${usr.id})">Reject</button>
-          </div>
+          ${actionButtonsHtml}
           <div style="margin-top: 8px; border-top: 1px solid #334155; padding-top: 8px;">
             <label style="font-size: 11px; color: #94a3b8;">ለ ${usr.name} የተለየ መልእክት ላክ፦</label>
             <input type="text" id="msgInput_${usr.id}" placeholder="መልእክት እዚህ ይፃፉ..." style="margin-bottom: 4px;">
@@ -499,15 +507,9 @@
     }
 
     function rejectUserDeposit(id) {
-      let usr = usersList.find(u => u.id === id);
-      if (usr) {
-        usr.reqStatus = 'rejected';
-        usr.status = 'pending';
-        userMessages.push(`❌ የ ${usr.amount} ETB Deposit ጥያቄዎ ውድቅ ተደርጓል።`);
-        renderUserMessages();
-        renderAdminUsers();
-        alert(`የ ${usr.name} ጥያቄ ውድቅ ተደርጓል።`);
-      }
+      usersList = usersList.filter(u => u.id !== id);
+      renderAdminUsers();
+      alert('የጥያቄው ፎቶና መረጃ ውድቅ ተደርጎ ከገጹ ጠፍቷል!');
     }
 
     function sendIndividualMsg(id, name) {
