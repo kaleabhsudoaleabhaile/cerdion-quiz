@@ -253,12 +253,13 @@
 
     let currentAdminTab = '';
     let depositRequests = [
-      { id: 101, name: "Abenezer Beju", date: "10/15/2026", amount: 100, img: "", reqStatus: "pending" }
+      { id: 101, name: "Abenezer Beju", date: "10/15/2026", amount: 100, img: "", reqStatus: "approved" },
+      { id: 102, name: "Haile Kassa", date: "10/15/2026", amount: 200, img: "", reqStatus: "approved" }
     ];
     let withdrawRequests = [];
     let membersList = [
-      { id: 1, name: "Abenezer Beju", date: "10/15/2026", refCode: "KY-8562", status: "pending" },
-      { id: 2, name: "Haile Kassa", date: "10/15/2026", refCode: "KY-9912", status: "active" }
+      { id: 1, name: "Abenezer Beju", date: "10/15/2026", refCode: "KY-8562", refInvites: 2 },
+      { id: 2, name: "Haile Kassa", date: "10/15/2026", refCode: "KY-9912", refInvites: 0 }
     ];
     let userMessages = ["📌 እንኳን ወደ CerdionQuiz በደህና መጡ!"];
 
@@ -464,7 +465,7 @@
         reqStatus: "pending"
       });
 
-      membersList.push({ id: newId, name: name, date: new Date().toLocaleDateString(), refCode: "KY-" + Math.floor(1000 + Math.random() * 9000), status: "pending" });
+      membersList.push({ id: newId, name: name, date: new Date().toLocaleDateString(), refCode: "KY-" + Math.floor(1000 + Math.random() * 9000), refInvites: 0 });
 
       alert('የክፍያ ደረሰኝዎ ለአድሚኑ ተልኳል!');
       document.getElementById('depName').value = '';
@@ -625,16 +626,19 @@
         card.className = 'card';
         card.innerHTML = `
           <h3 style="color: #38bdf8; margin-bottom: 8px;">👥 አጠቃላይ የአባል ብዛት: ${membersList.length}</h3>
-          <p style="font-size: 12px; color: #94a3b8; margin-bottom: 12px;">የተጠቃሚዎች ስም እና ያስገቡት ሪፈራል ኮድ ዝርዝር፦</p>
+          <p style="font-size: 12px; color: #94a3b8; margin-bottom: 12px;">የተጠቃሚዎች ስም፣ የሪፈራል ኮድ እና የጋበዟቸው ሰዎች ብዛት፦</p>
           <div style="display: flex; flex-direction: column; gap: 8px;">
-            ${membersList.map(m => `
+            ${membersList.map((m, index) => `
               <div style="background: #0f172a; padding: 10px; border-radius: 8px; border: 1px solid #334155; display: flex; justify-content: space-between; align-items: center;">
                 <div>
                   <div style="font-weight: bold; font-size: 14px; color: #f8fafc;">${m.name}</div>
-                  <div style="font-size: 11px; color: #94a3b8;">ቀን: ${m.date}</div>
+                  <div style="font-size: 11px; color: #94a3b8;">ቀን: ${m.date} \vert{} Ref:${m.refCode}</div>
                 </div>
-                <div style="background: #1e293b; padding: 4px 8px; border-radius: 6px; font-size: 12px; color: #38bdf8; font-weight: bold;">
-                  Ref: ${m.refCode}
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="background: #1e293b; padding: 4px 8px; border-radius: 6px; font-size: 12px; color: #38bdf8; font-weight: bold;">
+                    የጋበዛቸው: ${m.refInvites}
+                  </div>
+                  <button onclick="removeMember(${m.id})" style="background: #dc2626; color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 11px; cursor: pointer;">አስወጣ</button>
                 </div>
               </div>
             `).join('')}
@@ -681,6 +685,13 @@
       withdrawRequests = withdrawRequests.filter(r => r.id !== id);
       renderAdminPanel();
       alert('የወጪ ጥያቄው ውድቅ ተደርጎ ጠፍቷል!');
+    }
+
+    function removeMember(id) {
+      membersList = membersList.filter(m => m.id !== id);
+      depositRequests = depositRequests.filter(r => r.id !== id);
+      renderAdminPanel();
+      alert('አባሉ ከዝርዝሩ ተወግዷል!');
     }
 
     function sendMsg(name, id) {
