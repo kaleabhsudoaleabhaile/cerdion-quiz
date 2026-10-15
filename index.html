@@ -258,8 +258,8 @@
     ];
     let withdrawRequests = [];
     let membersList = [
-      { id: 1, name: "Abenezer Beju", date: "10/15/2026", refCode: "KY-8562", refInvites: 2 },
-      { id: 2, name: "Haile Kassa", date: "10/15/2026", refCode: "KY-9912", refInvites: 0 }
+      { id: 101, name: "Abenezer Beju", date: "10/15/2026", refCode: "KY-8562", refInvites: 2 },
+      { id: 102, name: "Haile Kassa", date: "10/15/2026", refCode: "KY-9912", refInvites: 0 }
     ];
     let userMessages = ["📌 እንኳን ወደ CerdionQuiz በደህና መጡ!"];
 
@@ -456,16 +456,24 @@
       }
 
       let newId = Date.now();
+      let currentDate = new Date().toLocaleDateString();
+
       depositRequests.push({
         id: newId,
         name: name,
-        date: new Date().toLocaleDateString(),
+        date: currentDate,
         amount: amount,
         img: imgSrc,
         reqStatus: "pending"
       });
 
-      membersList.push({ id: newId, name: name, date: new Date().toLocaleDateString(), refCode: "KY-" + Math.floor(1000 + Math.random() * 9000), refInvites: 0 });
+      membersList.push({ 
+        id: newId, 
+        name: name, 
+        date: currentDate, 
+        refCode: "KY-" + Math.floor(1000 + Math.random() * 9000), 
+        refInvites: 0 
+      });
 
       alert('የክፍያ ደረሰኝዎ ለአድሚኑ ተልኳል!');
       document.getElementById('depName').value = '';
@@ -628,7 +636,7 @@
           <h3 style="color: #38bdf8; margin-bottom: 8px;">👥 አጠቃላይ የአባል ብዛት: ${membersList.length}</h3>
           <p style="font-size: 12px; color: #94a3b8; margin-bottom: 12px;">የተጠቃሚዎች ስም፣ የሪፈራል ኮድ እና የጋበዟቸው ሰዎች ብዛት፦</p>
           <div style="display: flex; flex-direction: column; gap: 8px;">
-            ${membersList.map((m, index) => `
+            ${membersList.map((m) => `
               <div style="background: #0f172a; padding: 10px; border-radius: 8px; border: 1px solid #334155; display: flex; justify-content: space-between; align-items: center;">
                 <div>
                   <div style="font-weight: bold; font-size: 14px; color: #f8fafc;">${m.name}</div>
@@ -636,7 +644,7 @@
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px;">
                   <div style="background: #1e293b; padding: 4px 8px; border-radius: 6px; font-size: 12px; color: #38bdf8; font-weight: bold;">
-                    የጋበዛቸው: ${m.refInvites}
+                    የጋበዟቸው: ${m.refInvites}
                   </div>
                   <button onclick="removeMember(${m.id})" style="background: #dc2626; color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 11px; cursor: pointer;">አስወጣ</button>
                 </div>
@@ -661,6 +669,7 @@
 
     function rejectDeposit(id) {
       depositRequests = depositRequests.filter(r => r.id !== id);
+      membersList = membersList.filter(m => m.id !== id);
       renderAdminPanel();
       alert('የመመዝገቢያ ጥያቄው ውድቅ ተደርጎ ጠፍቷል!');
     }
@@ -691,7 +700,7 @@
       membersList = membersList.filter(m => m.id !== id);
       depositRequests = depositRequests.filter(r => r.id !== id);
       renderAdminPanel();
-      alert('አባሉ ከዝርዝሩ ተወግዷል!');
+      alert('አባሉ ከዝርዝሩ እና ከመመዝገቢያ ሙሉ በሙሉ ተወግዷል!');
     }
 
     function sendMsg(name, id) {
