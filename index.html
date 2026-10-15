@@ -50,11 +50,11 @@
 
     .timer-box { font-size: 16px; font-weight: bold; color: #f59e0b; margin-bottom: 10px; text-align: right; }
 
-    .admin-tabs { display: flex; gap: 8px; margin-bottom: 15px; }
-    .admin-tab-btn { flex: 1; padding: 10px; background: #334155; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; font-size: 13px; position: relative; display: flex; align-items: center; justify-content: center; gap: 5px; }
+    .admin-tabs { display: flex; gap: 6px; margin-bottom: 15px; flex-wrap: wrap; }
+    .admin-tab-btn { flex: 1; min-width: 110px; padding: 8px 5px; background: #334155; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; font-size: 11px; position: relative; display: flex; align-items: center; justify-content: center; gap: 4px; text-align: center; }
     .admin-tab-btn.active { background: #6366f1; }
 
-    .red-badge { background: #ef4444; color: white; border-radius: 50%; padding: 2px 6px; font-size: 11px; font-weight: bold; display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; }
+    .red-badge { background: #ef4444; color: white; border-radius: 50%; padding: 2px 5px; font-size: 10px; font-weight: bold; display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; }
 
     .user-card { background: #1e293b; border-radius: 12px; padding: 12px; margin-bottom: 12px; border: 1px solid #334155; display: flex; flex-direction: column; gap: 6px; }
     .user-header { display: flex; align-items: center; gap: 12px; }
@@ -156,7 +156,7 @@
           <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">1 ሰው ሲጋብዙ 50 ብር ያገኛሉ!</p>
           <br>
           <label>የእርስዎ መጋበዣ ኮድ (Referral Code)</label>
-          <input type="text" value="KY-8562" readonly>
+          <input type="text" id="userReferralCode" value="KY-8562" readonly>
           <button class="btn" style="background: #8b5cf6;" onclick="addReferralBonus()">ጓደኛ ጋብዝ (+50 ብር)</button>
         </div>
       </div>
@@ -198,19 +198,24 @@
     <div id="adminPanelPage" class="page">
       <div style="margin-bottom: 15px;">
         <h3 style="color: #ef4444;">⚙️ Admin Control Panel</h3>
-        <p style="font-size: 12px; color: #94a3b8;">የጥያቄዎች አስተዳደር እና ማረጋገጫ</p>
+        <p style="font-size: 12px; color: #94a3b8;">የጥያቄዎች አስተዳደር እና አጠቃላይ መረጃ</p>
       </div>
 
       <div class="admin-tabs">
-        <button class="admin-tab-btn active" id="tabDepBtn" onclick="switchAdminTab('dep')">
-          1. የመመዝገቢያ ጥያቄ <span class="red-badge" id="depCountBadge">0</span>
+        <button class="admin-tab-btn" id="tabDepBtn" onclick="switchAdminTab('dep')">
+          1. መመዝገቢያ <span class="red-badge" id="depCountBadge" style="display:none;">0</span>
         </button>
         <button class="admin-tab-btn" id="tabWithBtn" onclick="switchAdminTab('with')">
-          2. የወጪ ጥያቄ <span class="red-badge" id="withCountBadge">0</span>
+          2. የወጪ ጥያቄ <span class="red-badge" id="withCountBadge" style="display:none;">0</span>
+        </button>
+        <button class="admin-tab-btn" id="tabMemBtn" onclick="switchAdminTab('mem')">
+          3. የአባል ብዛት
         </button>
       </div>
 
-      <div id="adminListContainer"></div>
+      <div id="adminListContainer">
+        <p style="font-size: 13px; color: #64748b; text-align: center; margin-top: 20px;">እባክዎ ከላይ ከሚገኙት አማራጮች አንዱን ይምረጡ።</p>
+      </div>
     </div>
 
     <!-- QUIZ PLAY INTERFACE -->
@@ -246,9 +251,13 @@
     let inviteCount = 0;
     let demoBalance = 500.00;
 
-    let currentAdminTab = 'dep';
+    let currentAdminTab = '';
     let depositRequests = [];
     let withdrawRequests = [];
+    let membersList = [
+      { id: 1, name: "Abenezer Beju", date: "10/15/2026", refCode: "KY-8562", status: "active" },
+      { id: 2, name: "Haile Kassa", date: "10/15/2026", refCode: "KY-9912", status: "active" }
+    ];
     let userMessages = ["📌 እንኳን ወደ CerdionQuiz በደህና መጡ!"];
 
     let currentQIndex = 0;
@@ -273,7 +282,7 @@
         if (pass === "182418") {
           alert("ወደ አድሚን ፓነል ገብተዋል!");
           showPage('adminPanelPage');
-          renderAdminPanel();
+          updateBadges();
         } else if (pass !== null) {
           alert("የተሳሳተ የይለፍ ቃል!");
         }
@@ -443,21 +452,24 @@
         imgSrc = URL.createObjectURL(fileInput.files[0]);
       }
 
-      depositRequests.push({
+      let newReq = {
         id: Date.now(),
         name: name,
         date: new Date().toLocaleDateString(),
         amount: amount,
         img: imgSrc,
         reqStatus: "pending"
-      });
+      };
+
+      depositRequests.push(newReq);
+      membersList.push({ id: newReq.id, name: name, date: newReq.date, refCode: "KY-" + Math.floor(1000 + Math.random() * 9000), status: "pending" });
 
       alert('የክፍያ ደረሰኝዎ ለአድሚኑ ተልኳል!');
       document.getElementById('depName').value = '';
       document.getElementById('depAmount').value = '';
       document.getElementById('depFile').value = '';
       showSubPage('');
-      renderAdminPanel();
+      updateBadges();
     }
 
     function submitWithdraw(e) {
@@ -487,18 +499,10 @@
       document.getElementById('withAmount').value = '';
       document.getElementById('withAcc').value = '';
       showSubPage('');
-      renderAdminPanel();
+      updateBadges();
     }
 
-    function switchAdminTab(tab) {
-      currentAdminTab = tab;
-      document.getElementById('tabDepBtn').className = 'admin-tab-btn ' + (tab === 'dep' ? 'active' : '');
-      document.getElementById('tabWithBtn').className = 'admin-tab-btn ' + (tab === 'with' ? 'active' : '');
-      renderAdminPanel();
-    }
-
-    function renderAdminPanel() {
-      // ብዛቱን ብቻ እያሳየ (0 ከሆነ ባዶ ይሆናል፣ 1 ወይም ከዚያ በላይ ከሆነ ትክክለኛውን ቁጥር ያሳያል)
+    function updateBadges() {
       let pendingDeps = depositRequests.filter(r => r.reqStatus === 'pending');
       let pendingWiths = withdrawRequests.filter(r => r.reqStatus === 'pending');
 
@@ -519,6 +523,21 @@
         withBadge.style.display = 'none';
       }
 
+      if (currentAdminTab) {
+        renderAdminPanel();
+      }
+    }
+
+    function switchAdminTab(tab) {
+      currentAdminTab = tab;
+      document.getElementById('tabDepBtn').className = 'admin-tab-btn ' + (tab === 'dep' ? 'active' : '');
+      document.getElementById('tabWithBtn').className = 'admin-tab-btn ' + (tab === 'with' ? 'active' : '');
+      document.getElementById('tabMemBtn').className = 'admin-tab-btn ' + (tab === 'mem' ? 'active' : '');
+      renderAdminPanel();
+    }
+
+    function renderAdminPanel() {
+      updateBadges();
       let container = document.getElementById('adminListContainer');
       container.innerHTML = '';
 
@@ -563,7 +582,7 @@
           container.appendChild(card);
         });
 
-      } else {
+      } else if (currentAdminTab === 'with') {
         if (withdrawRequests.length === 0) {
           container.innerHTML = '<p style="font-size: 13px; color: #64748b; text-align: center; margin-top: 20px;">ምንም የወጪ ጥያቄ የለም።</p>';
           return;
@@ -602,6 +621,28 @@
           `;
           container.appendChild(card);
         });
+
+      } else if (currentAdminTab === 'mem') {
+        let card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <h3 style="color: #38bdf8; margin-bottom: 8px;">👥 አጠቃላይ የአባል ብዛት: ${membersList.length}</h3>
+          <p style="font-size: 12px; color: #94a3b8; margin-bottom: 12px;">የተጠቃሚዎች ስም እና ያስገቡት ሪፈራል ኮድ ዝርዝር፦</p>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            ${membersList.map(m => `
+              <div style="background: #0f172a; padding: 10px; border-radius: 8px; border: 1px solid #334155; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div style="font-weight: bold; font-size: 14px; color: #f8fafc;">${m.name}</div>
+                  <div style="font-size: 11px; color: #94a3b8;">ቀን: ${m.date}</div>
+                </div>
+                <div style="background: #1e293b; padding: 4px 8px; border-radius: 6px; font-size: 12px; color: #38bdf8; font-weight: bold;">
+                  Ref: ${m.refCode}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        container.appendChild(card);
       }
     }
 
