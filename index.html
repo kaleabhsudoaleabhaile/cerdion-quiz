@@ -276,7 +276,6 @@
     let clickCount = 0;
     let currentMode = 'real';
     
-    // Load account states and data from localStorage
     let realBalance = parseFloat(localStorage.getItem('ky_realBalance')) || 0.00;
     let wonBalance = parseFloat(localStorage.getItem('ky_wonBalance')) || 0.00;
     let inviteCount = parseInt(localStorage.getItem('ky_inviteCount')) || 0;
@@ -290,16 +289,13 @@
     }
     document.getElementById('userReferralCode').value = userRefCode;
 
-    // Load balances on UI start
     document.getElementById('userBalance').innerText = realBalance.toFixed(2) + ' ETB';
     document.getElementById('wonAmount').innerText = wonBalance.toFixed(2) + ' ETB';
     document.getElementById('refCount').innerText = inviteCount;
 
     let currentAdminTab = '';
-    let depositRequests = JSON.parse(localStorage.getItem('ky_depositRequests')) || [
-      { id: 101, name: "Abenezer Beju", date: "10/15/2026", amount: 100, img: "", refCode: "KY-8562", refInvites: 2, reqStatus: "approved" },
-      { id: 102, name: "Haile Kassa", date: "10/15/2026", amount: 200, img: "", refCode: "KY-9912", refInvites: 0, reqStatus: "approved" }
-    ];
+    let depositRequests = JSON.parse(localStorage.getItem('ky_depositRequests')) || [];
+    let membersList = JSON.parse(localStorage.getItem('ky_membersList')) || [];
     let withdrawRequests = JSON.parse(localStorage.getItem('ky_withdrawRequests')) || [];
     
     let userMessages = JSON.parse(localStorage.getItem('ky_userMessages')) || [
@@ -308,7 +304,6 @@
       "🎁 ጓደኛ በመጋበዝ 50 ብር ቦነስ ያግኙ!"
     ];
 
-    // Lock name input if already registered
     let nameInput = document.getElementById('depName');
     if (registeredName) {
       nameInput.value = registeredName;
@@ -336,6 +331,7 @@
       localStorage.setItem('ky_wonBalance', wonBalance);
       localStorage.setItem('ky_inviteCount', inviteCount);
       localStorage.setItem('ky_depositRequests', JSON.stringify(depositRequests));
+      localStorage.setItem('ky_membersList', JSON.stringify(membersList));
       localStorage.setItem('ky_withdrawRequests', JSON.stringify(withdrawRequests));
       localStorage.setItem('ky_userMessages', JSON.stringify(userMessages));
       if (registeredName) {
@@ -650,24 +646,14 @@
       container.innerHTML = '';
 
       if (currentAdminTab === 'dep') {
-        if (depositRequests.length === 0) {
+        let pendingDeps = depositRequests.filter(r => r.reqStatus === 'pending');
+        if (pendingDeps.length === 0) {
           container.innerHTML = '<p style="font-size: 13px; color: #64748b; text-align: center; margin-top: 20px;">ምንም የመመዝገቢያ ጥያቄ የለም።</p>';
           return;
         }
 
-        depositRequests.forEach((req) => {
+        pendingDeps.forEach((req) => {
           let initial = req.name.charAt(0).toUpperCase();
-          let statusBadge = req.reqStatus === 'approved' 
-            ? '<span class="badge-status">active</span>' 
-            : '<span class="badge-pending">Pending Deposit</span>';
-
-          let actionButtons = req.reqStatus === 'pending' 
-            ? `<div style="display: flex; gap: 8px; margin-top: 8px;">
-                 <button class="btn btn-approve" onclick="approveDeposit(${req.id})">Approve</button>
-                 <button class="btn" style="background: #dc2626; flex: 1;" onclick="rejectDeposit(${req.id})">Reject</button>
-               </div>` 
-            : '';
-
           let card = document.createElement('div');
           card.className = 'user-card';
           card.innerHTML = `
@@ -675,12 +661,15 @@
               <div class="user-avatar">${initial}</div>
               <div class="user-info">
                 <div class="user-name">${req.name}</div>
-                <div class="user-badges">${statusBadge}</div>
+                <div class="user-badges"><span class="badge-pending">Pending Deposit</span></div>
                 <div class="user-date">ቀን: ${req.date} | መጠን: ${req.amount} ETB</div>
               </div>
             </div>
             ${req.img ? `<img src="${req.img}" class="receipt-img">` : ''}
-            ${actionButtons}
+            <div style="display: flex; gap: 8px; margin-top: 8px;">
+              <button class="btn btn-approve" onclick="approveDeposit(${req.id})">Approve</button>
+              <button class="btn" style="background: #dc2626; flex: 1;" onclick="rejectDeposit(${req.id})">Reject</button>
+            </div>
             <div style="margin-top: 8px; border-top: 1px solid #334155; padding-top: 8px;">
               <label style="font-size: 11px; color: #94a3b8;">ለ ${req.name} መልእክት ላክ፦</label>
               <input type="text" id="msgInput_${req.id}" placeholder="መልእክት እዚህ ይፃፉ..." style="margin-bottom: 4px;">
@@ -698,10 +687,6 @@
 
         withdrawRequests.forEach((req) => {
           let initial = req.name.charAt(0).toUpperCase();
-          let statusBadge = req.reqStatus === 'approved' 
-            ? '<span class="badge-status">Approved</span>' 
-            : '<span class="badge-pending" style="background:#0284c7; color:#e0f2fe;">Withdraw Request</span>';
-
           let actionButtons = req.reqStatus === 'pending' 
             ? `<div style="display: flex; gap: 8px; margin-top: 8px;">
                  <button class="btn btn-approve" onclick="approveWithdraw(${req.id})">Approve</button>
@@ -716,7 +701,7 @@
               <div class="user-avatar">${initial}</div>
               <div class="user-info">
                 <div class="user-name">${req.name}</div>
-                <div class="user-badges">${statusBadge}</div>
+                <div class="user-badges"><span class="badge-pending" style="background:#0284c7; color:#e0f2fe;">Withdraw Request</span></div>
                 <div class="user-date">ቀን: ${req.date} | መጠን: ${req.amount} ETB | ዘዴ: ${req.method} (${req.acc})</div>
               </div>
             </div>
@@ -734,10 +719,10 @@
         let card = document.createElement('div');
         card.className = 'card';
         card.innerHTML = `
-          <h3 style="color: #38bdf8; margin-bottom: 8px;">👥 አጠቃላይ የአባል ብዛት: ${depositRequests.length}</h3>
-          <p style="font-size: 12px; color: #94a3b8; margin-bottom: 12px;">የተጠቃሚዎች ስም፣ የሪፈራል ኮድ እና የጋበዟቸው ሰዎች ብዛት፦</p>
+          <h3 style="color: #38bdf8; margin-bottom: 8px;">👥 አጠቃላይ የአባል ብዛት: ${membersList.length}</h3>
+          <p style="font-size: 12px; color: #94a3b8; margin-bottom: 12px;">የተጠቃሚዎች ስም፣ ቀን እና የሪፈራል ኮድ፦</p>
           <div style="display: flex; flex-direction: column; gap: 8px;">
-            ${depositRequests.map((m) => `
+            ${membersList.length === 0 ? '<p style="font-size: 12px; color: #64748b; text-align: center;">ምንም አባል የለም።</p>' : membersList.map((m) => `
               <div style="background: #0f172a; padding: 10px; border-radius: 8px; border: 1px solid #334155; display: flex; justify-content: space-between; align-items: center;">
                 <div>
                   <div style="font-weight: bold; font-size: 14px; color: #f8fafc;">${m.name}</div>
@@ -758,15 +743,22 @@
     }
 
     function approveDeposit(id) {
-      let req = depositRequests.find(r => r.id === id);
-      if (req) {
+      let reqIndex = depositRequests.findIndex(r => r.id === id);
+      if (reqIndex !== -1) {
+        let req = depositRequests[reqIndex];
         req.reqStatus = 'approved';
         realBalance += req.amount;
+        
+        // Move to members list
+        membersList.push(req);
+        // Remove from deposit requests
+        depositRequests.splice(reqIndex, 1);
+
         userMessages.push(`✅ የ ${req.amount} ETB የመመዝገቢያ (Deposit) ጥያቄዎ ጸድቋል! አካውንትዎ active ሆኗል።`);
         saveData();
         updateMessageBadge();
         renderAdminPanel();
-        alert('ጥያቄው ጸድቋል እና አካውንቱ active ሆኗል!');
+        alert('ጥያቄው ጸድቆ ወደ አባል ብዛት ተዛውሯል!');
       }
     }
 
@@ -803,10 +795,10 @@
     }
 
     function removeMember(id) {
-      depositRequests = depositRequests.filter(r => r.id !== id);
+      membersList = membersList.filter(m => m.id !== id);
       saveData();
       renderAdminPanel();
-      alert('አባሉ ከአባል ዝርዝር እና ከ መመዝገቢያ ሙሉ በሙሉ ተወግዷል!');
+      alert('አባሉ ከአባል ዝርዝር ተወግዷል!');
     }
 
     function sendMsg(name, id) {
