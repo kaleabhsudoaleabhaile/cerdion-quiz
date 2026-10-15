@@ -66,6 +66,7 @@
     .msg-box { background: #0f172a; padding: 10px; border-radius: 8px; margin-top: 8px; border-left: 3px solid #6366f1; font-size: 13px; line-height: 1.4; }
     
     .notice-box { background: #3f3f46; border-left: 4px solid #f59e0b; padding: 10px; border-radius: 6px; margin: 10px 0; font-size: 12px; color: #fef08a; }
+    .error-text { color: #ef4444; font-size: 11px; margin-top: -4px; margin-bottom: 6px; display: none; }
   </style>
 </head>
 <body>
@@ -168,12 +169,13 @@
           <input type="text" id="depName" placeholder="ሙሉ ስም ያስገቡ" required>
 
           <label>የክፍያ መጠን (ETB - በ 20 እጥፍ ብቻ)</label>
-          <input type="number" id="depAmount" step="20" min="20" placeholder="20, 40, 60, 80..." required>
+          <input type="number" id="depAmount" step="20" min="20" placeholder="20, 40, 60, 80..." oninput="validateDepositInput(this)" required>
+          <div id="depErrorText" class="error-text">❌ ስህተት! የብር መጠኑ በ 20 እጥፍ (20, 40, 60...) መሆን አለበት (ለምሳሌ 30 ወይም 50 አይፈቀድም)።</div>
 
           <label>የክፍያ ደረሰኝ ፎቶ (Receipt Screenshot)</label>
           <input type="file" id="depFile" accept="image/*" required>
 
-          <button class="btn" type="submit">ደረሰኝ ላክ (Deposit)</button>
+          <button class="btn" type="submit" id="depSubmitBtn">ደረሰኝ ላክ (Deposit)</button>
         </form>
       </div>
 
@@ -317,6 +319,24 @@
         } else if (pass !== null) {
           alert("የተሳሳተ የይለፍ ቃል!");
         }
+      }
+    }
+
+    function validateDepositInput(input) {
+      let val = parseFloat(input.value);
+      let errorDiv = document.getElementById('depErrorText');
+      let submitBtn = document.getElementById('depSubmitBtn');
+
+      if (!isNaN(val) && val % 20 !== 0) {
+        errorDiv.style.display = 'block';
+        input.style.borderColor = '#ef4444';
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.5';
+      } else {
+        errorDiv.style.display = 'none';
+        input.style.borderColor = '#334155';
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
       }
     }
 
