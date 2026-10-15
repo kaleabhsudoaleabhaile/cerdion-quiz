@@ -6,7 +6,7 @@
   <title>CerdionQuiz (K Y)</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    body { background-color: #0f172a; color: #f8fafc; padding-bottom: 70px; }
+    body { background-color: #0f172a; color: #f8fafc; padding-bottom: 120px; }
     header { background: linear-gradient(135deg, #1e1b4b, #312e81); padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #6366f1; }
     .logo { font-size: 22px; font-weight: bold; color: #38bdf8; }
     .logo span { background: #6366f1; color: white; padding: 2px 8px; border-radius: 6px; font-size: 15px; margin-left: 5px; }
@@ -18,25 +18,27 @@
     .balance-title { font-size: 14px; color: #94a3b8; }
     .balance-amount { font-size: 28px; font-weight: bold; color: #4ade80; margin: 5px 0; }
 
-    .mode-switch { display: flex; gap: 10px; margin-bottom: 15px; }
-    .mode-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; background: #334155; color: white; }
+    .bottom-switcher { position: fixed; bottom: 55px; left: 0; right: 0; background: #0f172a; padding: 8px 15px; border-top: 1px solid #334155; z-index: 99; }
+    .mode-switch { display: flex; gap: 10px; max-width: 500px; margin: 0 auto; }
+    .mode-btn { flex: 1; padding: 8px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; background: #334155; color: white; font-size: 13px; }
     .mode-btn.active-real { background: #16a34a; }
     .mode-btn.active-demo { background: #d97706; }
 
-    .btn { width: 100%; padding: 12px; background: #6366f1; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; }
+    .btn { width: 100%; padding: 10px; background: #6366f1; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 14px; }
     .btn:hover { background: #4f46e5; }
-    .btn-approve { background: #16a34a; margin-top: 5px; }
-    .btn-reject { background: #dc2626; margin-top: 5px; }
+    .btn-approve { background: #16a34a; margin-top: 5px; flex: 1; }
+    .btn-reject { background: #dc2626; margin-top: 5px; flex: 1; }
+    .btn-msg { background: #0284c7; margin-top: 5px; }
 
     .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
     .stat-box { background: #0f172a; padding: 10px; border-radius: 8px; text-align: center; }
     .stat-val { font-size: 18px; font-weight: bold; color: #38bdf8; }
     .stat-lbl { font-size: 12px; color: #94a3b8; }
 
-    input, select, textarea { width: 100%; padding: 10px; margin-top: 8px; margin-bottom: 12px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px; }
+    input, select, textarea { width: 100%; padding: 10px; margin-top: 6px; margin-bottom: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px; }
     label { font-size: 13px; color: #cbd5e1; }
 
-    .nav { position: fixed; bottom: 0; left: 0; right: 0; background: #1e293b; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #334155; }
+    .nav { position: fixed; bottom: 0; left: 0; right: 0; background: #1e293b; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #334155; z-index: 100; }
     .nav-item { color: #94a3b8; text-decoration: none; font-size: 12px; text-align: center; cursor: pointer; }
     .nav-item.active { color: #38bdf8; font-weight: bold; }
 
@@ -46,25 +48,31 @@
     .quiz-option { background: #0f172a; border: 1px solid #334155; padding: 12px; border-radius: 8px; margin-top: 8px; cursor: pointer; }
     .quiz-option:hover { border-color: #6366f1; }
 
-    .msg-box { background: #0f172a; padding: 10px; border-radius: 8px; margin-top: 8px; border-left: 3px solid #6366f1; }
+    .timer-box { font-size: 16px; font-weight: bold; color: #f59e0b; margin-bottom: 10px; text-align: right; }
+
+    .user-card { background: #1e293b; border-radius: 12px; padding: 12px; margin-bottom: 12px; border: 1px solid #334155; display: flex; flex-direction: column; gap: 6px; }
+    .user-header { display: flex; align-items: center; gap: 12px; }
+    .user-avatar { width: 45px; height: 45px; border-radius: 10px; background: #334155; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; color: #38bdf8; }
+    .user-info { flex: 1; }
+    .user-name { font-size: 16px; font-weight: bold; color: #f8fafc; }
+    .user-badges { display: flex; gap: 6px; align-items: center; margin-top: 3px; }
+    .badge-vip { background: #854d0e; color: #fef08a; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
+    .badge-status { background: #14532d; color: #4ade80; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
+    .badge-pending { background: #78350f; color: #fde047; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
+    .user-date { font-size: 11px; color: #64748b; margin-top: 2px; }
+
     .receipt-img { max-width: 100%; border-radius: 8px; margin-top: 8px; border: 1px solid #334155; }
+    .msg-box { background: #0f172a; padding: 10px; border-radius: 8px; margin-top: 8px; border-left: 3px solid #6366f1; }
   </style>
 </head>
 <body>
 
   <header>
     <div class="logo">CerdionQuiz <span>K Y</span></div>
-    <!-- Settings Icon (10 times tap triggers admin password prompt) -->
     <div class="settings-icon" onclick="handleSettingsClick()">⚙️</div>
   </header>
 
   <div class="container">
-
-    <!-- Account Switcher -->
-    <div class="mode-switch">
-      <button class="mode-btn active-real" id="realModeBtn" onclick="switchMode('real')">የእውነተኛ አካውንት</button>
-      <button class="mode-btn" id="demoModeBtn" onclick="switchMode('demo')">Demo Account (መለማመጃ)</button>
-    </div>
 
     <!-- PAGE 1: HOME -->
     <div id="homePage" class="page active">
@@ -72,7 +80,6 @@
         <div class="balance-title" id="balTitle">የእውነተኛ አካውንት ቀሪ ሂሳብ</div>
         <div class="balance-amount" id="userBalance">0.00 ETB</div>
 
-        <!-- Real Account Extra Features -->
         <div class="stats-grid" id="realStats">
           <div class="stat-box">
             <div class="stat-val" id="wonAmount">0.00 ETB</div>
@@ -85,15 +92,14 @@
         </div>
       </div>
 
-      <!-- Real Account Sub-Pages -->
       <div id="realFeaturesBlock">
         <div class="card">
           <h3>Deposit / Withdraw / Referral</h3>
           <p style="font-size: 12px; color: #94a3b8; margin-top: 5px;">የእውነተኛ አካውንት አገልግሎቶች</p>
           <div style="display: flex; gap: 8px; margin-top: 10px;">
-            <button class="btn" style="font-size: 13px; padding: 8px;" onclick="showSubPage('depSubPage')">Deposit (ብር ማስገቢያ)</button>
-            <button class="btn" style="font-size: 13px; padding: 8px; background: #0284c7;" onclick="showSubPage('withSubPage')">Withdraw (ብር ማውጫ)</button>
-            <button class="btn" style="font-size: 13px; padding: 8px; background: #8b5cf6;" onclick="showSubPage('refSubPage')">Invite / Referral</button>
+            <button class="btn" style="font-size: 12px; padding: 8px;" onclick="showSubPage('depSubPage')">Deposit (ብር ማስገቢያ)</button>
+            <button class="btn" style="font-size: 12px; padding: 8px; background: #0284c7;" onclick="showSubPage('withSubPage')">Withdraw (ብር ማውጫ)</button>
+            <button class="btn" style="font-size: 12px; padding: 8px; background: #8b5cf6;" onclick="showSubPage('refSubPage')">Invite / Referral</button>
           </div>
         </div>
 
@@ -139,36 +145,35 @@
 
         <div id="refSubPage" class="card" style="display: none;">
           <h3>Invite & My Referral</h3>
-          <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">ጓደኞችዎን በመጋበዝ ኮሚሽን ያግኙ!</p>
+          <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">1 ሰው ሲጋብዙ 50 ብር ያገኛሉ!</p>
           <br>
           <label>የእርስዎ መጋበዣ ኮድ (Referral Code)</label>
           <input type="text" value="KY-8562" readonly>
-          <button class="btn" style="background: #8b5cf6;" onclick="alert('ኮዱ ተቀድቷል!')">ኮዱን ኮፒ አድርግ</button>
+          <button class="btn" style="background: #8b5cf6;" onclick="addReferralBonus()">ጓደኛ ጋብዝ (+50 ብር)</button>
         </div>
       </div>
 
-      <!-- Quiz Trigger Block -->
       <div class="card">
         <h3 id="quizTitle">የኢትዮጵያ ኳይዝ ውድድር</h3>
         <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;" id="quizDesc">
-          በኢትዮጵያ ታሪክ፣ ባህል እና አጠቃላይ እውቀት ተወዳድረው ያሸንፉ! የመግቢያ ሂሳብ 20 ETB።
+          5 ጥያቄዎችን በ 3 ደቂቃ ውስጥ በመመለስ 300 ብር ያሸንፉ! የመግቢያ ሂሳብ 20 ETB።
         </p>
         <button class="btn" onclick="startQuiz()">Quiz ጀምር</button>
       </div>
     </div>
 
-    <!-- PAGE 2: DEMO QUIZ / PRACTICE PAGE -->
+    <!-- PAGE 2: DEMO QUIZ -->
     <div id="demoQuizPage" class="page">
       <div class="card">
         <h3>የመለማመጃ ኳይዝ (Demo Questions)</h3>
         <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">
-          እዚህ ላይ ያለምንም ክፍያ ጥያቄዎችን በመመለስ መለማመድ ይችላሉ!
+          እዚህ ላይ ያለምንም ክፍያ በ 3 ደቂቃ ውስጥ መለማመድ ይችላሉ!
         </p>
         <button class="btn" style="background: #d97706; margin-top: 15px;" onclick="startDemoQuiz()">የመለማመጃ ጥያቄ ጀምር</button>
       </div>
     </div>
 
-    <!-- PAGE 3: MESSAGES / NOTIFICATIONS -->
+    <!-- PAGE 3: MESSAGES -->
     <div id="messagesPage" class="page">
       <div class="card">
         <h3>የደረሱዎት መልእክቶች (Notifications)</h3>
@@ -183,28 +188,19 @@
 
     <!-- ADMIN PANEL PAGE -->
     <div id="adminPanelPage" class="page">
-      <div class="card" style="border-color: #ef4444;">
+      <div style="margin-bottom: 15px;">
         <h3 style="color: #ef4444;">⚙️ Admin Control Panel</h3>
-        <p style="font-size: 12px; color: #94a3b8; margin-bottom: 15px;">የተጠቃሚዎች የ Deposit ጥያቄዎች እና መልእክት መላኪያ</p>
-
-        <h4 style="margin-bottom: 10px; color: #38bdf8;">የገቡ የ Deposit ጥያቄዎች:</h4>
-        <div id="adminRequestsList">
-          <p style="font-size: 13px; color: #64748b;">ምንም አዲስ የ Deposit ጥያቄ የለም።</p>
-        </div>
-
-        <hr style="border-color: #334155; margin: 20px 0;">
-
-        <h4 style="margin-bottom: 10px; color: #38bdf8;">ለተጠቃሚው መልእክት መላኪያ:</h4>
-        <label>መልእክት ፃፍ</label>
-        <textarea id="adminMsgText" rows="3" placeholder="ለተጠቃሚው የሚደርስ መልእክት ያስገቡ..."></textarea>
-        <button class="btn" style="background: #0284c7;" onclick="sendAdminMessage()">መልእክት ላክ</button>
+        <p style="font-size: 12px; color: #94a3b8;">የተጠቃሚዎች ዝርዝር፣ የ Deposit ማረጋገጫ እና የግል መልእክት መላኪያ</p>
       </div>
+
+      <div id="adminUsersContainer"></div>
     </div>
 
     <!-- QUIZ PLAY INTERFACE -->
     <div id="quizPlayPage" class="page">
       <div class="card">
-        <h3 id="qCategory">የኢትዮጵያ ታሪክ</h3>
+        <div class="timer-box" id="timerDisplay">ቀሪ ሰዓት: 03:00</div>
+        <h3 id="qCategory">የኢትዮጵያ ታሪክ እና እውቀት</h3>
         <p id="qText" style="font-size: 16px; margin: 15px 0; color: #f8fafc;">ጥያቄ እዚህ ይመጣል...</p>
         <div id="optionsContainer"></div>
       </div>
@@ -212,7 +208,13 @@
 
   </div>
 
-  <!-- Bottom Navigation -->
+  <div class="bottom-switcher">
+    <div class="mode-switch">
+      <button class="mode-btn active-real" id="realModeBtn" onclick="switchMode('real')">የእውነተኛ አካውንት</button>
+      <button class="mode-btn" id="demoModeBtn" onclick="switchMode('demo')">Demo Account (መለማመጃ)</button>
+    </div>
+  </div>
+
   <div class="nav">
     <div class="nav-item active" onclick="showPage('homePage', this)">ዋና ገጽ</div>
     <div class="nav-item" onclick="showPage('demoQuizPage', this)">Demo ጥያቄ</div>
@@ -223,12 +225,22 @@
     let clickCount = 0;
     let currentMode = 'real';
     let realBalance = 0.00;
+    let wonBalance = 0.00;
+    let inviteCount = 0;
     let demoBalance = 500.00;
 
-    let depositRequests = [];
-    let userMessages = [
-      "📌 እንኳን ወደ CerdionQuiz በደህና መጡ!"
+    let currentQIndex = 0;
+    let score = 0;
+    let timerInterval = null;
+    let timeLeft = 180; // 3 minutes
+    let isQuizActive = false;
+
+    let usersList = [
+      { id: 1, name: "Abenezer Beju", vip: "VIP1", status: "active", date: "10/15/2026", tx: "TX982341", amount: 100, img: "", reqStatus: "pending" },
+      { id: 2, name: "Haile Kassa", vip: "VIP2", status: "active", date: "10/15/2026", tx: "TX871239", amount: 200, img: "", reqStatus: "pending" }
     ];
+
+    let userMessages = ["📌 እንኳን ወደ CerdionQuiz በደህና መጡ!"];
 
     const questions = [
       { q: "የዓድዋ ጦርነት የተካሄደበት ዓመተ ምህረት መቼ ነው?", opts: ["1888 ዓ.ም", "1896 ዓ.ም", "1928 ዓ.ም", "1933 ዓ.ም"], ans: 1 },
@@ -244,9 +256,9 @@
         clickCount = 0;
         let pass = prompt("የአድሚን የይለፍ ቃል ያስገቡ:");
         if (pass === "182418") {
-          alert("እንኳን ደስ አለዎት! ወደ አድሚን ፓነል ገብተዋል።");
+          alert("ወደ አድሚን ፓነል ገብተዋል!");
           showPage('adminPanelPage');
-          renderAdminRequests();
+          renderAdminUsers();
         } else if (pass !== null) {
           alert("የተሳሳተ የይለፍ ቃል!");
         }
@@ -264,14 +276,16 @@
         document.getElementById('realStats').style.display = 'none';
         document.getElementById('realFeaturesBlock').style.display = 'none';
         document.getElementById('quizTitle').innerText = 'የመለማመጃ ኳይዝ';
-        document.getElementById('quizDesc').innerText = 'ያለ ክፍያ ችሎታዎን ይፈትሹበት!';
+        document.getElementById('quizDesc').innerText = 'ያለ ክፍያ በ 3 ደቂቃ ውስጥ መለማመድ ይችላሉ!';
       } else {
         document.getElementById('balTitle').innerText = 'የእውነተኛ አካውንት ቀሪ ሂሳብ';
         document.getElementById('userBalance').innerText = realBalance.toFixed(2) + ' ETB';
+        document.getElementById('wonAmount').innerText = wonBalance.toFixed(2) + ' ETB';
+        document.getElementById('refCount').innerText = inviteCount;
         document.getElementById('realStats').style.display = 'grid';
         document.getElementById('realFeaturesBlock').style.display = 'block';
         document.getElementById('quizTitle').innerText = 'የኢትዮጵያ ኳይዝ ውድድር';
-        document.getElementById('quizDesc').innerText = 'በኢትዮጵያ ታሪክ፣ ባህል እና አጠቃላይ እውቀት ተወዳድረው ያሸንፉ! የመግቢያ ሂሳብ 20 ETB።';
+        document.getElementById('quizDesc').innerText = '5 ጥያቄዎችን በ 3 ደቂቃ ውስጥ በመመለስ 300 ብር ያሸንፉ! የመግቢያ ሂሳብ 20 ETB።';
       }
     }
 
@@ -288,10 +302,121 @@
     }
 
     function showPage(pageId, el) {
+      if (isQuizActive && pageId !== 'quizPlayPage') {
+        // If user tries to navigate away during active quiz
+        triggerQuizLoss("ከጥያቄው ገጽ ስለወጡ ጨዋታውን ተሸንፈዋል!");
+        return;
+      }
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
       document.getElementById(pageId).classList.add('active');
       if (el) el.classList.add('active');
+    }
+
+    function addReferralBonus() {
+      inviteCount++;
+      realBalance += 50;
+      document.getElementById('refCount').innerText = inviteCount;
+      document.getElementById('userBalance').innerText = realBalance.toFixed(2) + ' ETB';
+      alert('ጓደኛ በመጋበዝዎ 50 ብር ቦነስ አግኝተዋል! 🎉');
+    }
+
+    // Anti-cheat: Visibility change (screenshot or leaving app)
+    document.addEventListener("visibilitychange", function() {
+      if (document.hidden && isQuizActive) {
+        triggerQuizLoss("ከጥያቄው ገጽ ወጥተዋልና ጨዋታውን ተሸንፈዋል!");
+      }
+    });
+
+    function startQuiz() {
+      if (currentMode === 'real' && realBalance < 20) {
+        alert('ለኳይዙ መግቢያ በቂ ሂሳብ (20 ETB) የለዎትም!');
+        showSubPage('depSubPage');
+        return;
+      }
+      if (currentMode === 'real') {
+        realBalance -= 20;
+        document.getElementById('userBalance').innerText = realBalance.toFixed(2) + ' ETB';
+      }
+      beginQuizSession();
+    }
+
+    function startDemoQuiz() {
+      beginQuizSession();
+    }
+
+    function beginQuizSession() {
+      currentQIndex = 0;
+      score = 0;
+      timeLeft = 180;
+      isQuizActive = true;
+      showPage('quizPlayPage');
+      startTimer();
+      loadQuestion(currentQIndex);
+    }
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        let min = Math.floor(timeLeft / 60);
+        let sec = timeLeft % 60;
+        document.getElementById('timerDisplay').innerText = `ቀሪ ሰዓት: ${min < 10 ? '0' : ''}${min}:${sec < 10 ? '0' : ''}${sec}`;
+
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          triggerQuizLoss("ጊዜው አልቋል! ጨዋታውን ተሸንፈዋል!");
+        }
+      }, 1000);
+    }
+
+    function triggerQuizLoss(msg) {
+      if (!isQuizActive) return;
+      isQuizActive = false;
+      clearInterval(timerInterval);
+      alert(msg);
+      showPage('homePage');
+    }
+
+    function loadQuestion(idx) {
+      if (idx >= questions.length) {
+        clearInterval(timerInterval);
+        isQuizActive = false;
+        alert("እንኳን ደስ አለዎት! 5ቱን ጥያቄዎች በትክክል መልሰዋል 🎉 300 ብር አሸንፈዋል!");
+        if (currentMode === 'real') {
+          wonBalance += 300;
+          realBalance += 300;
+          document.getElementById('wonAmount').innerText = wonBalance.toFixed(2) + ' ETB';
+          document.getElementById('userBalance').innerText = realBalance.toFixed(2) + ' ETB';
+        } else {
+          demoBalance += 300;
+          document.getElementById('userBalance').innerText = demoBalance.toFixed(2) + ' ETB';
+        }
+        showPage('homePage');
+        return;
+      }
+
+      let q = questions[idx];
+      document.getElementById('qText').innerText = `ጥያቄ ${idx + 1}/5: ${q.q}`;
+      let cont = document.getElementById('optionsContainer');
+      cont.innerHTML = '';
+      q.opts.forEach((opt, i) => {
+        let div = document.createElement('div');
+        div.className = 'quiz-option';
+        div.innerText = opt;
+        div.onclick = () => {
+          if (i === q.ans) {
+            score++;
+            loadQuestion(currentQIndex + 1);
+          } else {
+            clearInterval(timerInterval);
+            isQuizActive = false;
+            alert('መልስዎ ስሳተ ነው! ጨዋታውን ተሸንፈዋል!');
+            showPage('homePage');
+          }
+        };
+        cont.appendChild(div);
+      });
     }
 
     function submitDeposit(e) {
@@ -306,16 +431,19 @@
         imgSrc = URL.createObjectURL(fileInput.files[0]);
       }
 
-      depositRequests.push({
+      usersList.unshift({
         id: Date.now(),
         name: name,
-        amount: amount,
+        vip: "VIP1",
+        status: "active",
+        date: new Date().toLocaleDateString(),
         tx: tx,
+        amount: amount,
         img: imgSrc,
-        status: 'pending'
+        reqStatus: "pending"
       });
 
-      alert('የክፍያ ደረሰኝዎ ለአድሚኑ ተልኳል! አድሚኑ አረጋግጦ አካውንትዎ ላይ ገቢ ያደርጋል።');
+      alert('የክፍያ ደረሰኝዎ ለአድሚኑ ተልኳል!');
       document.getElementById('depName').value = '';
       document.getElementById('depAmount').value = '';
       document.getElementById('depTx').value = '';
@@ -323,64 +451,77 @@
       showSubPage('');
     }
 
-    function renderAdminRequests() {
-      let container = document.getElementById('adminRequestsList');
-      if (depositRequests.length === 0) {
-        container.innerHTML = '<p style="font-size: 13px; color: #64748b;">ምንም አዲስ የ Deposit ጥያቄ የለም።</p>';
-        return;
-      }
-
+    function renderAdminUsers() {
+      let container = document.getElementById('adminUsersContainer');
       container.innerHTML = '';
-      depositRequests.forEach((req) => {
-        if (req.status === 'pending') {
-          let div = document.createElement('div');
-          div.className = 'msg-box';
-          div.style.borderLeftColor = '#f59e0b';
-          div.innerHTML = `
-            <p><strong>ስም:</strong> ${req.name}</p>
-            <p><strong>መጠን:</strong> ${req.amount} ETB</p>
-            <p><strong>Tx ID:</strong> ${req.tx}</p>
-            ${req.img ? `<img src="${req.img}" class="receipt-img">` : ''}
-            <div style="display: flex; gap: 10px; margin-top: 10px;">
-              <button class="btn btn-approve" onclick="approveDeposit(${req.id})">Approve (ቀበል)</button>
-              <button class="btn btn-reject" onclick="rejectDeposit(${req.id})">Reject ( ውድቅ አድርግ)</button>
+
+      usersList.forEach((usr) => {
+        let initial = usr.name ? usr.name.charAt(0).toUpperCase() : 'U';
+        let statusBadge = usr.reqStatus === 'approved' 
+          ? '<span class="badge-status">Approved</span>' 
+          : (usr.reqStatus === 'rejected' ? '<span class="badge-pending" style="background:#831843; color:#fbcfe8;">Rejected</span>' : '<span class="badge-pending">Pending Deposit</span>');
+
+        let card = document.createElement('div');
+        card.className = 'user-card';
+        card.innerHTML = `
+          <div class="user-header">
+            <div class="user-avatar">${initial}</div>
+            <div class="user-info">
+              <div class="user-name">${usr.name}</div>
+              <div class="user-badges">
+                <span class="badge-vip">${usr.vip}</span>
+                <span class="badge-status">${usr.status}</span>
+                ${statusBadge}
+              </div>
+              <div class="user-date">ቀን: ${usr.date} | Tx: ${usr.tx} | መጠን: ${usr.amount} ETB</div>
             </div>
-          `;
-          container.appendChild(div);
-        }
+          </div>
+          ${usr.img ? `<img src="${usr.img}" class="receipt-img">` : ''}
+          <div style="display: flex; gap: 8px; margin-top: 5px;">
+            <button class="btn btn-approve" onclick="approveUserDeposit(${usr.id})">Approve</button>
+            <button class="btn btn-reject" onclick="rejectUserDeposit(${usr.id})">Reject</button>
+          </div>
+          <div style="margin-top: 8px; border-top: 1px solid #334155; padding-top: 8px;">
+            <label style="font-size: 11px; color: #94a3b8;">ለ ${usr.name} የተለየ መልእክት ላክ፦</label>
+            <input type="text" id="msgInput_${usr.id}" placeholder="መልእክት እዚህ ይፃፉ..." style="margin-bottom: 4px;">
+            <button class="btn btn-msg" onclick="sendIndividualMsg(${usr.id}, '${usr.name}')">መልእክት ላክ</button>
+          </div>
+        `;
+        container.appendChild(card);
       });
     }
 
-    function approveDeposit(id) {
-      let req = depositRequests.find(r => r.id === id);
-      if (req) {
-        req.status = 'approved';
-        realBalance += req.amount;
-        userMessages.push(`✅ የ ${req.amount} ETB Deposit ጥያቄዎ በአድሚን ጸድቋል! አካውንትዎ ላይ ገቢ ሆኗል።`);
+    function approveUserDeposit(id) {
+      let usr = usersList.find(u => u.id === id);
+      if (usr) {
+        usr.reqStatus = 'approved';
+        realBalance += usr.amount;
+        userMessages.push(`✅ የ ${usr.amount} ETB Deposit ጥያቄዎ በአድሚን ጸድቋል!`);
         renderUserMessages();
-        renderAdminRequests();
-        alert(`የ ${req.name} ጥያቄ ጸድቋል! ${req.amount} ETB ገቢ ሆኗል።`);
+        renderAdminUsers();
+        alert(`የ ${usr.name} ጥያቄ ጸድቋል!`);
       }
     }
 
-    function rejectDeposit(id) {
-      let req = depositRequests.find(r => r.id === id);
-      if (req) {
-        req.status = 'rejected';
-        userMessages.push(`❌ የ ${req.amount} ETB Deposit ጥያቄዎ ውድቅ ተደርጓል። እባክዎን ትክክለኛ የደረሰኝ ቁጥር እና ፎቶ ይላኩ።`);
+    function rejectUserDeposit(id) {
+      let usr = usersList.find(u => u.id === id);
+      if (usr) {
+        usr.reqStatus = 'rejected';
+        userMessages.push(`❌ የ ${usr.amount} ETB Deposit ጥያቄዎ ውድቅ ተደርጓል።`);
         renderUserMessages();
-        renderAdminRequests();
-        alert(`የ ${req.name} ጥያቄ ውድቅ ተደርጓል።`);
+        renderAdminUsers();
+        alert(`የ ${usr.name} ጥያቄ ውድቅ ተደርጓል።`);
       }
     }
 
-    function sendAdminMessage() {
-      let txt = document.getElementById('adminMsgText').value;
+    function sendIndividualMsg(id, name) {
+      let input = document.getElementById(`msgInput_${id}`);
+      let txt = input ? input.value : '';
       if (txt.trim()) {
-        userMessages.push(`📢 ከአድሚን: ${txt}`);
+        userMessages.push(`📢 ለ ${name}: ${txt}`);
         renderUserMessages();
-        document.getElementById('adminMsgText').value = '';
-        alert("መልእክቱ ለአካውንቱ ተልኳል!");
+        input.value = '';
+        alert(`መልእክቱ ለ ${name} ተልኳል!`);
       }
     }
 
@@ -391,54 +532,6 @@
         let div = document.createElement('div');
         div.className = 'msg-box';
         div.innerText = m;
-        cont.appendChild(div);
-      });
-    }
-
-    function startQuiz() {
-      if (currentMode === 'real' && realBalance < 20) {
-        alert('ለኳይዙ መግቢያ በቂ ሂሳብ የለዎትም። እባክዎን አስቀድመው Deposit ያድርጉ!');
-        return;
-      }
-      if (currentMode === 'real') {
-        realBalance -= 20;
-        document.getElementById('userBalance').innerText = realBalance.toFixed(2) + ' ETB';
-      }
-      showPage('quizPlayPage');
-      loadQuestion(0);
-    }
-
-    function startDemoQuiz() {
-      showPage('quizPlayPage');
-      loadQuestion(0);
-    }
-
-    function loadQuestion(idx) {
-      if (idx >= questions.length) {
-        alert("ኳይዙን ጨርሰዋል! እንኳን ደስ አለዎት።");
-        showPage('homePage');
-        return;
-      }
-      let q = questions[idx];
-      document.getElementById('qText').innerText = q.q;
-      let cont = document.getElementById('optionsContainer');
-      cont.innerHTML = '';
-      q.opts.forEach((opt, i) => {
-        let div = document.createElement('div');
-        div.className = 'quiz-option';
-        div.innerText = opt;
-        div.onclick = () => {
-          if (i === q.ans) {
-            alert('ትክክል ነዎት! 🎉');
-            if (currentMode === 'real') {
-              realBalance += 35;
-              document.getElementById('userBalance').innerText = realBalance.toFixed(2) + ' ETB';
-            }
-          } else {
-            alert('ተሳስተዋል!');
-          }
-          loadQuestion(idx + 1);
-        };
         cont.appendChild(div);
       });
     }
