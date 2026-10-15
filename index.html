@@ -165,12 +165,12 @@
         </div>
 
         <form style="margin-top: 10px;" onsubmit="submitDeposit(event)">
-          <label>ስምዎ</label>
+          <label>ስምዎ (የተመዘገበበት)</label>
           <input type="text" id="depName" placeholder="ሙሉ ስም ያስገቡ" required>
 
           <label>የክፍያ መጠን (ETB - በ 20 እጥፍ ብቻ)</label>
           <input type="number" id="depAmount" step="20" min="20" placeholder="20, 40, 60, 80..." oninput="validateDepositInput(this)" required>
-          <div id="depErrorText" class="error-text">❌ ስህተት! የብር መጠኑ በ 20 እጥፍ (20, 40, 60...) መሆን አለበት (ለምሳሌ 30 ወይም 50 አይፈቀድም)።</div>
+          <div id="depErrorText" class="error-text">❌ ስህተት! የብር መጠኑ በ 20 እጥፍ (20, 40, 60...) መሆን አለበት።</div>
 
           <label>የክፍያ ደረሰኝ ፎቶ (Receipt Screenshot)</label>
           <input type="file" id="depFile" accept="image/*" required>
@@ -206,7 +206,7 @@
         <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">1 ሰው ሲጋብዙ 50 ብር ያገኛሉ!</p>
         <br>
         <label>የእርስዎ የሪፈራል ኮድ (Referral Code)</label>
-        <input type="text" id="userReferralCode" value="KY-8562" readonly>
+        <input type="text" id="userReferralCode" readonly>
         <button class="btn" style="background: #8b5cf6;" onclick="addReferralBonus()">ጓደኛ ጋብዝ (+50 ብር)</button>
       </div>
     </div>
@@ -275,23 +275,47 @@
   <script>
     let clickCount = 0;
     let currentMode = 'real';
-    let realBalance = 0.00;
-    let wonBalance = 0.00;
-    let inviteCount = 0;
+    
+    // Load account states and data from localStorage
+    let realBalance = parseFloat(localStorage.getItem('ky_realBalance')) || 0.00;
+    let wonBalance = parseFloat(localStorage.getItem('ky_wonBalance')) || 0.00;
+    let inviteCount = parseInt(localStorage.getItem('ky_inviteCount')) || 0;
     let demoBalance = 500.00;
+    let registeredName = localStorage.getItem('ky_registeredName') || '';
+    
+    let userRefCode = localStorage.getItem('ky_refCode');
+    if (!userRefCode) {
+      userRefCode = 'KY-' + Math.floor(1000 + Math.random() * 9000);
+      localStorage.setItem('ky_refCode', userRefCode);
+    }
+    document.getElementById('userReferralCode').value = userRefCode;
+
+    // Load balances on UI start
+    document.getElementById('userBalance').innerText = realBalance.toFixed(2) + ' ETB';
+    document.getElementById('wonAmount').innerText = wonBalance.toFixed(2) + ' ETB';
+    document.getElementById('refCount').innerText = inviteCount;
 
     let currentAdminTab = '';
-    let depositRequests = [
+    let depositRequests = JSON.parse(localStorage.getItem('ky_depositRequests')) || [
       { id: 101, name: "Abenezer Beju", date: "10/15/2026", amount: 100, img: "", refCode: "KY-8562", refInvites: 2, reqStatus: "approved" },
       { id: 102, name: "Haile Kassa", date: "10/15/2026", amount: 200, img: "", refCode: "KY-9912", refInvites: 0, reqStatus: "approved" }
     ];
-    let withdrawRequests = [];
+    let withdrawRequests = JSON.parse(localStorage.getItem('ky_withdrawRequests')) || [];
     
-    let userMessages = [
+    let userMessages = JSON.parse(localStorage.getItem('ky_userMessages')) || [
       "📌 እንኳን ወደ CerdionQuiz በደህና መጡ! ጨዋታውን ለመጀመር 'የኔ አካውንት' በመሄድ በ 20 እጥፍ (20፣ 40፣ 60...) ብር ዴፖዚት ያድርጉ።",
       "💡 ጠቃሚ ማሳሰቢያ፡ በውድድር ሰዓት ከጥያቄው ገጽ መውጣት ጨዋታውን ያስሸንፍዎታል።",
       "🎁 ጓደኛ በመጋበዝ 50 ብር ቦነስ ያግኙ!"
     ];
+
+    // Lock name input if already registered
+    let nameInput = document.getElementById('depName');
+    if (registeredName) {
+      nameInput.value = registeredName;
+      nameInput.readOnly = true;
+      nameInput.style.backgroundColor = '#1e293b';
+      nameInput.style.color = '#38bdf8';
+    }
 
     let currentQIndex = 0;
     let score = 0;
@@ -306,6 +330,18 @@
       { q: "የኢትዮጵያ የመጀመሪያው የባቡር መስመር የተዘረጋው በየትኞቹ ከተሞች መካከል ነው?", opts: ["አዲስ አበባ - ድሬዳዋ", "አዲስ አበባ - ጂቡቲ", "ሐረር - ጂቡቲ", "አዳማ - አዲስ አበባ"], ans: 1 },
       { q: "ዓለም አቀፉ የቡና መገኛ ሀገር የትኛዋ ናት?", opts: ["ብራዚል", "ኮሎምቢያ", "ኢትዮጵያ", "ኬንያ"], ans: 2 }
     ];
+
+    function saveData() {
+      localStorage.setItem('ky_realBalance', realBalance);
+      localStorage.setItem('ky_wonBalance', wonBalance);
+      localStorage.setItem('ky_inviteCount', inviteCount);
+      localStorage.setItem('ky_depositRequests', JSON.stringify(depositRequests));
+      localStorage.setItem('ky_withdrawRequests', JSON.stringify(withdrawRequests));
+      localStorage.setItem('ky_userMessages', JSON.stringify(userMessages));
+      if (registeredName) {
+        localStorage.setItem('ky_registeredName', registeredName);
+      }
+    }
 
     function handleSettingsClick() {
       clickCount++;
@@ -362,6 +398,9 @@
         currentMode = 'demo';
       } else if (pageId === 'realAccountPage') {
         currentMode = 'real';
+        document.getElementById('userBalance').innerText = realBalance.toFixed(2) + ' ETB';
+        document.getElementById('wonAmount').innerText = wonBalance.toFixed(2) + ' ETB';
+        document.getElementById('refCount').innerText = inviteCount;
       } else if (pageId === 'messagesPage') {
         let badge = document.getElementById('msgBadge');
         if (badge) badge.style.display = 'none';
@@ -392,6 +431,7 @@
       realBalance += 50;
       document.getElementById('refCount').innerText = inviteCount;
       document.getElementById('userBalance').innerText = realBalance.toFixed(2) + ' ETB';
+      saveData();
       alert('ጓደኛ በመጋበዝዎ 50 ብር ቦነስ አግኝተዋል! 🎉');
     }
 
@@ -411,6 +451,7 @@
       if (currentMode === 'real') {
         realBalance -= 20;
         document.getElementById('userBalance').innerText = realBalance.toFixed(2) + ' ETB';
+        saveData();
       }
       beginQuizSession();
     }
@@ -462,6 +503,7 @@
           realBalance += 300;
           document.getElementById('wonAmount').innerText = wonBalance.toFixed(2) + ' ETB';
           document.getElementById('userBalance').innerText = realBalance.toFixed(2) + ' ETB';
+          saveData();
         } else {
           demoBalance += 300;
           document.getElementById('demoBalanceDisplay').innerText = demoBalance.toFixed(2) + ' ETB';
@@ -495,12 +537,25 @@
 
     function submitDeposit(e) {
       e.preventDefault();
-      let name = document.getElementById('depName').value;
+      let name = nameInput.value.trim();
       let amount = parseFloat(document.getElementById('depAmount').value);
 
-      if (amount % 20 !== 0) {
-        alert('ስህተት! የብር መጠኑ በ 20 እጥፍ (ማለትም 20፣ 40፣ 60፣ 80...) ብቻ መሆን አለበት። 50 ወይም ሌሎች ከ 20 እጥፍ ውጭ ያሉ መጠኖች አይፈቀዱም!');
+      if (registeredName && registeredName !== name) {
+        alert('ስህተት! እርስዎ አስቀድመው በ "' + registeredName + '" ስም ተመዝግበዋል! በሌላ ስም አካውንት መክፈት አይችሉም።');
+        nameInput.value = registeredName;
         return;
+      }
+
+      if (amount % 20 !== 0) {
+        alert('ስህተት! የብር መጠኑ በ 20 እጥፍ (ማለትም 20፣ 40፣ 60፣ 80...) ብቻ መሆን አለበት።');
+        return;
+      }
+
+      if (!registeredName) {
+        registeredName = name;
+        nameInput.readOnly = true;
+        nameInput.style.backgroundColor = '#1e293b';
+        nameInput.style.color = '#38bdf8';
       }
 
       let fileInput = document.getElementById('depFile');
@@ -509,22 +564,19 @@
         imgSrc = URL.createObjectURL(fileInput.files[0]);
       }
 
-      let newId = Date.now();
-      let currentDate = new Date().toLocaleDateString();
-
       depositRequests.push({
-        id: newId,
+        id: Date.now(),
         name: name,
-        date: currentDate,
+        date: new Date().toLocaleDateString(),
         amount: amount,
         img: imgSrc,
-        refCode: "KY-" + Math.floor(1000 + Math.random() * 9000),
-        refInvites: 0,
+        refCode: userRefCode,
+        refInvites: inviteCount,
         reqStatus: "pending"
       });
 
+      saveData();
       alert('የክፍያ ደረሰኝዎ ለአድሚኑ ተልኳል!');
-      document.getElementById('depName').value = '';
       document.getElementById('depAmount').value = '';
       document.getElementById('depFile').value = '';
       showSubPage('');
@@ -553,6 +605,7 @@
         reqStatus: "pending"
       });
 
+      saveData();
       alert('የወጪ ጥያቄዎ ለአድሚኑ ተልኳል!');
       document.getElementById('withName').value = '';
       document.getElementById('withAmount').value = '';
@@ -710,6 +763,7 @@
         req.reqStatus = 'approved';
         realBalance += req.amount;
         userMessages.push(`✅ የ ${req.amount} ETB የመመዝገቢያ (Deposit) ጥያቄዎ ጸድቋል! አካውንትዎ active ሆኗል።`);
+        saveData();
         updateMessageBadge();
         renderAdminPanel();
         alert('ጥያቄው ጸድቋል እና አካውንቱ active ሆኗል!');
@@ -718,6 +772,7 @@
 
     function rejectDeposit(id) {
       depositRequests = depositRequests.filter(r => r.id !== id);
+      saveData();
       renderAdminPanel();
       alert('የመመዝገቢያ ጥያቄው ውድቅ ተደርጎ ጠፍቷል!');
     }
@@ -730,6 +785,7 @@
           realBalance -= req.amount;
           req.reqStatus = 'approved';
           userMessages.push(`✅ የ ${req.amount} ETB የወጪ ጥያቄዎ ጸድቆ ተልኳል!`);
+          saveData();
           updateMessageBadge();
           renderAdminPanel();
           alert('የወጪ ጥያቄው ጸድቋል!');
@@ -741,12 +797,14 @@
 
     function rejectWithdraw(id) {
       withdrawRequests = withdrawRequests.filter(r => r.id !== id);
+      saveData();
       renderAdminPanel();
       alert('የወጪ ጥያቄው ውድቅ ተደርጎ ጠፍቷል!');
     }
 
     function removeMember(id) {
       depositRequests = depositRequests.filter(r => r.id !== id);
+      saveData();
       renderAdminPanel();
       alert('አባሉ ከአባል ዝርዝር እና ከ መመዝገቢያ ሙሉ በሙሉ ተወግዷል!');
     }
@@ -756,6 +814,7 @@
       let txt = input ? input.value : '';
       if (txt.trim()) {
         userMessages.push(`📢 ለ ${name}: ${txt}`);
+        saveData();
         updateMessageBadge();
         renderUserMessages();
         input.value = '';
