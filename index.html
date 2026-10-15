@@ -35,7 +35,6 @@
     .nav { position: fixed; bottom: 0; left: 0; right: 0; background: #1e293b; display: flex; justify-content: space-around; padding: 10px 5px; border-top: 1px solid #334155; z-index: 100; }
     .nav-item { color: #94a3b8; text-decoration: none; font-size: 11px; text-align: center; cursor: pointer; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; }
     .nav-item.active { color: #38bdf8; font-weight: bold; }
-    .nav-item.active-mode { color: #4ade80; font-weight: bold; }
 
     .page { display: none; }
     .page.active { display: block; }
@@ -74,94 +73,14 @@
 
   <div class="container">
 
-    <!-- PAGE 1: HOME -->
+    <!-- PAGE 1: HOME (QUIZ / MAIN PAGE) -->
     <div id="homePage" class="page active">
       <div class="card">
-        <div class="balance-title" id="balTitle">የእውነተኛ አካውንት ቀሪ ሂሳብ</div>
-        <div class="balance-amount" id="userBalance">0.00 ETB</div>
-
-        <div class="stats-grid" id="realStats">
-          <div class="stat-box">
-            <div class="stat-val" id="wonAmount">0.00 ETB</div>
-            <div class="stat-lbl">Won (ያሸነፉት)</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-val" id="refCount">0</div>
-            <div class="stat-lbl">Invited (የጋበዟቸው)</div>
-          </div>
-        </div>
-      </div>
-
-      <div id="realFeaturesBlock">
-        <div class="card">
-          <h3>Deposit / Withdraw / Referral</h3>
-          <p style="font-size: 12px; color: #94a3b8; margin-top: 5px;">የእውነተኛ አካውንት አገልግሎቶች</p>
-          <div style="display: flex; gap: 8px; margin-top: 10px;">
-            <button class="btn" style="font-size: 12px; padding: 8px;" onclick="showSubPage('depSubPage')">Deposit (ብር ማስገቢያ)</button>
-            <button class="btn" style="font-size: 12px; padding: 8px; background: #0284c7;" onclick="showSubPage('withSubPage')">Withdraw (ብር ማውጫ)</button>
-            <button class="btn" style="font-size: 12px; padding: 8px; background: #8b5cf6;" onclick="showSubPage('refSubPage')">Invite / Referral</button>
-          </div>
-        </div>
-
-        <div id="depSubPage" class="card" style="display: none;">
-          <h3>Deposit (ብር ማስገቢያ)</h3>
-          <p style="font-size: 12px; color: #94a3b8; margin-top: 5px;">
-            • CBE: 1000657786342<br>
-            • Telebirr: 0985625604<br>
-            • ስም: Kaleab Haile W/abrha
-          </p>
-          <form style="margin-top: 10px;" onsubmit="submitDeposit(event)">
-            <label>ስምዎ</label>
-            <input type="text" id="depName" placeholder="ሙሉ ስም ያስገቡ" required>
-
-            <label>የክፍያ መጠን (ETB)</label>
-            <input type="number" id="depAmount" min="20" placeholder="20" required>
-
-            <label>የክፍያ ደረሰኝ ፎቶ (Receipt Screenshot)</label>
-            <input type="file" id="depFile" accept="image/*" required>
-
-            <button class="btn" type="submit">ደረሰኝ ላክ (Deposit)</button>
-          </form>
-        </div>
-
-        <div id="withSubPage" class="card" style="display: none;">
-          <h3>Withdraw (ብር ማውጫ)</h3>
-          <form onsubmit="submitWithdraw(event)">
-            <label>ስምዎ</label>
-            <input type="text" id="withName" placeholder="ሙሉ ስም ያስገቡ" required>
-
-            <label>የሚያወጡት ብር መጠን</label>
-            <input type="number" id="withAmount" placeholder="50" min="50" required>
-
-            <label>የመቀበያ ዘዴ</label>
-            <select id="withMethod">
-              <option>Telebirr</option>
-              <option>CBE Bank</option>
-            </select>
-
-            <label>የስልክ / አካውንት ቁጥር</label>
-            <input type="text" id="withAcc" placeholder="09..." required>
-
-            <button class="btn" style="background: #0284c7;" type="submit">ብር አውጣ (Withdraw)</button>
-          </form>
-        </div>
-
-        <div id="refSubPage" class="card" style="display: none;">
-          <h3>Invite & My Referral</h3>
-          <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">1 ሰው ሲጋብዙ 50 ብር ያገኛሉ!</p>
-          <br>
-          <label>የእርስዎ መጋበዣ ኮድ (Referral Code)</label>
-          <input type="text" id="userReferralCode" value="KY-8562" readonly>
-          <button class="btn" style="background: #8b5cf6;" onclick="addReferralBonus()">ጓደኛ ጋብዝ (+50 ብር)</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3 id="quizTitle">የኢትዮጵያ ኳይዝ ውድድር</h3>
+        <h3 id="quizTitle">CerdionQuiz</h3>
         <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;" id="quizDesc">
           5 ጥያቄዎችን በ 3 ደቂቃ ውስጥ በመመለስ 300 ብር ያሸንፉ! የመግቢያ ሂሳብ 20 ETB።
         </p>
-        <button class="btn" onclick="startQuiz()">Quiz ጀምር</button>
+        <button class="btn" style="margin-top: 15px;" onclick="startQuiz()">Quiz ጀምር</button>
       </div>
     </div>
 
@@ -186,6 +105,101 @@
             📌 እንኳን ወደ CerdionQuiz በደህና መጡ!
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- PAGE 4: DEMO ACCOUNT -->
+    <div id="demoAccountPage" class="page">
+      <div class="card">
+        <div class="balance-title">የመለማመጃ (Demo) ቀሪ ሂሳብ</div>
+        <div class="balance-amount" id="demoBalanceDisplay">500.00 ETB</div>
+      </div>
+      <div class="card">
+        <h3>የመለማመጃ ኳይዝ</h3>
+        <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">ያለ ክፍያ በ 3 ደቂቃ ውስጥ መለማመድ ይችላሉ!</p>
+        <button class="btn" style="background: #d97706; margin-top: 10px;" onclick="showPage('demoQuizPage', document.getElementById('navDemo'))">Demo ኳይዝ ጀምር</button>
+      </div>
+    </div>
+
+    <!-- PAGE 5: REAL ACCOUNT (የኔ አካውንት) -->
+    <div id="realAccountPage" class="page">
+      <div class="card">
+        <div class="balance-title">የእውነተኛ አካውንት ቀሪ ሂሳብ</div>
+        <div class="balance-amount" id="userBalance">0.00 ETB</div>
+
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-val" id="wonAmount">0.00 ETB</div>
+            <div class="stat-lbl">Won (ያሸነፉት)</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val" id="refCount">0</div>
+            <div class="stat-lbl">Invited (የጋበዟቸው)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Deposit / Withdraw / Referral</h3>
+        <p style="font-size: 12px; color: #94a3b8; margin-top: 5px;">የእውነተኛ አካውንት አገልግሎቶች</p>
+        <div style="display: flex; gap: 8px; margin-top: 10px;">
+          <button class="btn" style="font-size: 12px; padding: 8px;" onclick="showSubPage('depSubPage')">Deposit (ብር ማስገቢያ)</button>
+          <button class="btn" style="font-size: 12px; padding: 8px; background: #0284c7;" onclick="showSubPage('withSubPage')">Withdraw (ብር ማውጫ)</button>
+          <button class="btn" style="font-size: 12px; padding: 8px; background: #8b5cf6;" onclick="showSubPage('refSubPage')">Invite / Referral</button>
+        </div>
+      </div>
+
+      <div id="depSubPage" class="card" style="display: none;">
+        <h3>Deposit (ብር ማስገቢያ)</h3>
+        <p style="font-size: 12px; color: #94a3b8; margin-top: 5px;">
+          • CBE: 1000657786342<br>
+          • Telebirr: 0985625604<br>
+          • ስም: Kaleab Haile W/abrha<br>
+          <strong style="color: #38bdf8; display: block; margin-top: 4px;">ማስታወሻ፡ የሚገቡት ገንዘቦች በ 20 እጥፍ (20፣ 40፣ 60...) ብቻ መሆን አለባቸው።</strong>
+        </p>
+        <form style="margin-top: 10px;" onsubmit="submitDeposit(event)">
+          <label>ስምዎ</label>
+          <input type="text" id="depName" placeholder="ሙሉ ስም ያስገቡ" required>
+
+          <label>የክፍያ መጠን (ETB - በ 20 እጥፍ)</label>
+          <input type="number" id="depAmount" step="20" min="20" placeholder="20, 40, 60..." required>
+
+          <label>የክፍያ ደረሰኝ ፎቶ (Receipt Screenshot)</label>
+          <input type="file" id="depFile" accept="image/*" required>
+
+          <button class="btn" type="submit">ደረሰኝ ላክ (Deposit)</button>
+        </form>
+      </div>
+
+      <div id="withSubPage" class="card" style="display: none;">
+        <h3>Withdraw (ብር ማውጫ)</h3>
+        <form onsubmit="submitWithdraw(event)">
+          <label>ስምዎ</label>
+          <input type="text" id="withName" placeholder="ሙሉ ስም ያስገቡ" required>
+
+          <label>የሚያወጡት ብር መጠን</label>
+          <input type="number" id="withAmount" placeholder="50" min="50" required>
+
+          <label>የመቀበያ ዘዴ</label>
+          <select id="withMethod">
+            <option>Telebirr</option>
+            <option>CBE Bank</option>
+          </select>
+
+          <label>የስልክ / አካውንት ቁጥር</label>
+          <input type="text" id="withAcc" placeholder="09..." required>
+
+          <button class="btn" style="background: #0284c7;" type="submit">ብር አውጣ (Withdraw)</button>
+        </form>
+      </div>
+
+      <div id="refSubPage" class="card" style="display: none;">
+        <h3>Invite & My Referral</h3>
+        <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">1 ሰው ሲጋብዙ 50 ብር ያገኛሉ!</p>
+        <br>
+        <label>የእርስዎ መጋበዣ ኮድ (Referral Code)</label>
+        <input type="text" id="userReferralCode" value="KY-8562" readonly>
+        <button class="btn" style="background: #8b5cf6;" onclick="addReferralBonus()">ጓደኛ ጋብዝ (+50 ብር)</button>
       </div>
     </div>
 
@@ -217,7 +231,7 @@
     <div id="quizPlayPage" class="page">
       <div class="card">
         <div class="timer-box" id="timerDisplay">ቀሪ ሰዓት: 03:00</div>
-        <h3 id="qCategory">የኢትዮጵያ ታሪክ እና እውቀት</h3>
+        <h3 id="qCategory">CerdionQuiz ጥያቄዎች</h3>
         <p id="qText" style="font-size: 16px; margin: 15px 0; color: #f8fafc;">ጥያቄ እዚህ ይመጣል...</p>
         <div id="optionsContainer"></div>
       </div>
@@ -225,25 +239,25 @@
 
   </div>
 
-  <!-- BOTTOM NAVIGATION BAR (WITH EXACT REQUESTED ORDER) -->
+  <!-- BOTTOM NAVIGATION BAR -->
   <div class="nav">
-    <div class="nav-item active" id="navQuiz" onclick="switchNavTab('quiz', this)">
+    <div class="nav-item active" id="navQuiz" onclick="switchNavTab('homePage', this)">
       <span>❓</span>
       <span>ጥያቄ</span>
     </div>
-    <div class="nav-item" id="navDemo" onclick="switchNavTab('demo', this)">
+    <div class="nav-item" id="navDemo" onclick="switchNavTab('demoQuizPage', this)">
       <span>🎮</span>
       <span>ዴሞ ጥያቄ</span>
     </div>
-    <div class="nav-item" id="navMsg" onclick="switchNavTab('msg', this)">
+    <div class="nav-item" id="navMsg" onclick="switchNavTab('messagesPage', this)">
       <span>📬</span>
       <span>መልእክት</span>
     </div>
-    <div class="nav-item" id="navDemoAcc" onclick="switchNavTab('demoAcc', this)">
+    <div class="nav-item" id="navDemoAcc" onclick="switchNavTab('demoAccountPage', this)">
       <span>🟡</span>
       <span>የዴሞ አካውንት</span>
     </div>
-    <div class="nav-item" id="navRealAcc" onclick="switchNavTab('realAcc', this)">
+    <div class="nav-item" id="navRealAcc" onclick="switchNavTab('realAccountPage', this)">
       <span>🟢</span>
       <span>የኔ አካውንት</span>
     </div>
@@ -294,49 +308,21 @@
       }
     }
 
-    function switchNavTab(tab, el) {
+    function switchNavTab(pageId, el) {
+      if (isQuizActive && pageId !== 'quizPlayPage') {
+        triggerQuizLoss("ከጥያቄው ገጽ ስለወጡ ጨዋታውን ተሸንፈዋል!");
+        return;
+      }
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      
-      if (tab === 'quiz') {
-        setMode('real');
-        showPage('homePage');
-        el.classList.add('active');
-      } else if (tab === 'demo') {
-        showPage('demoQuizPage');
-        el.classList.add('active');
-      } else if (tab === 'msg') {
-        showPage('messagesPage');
-        el.classList.add('active');
-      } else if (tab === 'demoAcc') {
-        setMode('demo');
-        showPage('homePage');
-        el.classList.add('active');
-      } else if (tab === 'realAcc') {
-        setMode('real');
-        showPage('homePage');
-        el.classList.add('active');
-      }
-    }
+      el.classList.add('active');
 
-    function setMode(mode) {
-      currentMode = mode;
-      if (mode === 'demo') {
-        document.getElementById('balTitle').innerText = 'የመለማመጃ (Demo) ቀሪ ሂሳብ';
-        document.getElementById('userBalance').innerText = demoBalance.toFixed(2) + ' ETB';
-        document.getElementById('realStats').style.display = 'none';
-        document.getElementById('realFeaturesBlock').style.display = 'none';
-        document.getElementById('quizTitle').innerText = 'የመለማመጃ ኳይዝ';
-        document.getElementById('quizDesc').innerText = 'ያለ ክፍያ በ 3 ደቂቃ ውስጥ መለማመድ ይችላሉ!';
-      } else {
-        document.getElementById('balTitle').innerText = 'የእውነተኛ አካውንት ቀሪ ሂሳብ';
-        document.getElementById('userBalance').innerText = realBalance.toFixed(2) + ' ETB';
-        document.getElementById('wonAmount').innerText = wonBalance.toFixed(2) + ' ETB';
-        document.getElementById('refCount').innerText = inviteCount;
-        document.getElementById('realStats').style.display = 'grid';
-        document.getElementById('realFeaturesBlock').style.display = 'block';
-        document.getElementById('quizTitle').innerText = 'የኢትዮጵያ ኳይዝ ውድድር';
-        document.getElementById('quizDesc').innerText = '5 ጥያቄዎችን በ 3 ደቂቃ ውስጥ በመመለስ 300 ብር ያሸንፉ! የመግቢያ ሂሳብ 20 ETB።';
+      if (pageId === 'demoAccountPage') {
+        currentMode = 'demo';
+      } else if (pageId === 'realAccountPage') {
+        currentMode = 'real';
       }
+
+      showPage(pageId);
     }
 
     function showSubPage(id) {
@@ -352,10 +338,6 @@
     }
 
     function showPage(pageId) {
-      if (isQuizActive && pageId !== 'quizPlayPage') {
-        triggerQuizLoss("ከጥያቄው ገጽ ስለወጡ ጨዋታውን ተሸንፈዋል!");
-        return;
-      }
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.getElementById(pageId).classList.add('active');
     }
@@ -377,6 +359,7 @@
     function startQuiz() {
       if (currentMode === 'real' && realBalance < 20) {
         alert('ለኳይዙ መግቢያ በቂ ሂሳብ (20 ETB) የለዎትም!');
+        switchNavTab('realAccountPage', document.getElementById('navRealAcc'));
         showSubPage('depSubPage');
         return;
       }
@@ -436,7 +419,7 @@
           document.getElementById('userBalance').innerText = realBalance.toFixed(2) + ' ETB';
         } else {
           demoBalance += 300;
-          document.getElementById('userBalance').innerText = demoBalance.toFixed(2) + ' ETB';
+          document.getElementById('demoBalanceDisplay').innerText = demoBalance.toFixed(2) + ' ETB';
         }
         showPage('homePage');
         return;
@@ -469,8 +452,14 @@
       e.preventDefault();
       let name = document.getElementById('depName').value;
       let amount = parseFloat(document.getElementById('depAmount').value);
-      let fileInput = document.getElementById('depFile');
 
+      // Validate multiple of 20
+      if (amount % 20 !== 0) {
+        alert('የብር መጠኑ በ 20 እጥፍ (ማለትም 20፣ 40፣ 60፣ 80...) ብቻ መሆን አለበት!');
+        return;
+      }
+
+      let fileInput = document.getElementById('depFile');
       let imgSrc = "";
       if (fileInput.files && fileInput.files[0]) {
         imgSrc = URL.createObjectURL(fileInput.files[0]);
