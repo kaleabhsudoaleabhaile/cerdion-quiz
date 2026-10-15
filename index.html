@@ -56,7 +56,6 @@
     .user-info { flex: 1; }
     .user-name { font-size: 16px; font-weight: bold; color: #f8fafc; }
     .user-badges { display: flex; gap: 6px; align-items: center; margin-top: 3px; }
-    .badge-vip { background: #854d0e; color: #fef08a; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
     .badge-status { background: #14532d; color: #4ade80; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
     .badge-pending { background: #78350f; color: #fde047; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
     .user-date { font-size: 11px; color: #64748b; margin-top: 2px; }
@@ -232,12 +231,12 @@
     let currentQIndex = 0;
     let score = 0;
     let timerInterval = null;
-    let timeLeft = 180; // 3 minutes
+    let timeLeft = 180;
     let isQuizActive = false;
 
     let usersList = [
-      { id: 1, name: "Abenezer Beju", vip: "VIP1", status: "active", date: "10/15/2026", tx: "TX982341", amount: 100, img: "", reqStatus: "pending" },
-      { id: 2, name: "Haile Kassa", vip: "VIP2", status: "active", date: "10/15/2026", tx: "TX871239", amount: 200, img: "", reqStatus: "pending" }
+      { id: 1, name: "Abenezer Beju", status: "pending", date: "10/15/2026", tx: "TX982341", amount: 100, img: "", reqStatus: "pending" },
+      { id: 2, name: "Haile Kassa", status: "pending", date: "10/15/2026", tx: "TX871239", amount: 200, img: "", reqStatus: "pending" }
     ];
 
     let userMessages = ["📌 እንኳን ወደ CerdionQuiz በደህና መጡ!"];
@@ -303,7 +302,6 @@
 
     function showPage(pageId, el) {
       if (isQuizActive && pageId !== 'quizPlayPage') {
-        // If user tries to navigate away during active quiz
         triggerQuizLoss("ከጥያቄው ገጽ ስለወጡ ጨዋታውን ተሸንፈዋል!");
         return;
       }
@@ -321,7 +319,6 @@
       alert('ጓደኛ በመጋበዝዎ 50 ብር ቦነስ አግኝተዋል! 🎉');
     }
 
-    // Anti-cheat: Visibility change (screenshot or leaving app)
     document.addEventListener("visibilitychange", function() {
       if (document.hidden && isQuizActive) {
         triggerQuizLoss("ከጥያቄው ገጽ ወጥተዋልና ጨዋታውን ተሸንፈዋል!");
@@ -434,8 +431,7 @@
       usersList.unshift({
         id: Date.now(),
         name: name,
-        vip: "VIP1",
-        status: "active",
+        status: "pending",
         date: new Date().toLocaleDateString(),
         tx: tx,
         amount: amount,
@@ -458,7 +454,7 @@
       usersList.forEach((usr) => {
         let initial = usr.name ? usr.name.charAt(0).toUpperCase() : 'U';
         let statusBadge = usr.reqStatus === 'approved' 
-          ? '<span class="badge-status">Approved</span>' 
+          ? '<span class="badge-status">active</span>' 
           : (usr.reqStatus === 'rejected' ? '<span class="badge-pending" style="background:#831843; color:#fbcfe8;">Rejected</span>' : '<span class="badge-pending">Pending Deposit</span>');
 
         let card = document.createElement('div');
@@ -469,8 +465,6 @@
             <div class="user-info">
               <div class="user-name">${usr.name}</div>
               <div class="user-badges">
-                <span class="badge-vip">${usr.vip}</span>
-                <span class="badge-status">${usr.status}</span>
                 ${statusBadge}
               </div>
               <div class="user-date">ቀን: ${usr.date} | Tx: ${usr.tx} | መጠን: ${usr.amount} ETB</div>
@@ -495,11 +489,12 @@
       let usr = usersList.find(u => u.id === id);
       if (usr) {
         usr.reqStatus = 'approved';
+        usr.status = 'active';
         realBalance += usr.amount;
-        userMessages.push(`✅ የ ${usr.amount} ETB Deposit ጥያቄዎ በአድሚን ጸድቋል!`);
+        userMessages.push(`✅ የ ${usr.amount} ETB Deposit ጥያቄዎ በአድሚን ጸድቋል! አካውንትዎ አሁን active ሆኗል።`);
         renderUserMessages();
         renderAdminUsers();
-        alert(`የ ${usr.name} ጥያቄ ጸድቋል!`);
+        alert(`የ ${usr.name} ጥያቄ ጸድቋል እና አካውንቱ active ሆኗል!`);
       }
     }
 
@@ -507,6 +502,7 @@
       let usr = usersList.find(u => u.id === id);
       if (usr) {
         usr.reqStatus = 'rejected';
+        usr.status = 'pending';
         userMessages.push(`❌ የ ${usr.amount} ETB Deposit ጥያቄዎ ውድቅ ተደርጓል።`);
         renderUserMessages();
         renderAdminUsers();
