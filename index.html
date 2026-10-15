@@ -50,6 +50,10 @@
 
     .timer-box { font-size: 16px; font-weight: bold; color: #f59e0b; margin-bottom: 10px; text-align: right; }
 
+    .admin-tabs { display: flex; gap: 8px; margin-bottom: 15px; }
+    .admin-tab-btn { flex: 1; padding: 10px; background: #334155; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; font-size: 13px; }
+    .admin-tab-btn.active { background: #6366f1; }
+
     .user-card { background: #1e293b; border-radius: 12px; padding: 12px; margin-bottom: 12px; border: 1px solid #334155; display: flex; flex-direction: column; gap: 6px; }
     .user-header { display: flex; align-items: center; gap: 12px; }
     .user-avatar { width: 45px; height: 45px; border-radius: 10px; background: #334155; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; color: #38bdf8; }
@@ -116,9 +120,6 @@
             <label>የክፍያ መጠን (ETB)</label>
             <input type="number" id="depAmount" min="20" placeholder="20" required>
 
-            <label>የግብይት ቁጥር (Transaction ID)</label>
-            <input type="text" id="depTx" placeholder="ለምሳሌ: TX12345678" required>
-
             <label>የክፍያ ደረሰኝ ፎቶ (Receipt Screenshot)</label>
             <input type="file" id="depFile" accept="image/*" required>
 
@@ -128,16 +129,22 @@
 
         <div id="withSubPage" class="card" style="display: none;">
           <h3>Withdraw (ብር ማውጫ)</h3>
-          <form onsubmit="alert('የማውጣት ጥያቄዎ ለአድሚን ተልኳል!'); return false;">
+          <form onsubmit="submitWithdraw(event)">
+            <label>ስምዎ</label>
+            <input type="text" id="withName" placeholder="ሙሉ ስም ያስገቡ" required>
+
             <label>የሚያወጡት ብር መጠን</label>
-            <input type="number" placeholder="50" min="50">
+            <input type="number" id="withAmount" placeholder="50" min="50" required>
+
             <label>የመቀበያ ዘዴ</label>
-            <select>
+            <select id="withMethod">
               <option>Telebirr</option>
               <option>CBE Bank</option>
             </select>
+
             <label>የስልክ / አካውንት ቁጥር</label>
-            <input type="text" placeholder="09..." required>
+            <input type="text" id="withAcc" placeholder="09..." required>
+
             <button class="btn" style="background: #0284c7;" type="submit">ብር አውጣ (Withdraw)</button>
           </form>
         </div>
@@ -189,10 +196,15 @@
     <div id="adminPanelPage" class="page">
       <div style="margin-bottom: 15px;">
         <h3 style="color: #ef4444;">⚙️ Admin Control Panel</h3>
-        <p style="font-size: 12px; color: #94a3b8;">የተጠቃሚዎች ዝርዝር፣ የ Deposit ማረጋገጫ እና የግል መልእክት መላኪያ</p>
+        <p style="font-size: 12px; color: #94a3b8;">የጥያቄዎች አስተዳደር እና ማረጋገጫ</p>
       </div>
 
-      <div id="adminUsersContainer"></div>
+      <div class="admin-tabs">
+        <button class="admin-tab-btn active" id="tabDepBtn" onclick="switchAdminTab('dep')">1. የመመዝገቢያ ጥያቄ (<span id="depCountBadge">0</span>)</button>
+        <button class="admin-tab-btn" id="tabWithBtn" onclick="switchAdminTab('with')">2. የወጪ ጥያቄ (<span id="withCountBadge">0</span>)</button>
+      </div>
+
+      <div id="adminListContainer"></div>
     </div>
 
     <!-- QUIZ PLAY INTERFACE -->
@@ -228,18 +240,16 @@
     let inviteCount = 0;
     let demoBalance = 500.00;
 
+    let currentAdminTab = 'dep';
+    let depositRequests = [];
+    let withdrawRequests = [];
+    let userMessages = ["📌 እንኳን ወደ CerdionQuiz በደህና መጡ!"];
+
     let currentQIndex = 0;
     let score = 0;
     let timerInterval = null;
     let timeLeft = 180;
     let isQuizActive = false;
-
-    let usersList = [
-      { id: 1, name: "Abenezer Beju", status: "active", date: "10/15/2026", tx: "TX982341", amount: 100, img: "", reqStatus: "approved" },
-      { id: 2, name: "Haile Kassa", status: "pending", date: "10/15/2026", tx: "TX871239", amount: 200, img: "", reqStatus: "pending" }
-    ];
-
-    let userMessages = ["📌 እንኳን ወደ CerdionQuiz በደህና መጡ!"];
 
     const questions = [
       { q: "የዓድዋ ጦርነት የተካሄደበት ዓመተ ምህረት መቼ ነው?", opts: ["1888 ዓ.ም", "1896 ዓ.ም", "1928 ዓ.ም", "1933 ዓ.ም"], ans: 1 },
@@ -257,7 +267,7 @@
         if (pass === "182418") {
           alert("ወደ አድሚን ፓነል ገብተዋል!");
           showPage('adminPanelPage');
-          renderAdminUsers();
+          renderAdminPanel();
         } else if (pass !== null) {
           alert("የተሳሳተ የይለፍ ቃል!");
         }
@@ -420,7 +430,6 @@
       e.preventDefault();
       let name = document.getElementById('depName').value;
       let amount = parseFloat(document.getElementById('depAmount').value);
-      let tx = document.getElementById('depTx').value;
       let fileInput = document.getElementById('depFile');
 
       let imgSrc = "";
@@ -428,98 +437,177 @@
         imgSrc = URL.createObjectURL(fileInput.files[0]);
       }
 
-      usersList.unshift({
+      depositRequests.push({
         id: Date.now(),
         name: name,
-        status: "pending",
         date: new Date().toLocaleDateString(),
-        tx: tx,
         amount: amount,
-        img: imgSrc,
-        reqStatus: "pending"
+        img: imgSrc
       });
 
       alert('የክፍያ ደረሰኝዎ ለአድሚኑ ተልኳል!');
       document.getElementById('depName').value = '';
       document.getElementById('depAmount').value = '';
-      document.getElementById('depTx').value = '';
       document.getElementById('depFile').value = '';
       showSubPage('');
     }
 
-    function renderAdminUsers() {
-      let container = document.getElementById('adminUsersContainer');
-      container.innerHTML = '';
+    function submitWithdraw(e) {
+      e.preventDefault();
+      let name = document.getElementById('withName').value;
+      let amount = parseFloat(document.getElementById('withAmount').value);
+      let method = document.getElementById('withMethod').value;
+      let acc = document.getElementById('withAcc').value;
 
-      usersList.forEach((usr) => {
-        let initial = usr.name ? usr.name.charAt(0).toUpperCase() : 'U';
-        let statusBadge = usr.reqStatus === 'approved' 
-          ? '<span class="badge-status">active</span>' 
-          : '<span class="badge-pending">Pending Deposit</span>';
+      if (wonBalance < amount) {
+        alert('በ Won (ያሸነፉት) ሂሳብ ውስጥ በቂ ብር የለዎትም!');
+        return;
+      }
 
-        let card = document.createElement('div');
-        card.className = 'user-card';
-
-        let actionButtonsHtml = '';
-        if (usr.reqStatus === 'pending') {
-          actionButtonsHtml = `
-            <div style="display: flex; gap: 8px; margin-top: 5px;">
-              <button class="btn btn-approve" onclick="approveUserDeposit(${usr.id})">Approve</button>
-              <button class="btn btn-reject" onclick="rejectUserDeposit(${usr.id})">Reject</button>
-            </div>
-          `;
-        }
-
-        card.innerHTML = `
-          <div class="user-header">
-            <div class="user-avatar">${initial}</div>
-            <div class="user-info">
-              <div class="user-name">${usr.name}</div>
-              <div class="user-badges">
-                ${statusBadge}
-              </div>
-              <div class="user-date">ቀን: ${usr.date} | Tx: ${usr.tx} | መጠን: ${usr.amount} ETB</div>
-            </div>
-          </div>
-          ${usr.img ? `<img src="${usr.img}" class="receipt-img">` : ''}
-          ${actionButtonsHtml}
-          <div style="margin-top: 8px; border-top: 1px solid #334155; padding-top: 8px;">
-            <label style="font-size: 11px; color: #94a3b8;">ለ ${usr.name} የተለየ መልእክት ላክ፦</label>
-            <input type="text" id="msgInput_${usr.id}" placeholder="መልእክት እዚህ ይፃፉ..." style="margin-bottom: 4px;">
-            <button class="btn btn-msg" onclick="sendIndividualMsg(${usr.id}, '${usr.name}')">መልእክት ላክ</button>
-          </div>
-        `;
-        container.appendChild(card);
+      withdrawRequests.push({
+        id: Date.now(),
+        name: name,
+        date: new Date().toLocaleDateString(),
+        amount: amount,
+        method: method,
+        acc: acc
       });
+
+      alert('የወጪ ጥያቄዎ ለአድሚኑ ተልኳል!');
+      document.getElementById('withName').value = '';
+      document.getElementById('withAmount').value = '';
+      document.getElementById('withAcc').value = '';
+      showSubPage('');
     }
 
-    function approveUserDeposit(id) {
-      let usr = usersList.find(u => u.id === id);
-      if (usr) {
-        usr.reqStatus = 'approved';
-        usr.status = 'active';
-        realBalance += usr.amount;
-        userMessages.push(`✅ የ ${usr.amount} ETB Deposit ጥያቄዎ በአድሚን ጸድቋል! አካውንትዎ አሁን active ሆኗል።`);
-        renderUserMessages();
-        renderAdminUsers();
-        alert(`የ ${usr.name} ጥያቄ ጸድቋል እና አካውንቱ active ሆኗል!`);
+    function switchAdminTab(tab) {
+      currentAdminTab = tab;
+      document.getElementById('tabDepBtn').className = 'admin-tab-btn ' + (tab === 'dep' ? 'active' : '');
+      document.getElementById('tabWithBtn').className = 'admin-tab-btn ' + (tab === 'with' ? 'active' : '');
+      renderAdminPanel();
+    }
+
+    function renderAdminPanel() {
+      document.getElementById('depCountBadge').innerText = depositRequests.length;
+      document.getElementById('withCountBadge').innerText = withdrawRequests.length;
+
+      let container = document.getElementById('adminListContainer');
+      container.innerHTML = '';
+
+      if (currentAdminTab === 'dep') {
+        if (depositRequests.length === 0) {
+          container.innerHTML = '<p style="font-size: 13px; color: #64748b; text-align: center; margin-top: 20px;">ምንም የመመዝገቢያ ጥያቄ የለም።</p>';
+          return;
+        }
+
+        depositRequests.forEach((req) => {
+          let initial = req.name.charAt(0).toUpperCase();
+          let card = document.createElement('div');
+          card.className = 'user-card';
+          card.innerHTML = `
+            <div class="user-header">
+              <div class="user-avatar">${initial}</div>
+              <div class="user-info">
+                <div class="user-name">${req.name}</div>
+                <div class="user-badges"><span class="badge-pending">Deposit Request</span></div>
+                <div class="user-date">ቀን: ${req.date} | መጠን: ${req.amount} ETB</div>
+              </div>
+            </div>
+            ${req.img ? `<img src="${req.img}" class="receipt-img">` : ''}
+            <div style="display: flex; gap: 8px; margin-top: 8px;">
+              <button class="btn btn-approve" onclick="approveDeposit(${req.id})">Approve</button>
+              <button class="btn btn-reject" onclick="rejectDeposit(${req.id})">Reject</button>
+            </div>
+            <div style="margin-top: 8px; border-top: 1px solid #334155; padding-top: 8px;">
+              <label style="font-size: 11px; color: #94a3b8;">ለ ${req.name} መልእክት ላክ፦</label>
+              <input type="text" id="msgInput_${req.id}" placeholder="መልእክት እዚህ ይፃፉ..." style="margin-bottom: 4px;">
+              <button class="btn btn-msg" onclick="sendMsg('${req.name}', ${req.id})">መልእክት ላክ</button>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+
+      } else {
+        if (withdrawRequests.length === 0) {
+          container.innerHTML = '<p style="font-size: 13px; color: #64748b; text-align: center; margin-top: 20px;">ምንም የወጪ ጥያቄ የለም።</p>';
+          return;
+        }
+
+        withdrawRequests.forEach((req) => {
+          let initial = req.name.charAt(0).toUpperCase();
+          let card = document.createElement('div');
+          card.className = 'user-card';
+          card.innerHTML = `
+            <div class="user-header">
+              <div class="user-avatar">${initial}</div>
+              <div class="user-info">
+                <div class="user-name">${req.name}</div>
+                <div class="user-badges"><span class="badge-pending" style="background:#0284c7; color:#e0f2fe;">Withdraw Request</span></div>
+                <div class="user-date">ቀን: ${req.date} | መጠን: ${req.amount} ETB | ዘዴ: ${req.method} (${req.acc})</div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: 8px;">
+              <button class="btn btn-approve" onclick="approveWithdraw(${req.id})">Approve</button>
+              <button class="btn btn-reject" onclick="rejectWithdraw(${req.id})">Reject</button>
+            </div>
+            <div style="margin-top: 8px; border-top: 1px solid #334155; padding-top: 8px;">
+              <label style="font-size: 11px; color: #94a3b8;">ለ ${req.name} መልእክት ላክ፦</label>
+              <input type="text" id="msgInput_${req.id}" placeholder="መልእክት እዚህ ይፃፉ..." style="margin-bottom: 4px;">
+              <button class="btn btn-msg" onclick="sendMsg('${req.name}', ${req.id})">መልእክት ላክ</button>
+            </div>
+          `;
+          container.appendChild(card);
+        });
       }
     }
 
-    function rejectUserDeposit(id) {
-      usersList = usersList.filter(u => u.id !== id);
-      renderAdminUsers();
-      alert('የጥያቄው ፎቶና መረጃ ውድቅ ተደርጎ ከገጹ ጠፍቷል!');
+    function approveDeposit(id) {
+      let req = depositRequests.find(r => r.id === id);
+      if (req) {
+        realBalance += req.amount;
+        userMessages.push(`✅ የ ${req.amount} ETB የመመዝገቢያ (Deposit) ጥያቄዎ ጸድቋል!`);
+        depositRequests = depositRequests.filter(r => r.id !== id);
+        renderAdminPanel();
+        alert('ጥያቄው ጸድቋል!');
+      }
     }
 
-    function sendIndividualMsg(id, name) {
+    function rejectDeposit(id) {
+      depositRequests = depositRequests.filter(r => r.id !== id);
+      renderAdminPanel();
+      alert('የመመዝገቢያ ጥያቄው ውድቅ ተደርጓል!');
+    }
+
+    function approveWithdraw(id) {
+      let req = withdrawRequests.find(r => r.id === id);
+      if (req) {
+        if (wonBalance >= req.amount) {
+          wonBalance -= req.amount;
+          realBalance -= req.amount;
+          userMessages.push(`✅ የ ${req.amount} ETB የወጪ ጥያቄዎ ጸድቆ ተልኳል!`);
+          withdrawRequests = withdrawRequests.filter(r => r.id !== id);
+          renderAdminPanel();
+          alert('የወጪ ጥያቄው ጸድቋል!');
+        } else {
+          alert('በ Won ሂሳብ ውስጥ በቂ ብር የለም!');
+        }
+      }
+    }
+
+    function rejectWithdraw(id) {
+      withdrawRequests = withdrawRequests.filter(r => r.id !== id);
+      renderAdminPanel();
+      alert('የወጪ ጥያቄው ውድቅ ተደርጓል!');
+    }
+
+    function sendMsg(name, id) {
       let input = document.getElementById(`msgInput_${id}`);
       let txt = input ? input.value : '';
       if (txt.trim()) {
         userMessages.push(`📢 ለ ${name}: ${txt}`);
         renderUserMessages();
         input.value = '';
-        alert(`መልእክቱ ለ ${name} ተልኳል!`);
+        alert('መልእክቱ ተልኳል!');
       }
     }
 
