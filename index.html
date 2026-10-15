@@ -63,7 +63,9 @@
     .user-date { font-size: 11px; color: #64748b; margin-top: 2px; }
 
     .receipt-img { max-width: 100%; border-radius: 8px; margin-top: 8px; border: 1px solid #334155; }
-    .msg-box { background: #0f172a; padding: 10px; border-radius: 8px; margin-top: 8px; border-left: 3px solid #6366f1; }
+    .msg-box { background: #0f172a; padding: 10px; border-radius: 8px; margin-top: 8px; border-left: 3px solid #6366f1; font-size: 13px; line-height: 1.4; }
+    
+    .notice-box { background: #3f3f46; border-left: 4px solid #f59e0b; padding: 10px; border-radius: 6px; margin: 10px 0; font-size: 12px; color: #fef08a; }
   </style>
 </head>
 <body>
@@ -103,9 +105,7 @@
         <h3>የደረሱዎት መልእክቶች (Notifications)</h3>
         <p style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">ከአድሚን የተላኩ ማሳወቂያዎች፦</p>
         <div id="userMessagesList">
-          <div class="msg-box">
-            📌 እንኳን ወደ CerdionQuiz በደህና መጡ!
-          </div>
+          <!-- Dynamically populated -->
         </div>
       </div>
     </div>
@@ -156,15 +156,19 @@
         <p style="font-size: 12px; color: #94a3b8; margin-top: 5px;">
           • CBE: 1000657786342<br>
           • Telebirr: 0985625604<br>
-          • ስም: Kaleab Haile W/abrha<br>
-          <strong style="color: #38bdf8; display: block; margin-top: 4px;">ማስታወሻ፡ የሚገቡት ገንዘቦች በ 20 እጥፍ (20፣ 40፣ 60...) ብቻ መሆን አለባቸው።</strong>
+          • ስም: Kaleab Haile W/abrha
         </p>
+
+        <div class="notice-box">
+          ⚠️ <b>ማስታወሻ፦</b> የሚገቡት ገንዘቦች <b>በ 20 እጥፍ</b> (ለምሳሌ፦ 20፣ 40፣ 60፣ 80፣ 100...) ብቻ መሆን አለባቸው። እንደ 30፣ 50 ያሉ መጠኖች አይፈቀዱም!
+        </div>
+
         <form style="margin-top: 10px;" onsubmit="submitDeposit(event)">
           <label>ስምዎ</label>
           <input type="text" id="depName" placeholder="ሙሉ ስም ያስገቡ" required>
 
-          <label>የክፍያ መጠን (ETB - በ 20 እጥፍ)</label>
-          <input type="number" id="depAmount" step="20" min="20" placeholder="20, 40, 60..." required>
+          <label>የክፍያ መጠን (ETB - በ 20 እጥፍ ብቻ)</label>
+          <input type="number" id="depAmount" step="20" min="20" placeholder="20, 40, 60, 80..." required>
 
           <label>የክፍያ ደረሰኝ ፎቶ (Receipt Screenshot)</label>
           <input type="file" id="depFile" accept="image/*" required>
@@ -199,7 +203,7 @@
         <h3>Invite & My Referral</h3>
         <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">1 ሰው ሲጋብዙ 50 ብር ያገኛሉ!</p>
         <br>
-        <label>የእርስዎ መጋበዣ ኮድ (Referral Code)</label>
+        <label>የእርስዎ የሪፈራል ኮድ (Referral Code)</label>
         <input type="text" id="userReferralCode" value="KY-8562" readonly>
         <button class="btn" style="background: #8b5cf6;" onclick="addReferralBonus()">ጓደኛ ጋብዝ (+50 ብር)</button>
       </div>
@@ -280,7 +284,12 @@
       { id: 102, name: "Haile Kassa", date: "10/15/2026", amount: 200, img: "", refCode: "KY-9912", refInvites: 0, reqStatus: "approved" }
     ];
     let withdrawRequests = [];
-    let userMessages = ["📌 እንኳን ወደ CerdionQuiz በደህና መጡ!"];
+    
+    let userMessages = [
+      "📌 እንኳን ወደ CerdionQuiz በደህና መጡ! ጨዋታውን ለመጀመር 'የኔ አካውንት' በመሄድ በ 20 እጥፍ (20፣ 40፣ 60...) ብር ዴፖዚት ያድርጉ።",
+      "💡 ጠቃሚ ማሳሰቢያ፡ በውድድር ሰዓት ከጥያቄው ገጽ መውጣት ጨዋታውን ያስሸንፍዎታል።",
+      "🎁 ጓደኛ በመጋበዝ 50 ብር ቦነስ ያግኙ!"
+    ];
 
     let currentQIndex = 0;
     let score = 0;
@@ -745,7 +754,6 @@
       });
     }
 
-    // Initialize message badge on load
     updateMessageBadge();
     renderUserMessages();
   </script>
