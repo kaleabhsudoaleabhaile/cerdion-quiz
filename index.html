@@ -51,8 +51,10 @@
     .timer-box { font-size: 16px; font-weight: bold; color: #f59e0b; margin-bottom: 10px; text-align: right; }
 
     .admin-tabs { display: flex; gap: 8px; margin-bottom: 15px; }
-    .admin-tab-btn { flex: 1; padding: 10px; background: #334155; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; font-size: 13px; }
+    .admin-tab-btn { flex: 1; padding: 10px; background: #334155; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; font-size: 13px; position: relative; display: flex; align-items: center; justify-content: center; gap: 5px; }
     .admin-tab-btn.active { background: #6366f1; }
+
+    .red-badge { background: #ef4444; color: white; border-radius: 50%; padding: 2px 6px; font-size: 11px; font-weight: bold; display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; }
 
     .user-card { background: #1e293b; border-radius: 12px; padding: 12px; margin-bottom: 12px; border: 1px solid #334155; display: flex; flex-direction: column; gap: 6px; }
     .user-header { display: flex; align-items: center; gap: 12px; }
@@ -200,8 +202,12 @@
       </div>
 
       <div class="admin-tabs">
-        <button class="admin-tab-btn active" id="tabDepBtn" onclick="switchAdminTab('dep')">1. የመመዝገቢያ ጥያቄ (<span id="depCountBadge">0</span>)</button>
-        <button class="admin-tab-btn" id="tabWithBtn" onclick="switchAdminTab('with')">2. የወጪ ጥያቄ (<span id="withCountBadge">0</span>)</button>
+        <button class="admin-tab-btn active" id="tabDepBtn" onclick="switchAdminTab('dep')">
+          1. የመመዝገቢያ ጥያቄ <span class="red-badge" id="depCountBadge">0</span>
+        </button>
+        <button class="admin-tab-btn" id="tabWithBtn" onclick="switchAdminTab('with')">
+          2. የወጪ ጥያቄ <span class="red-badge" id="withCountBadge">0</span>
+        </button>
       </div>
 
       <div id="adminListContainer"></div>
@@ -442,7 +448,8 @@
         name: name,
         date: new Date().toLocaleDateString(),
         amount: amount,
-        img: imgSrc
+        img: imgSrc,
+        reqStatus: "pending"
       });
 
       alert('የክፍያ ደረሰኝዎ ለአድሚኑ ተልኳል!');
@@ -450,6 +457,7 @@
       document.getElementById('depAmount').value = '';
       document.getElementById('depFile').value = '';
       showSubPage('');
+      renderAdminPanel();
     }
 
     function submitWithdraw(e) {
@@ -470,7 +478,8 @@
         date: new Date().toLocaleDateString(),
         amount: amount,
         method: method,
-        acc: acc
+        acc: acc,
+        reqStatus: "pending"
       });
 
       alert('የወጪ ጥያቄዎ ለአድሚኑ ተልኳል!');
@@ -478,6 +487,7 @@
       document.getElementById('withAmount').value = '';
       document.getElementById('withAcc').value = '';
       showSubPage('');
+      renderAdminPanel();
     }
 
     function switchAdminTab(tab) {
@@ -488,8 +498,26 @@
     }
 
     function renderAdminPanel() {
-      document.getElementById('depCountBadge').innerText = depositRequests.length;
-      document.getElementById('withCountBadge').innerText = withdrawRequests.length;
+      // ብዛቱን ብቻ እያሳየ (0 ከሆነ ባዶ ይሆናል፣ 1 ወይም ከዚያ በላይ ከሆነ ትክክለኛውን ቁጥር ያሳያል)
+      let pendingDeps = depositRequests.filter(r => r.reqStatus === 'pending');
+      let pendingWiths = withdrawRequests.filter(r => r.reqStatus === 'pending');
+
+      let depBadge = document.getElementById('depCountBadge');
+      let withBadge = document.getElementById('withCountBadge');
+
+      if (pendingDeps.length > 0) {
+        depBadge.style.display = 'inline-flex';
+        depBadge.innerText = pendingDeps.length;
+      } else {
+        depBadge.style.display = 'none';
+      }
+
+      if (pendingWiths.length > 0) {
+        withBadge.style.display = 'inline-flex';
+        withBadge.innerText = pendingWiths.length;
+      } else {
+        withBadge.style.display = 'none';
+      }
 
       let container = document.getElementById('adminListContainer');
       container.innerHTML = '';
@@ -502,6 +530,17 @@
 
         depositRequests.forEach((req) => {
           let initial = req.name.charAt(0).toUpperCase();
+          let statusBadge = req.reqStatus === 'approved' 
+            ? '<span class="badge-status">active</span>' 
+            : '<span class="badge-pending">Pending Deposit</span>';
+
+          let actionButtons = req.reqStatus === 'pending' 
+            ? `<div style="display: flex; gap: 8px; margin-top: 8px;">
+                 <button class="btn btn-approve" onclick="approveDeposit(${req.id})">Approve</button>
+                 <button class="btn" style="background: #dc2626; flex: 1;" onclick="rejectDeposit(${req.id})">Reject</button>
+               </div>` 
+            : '';
+
           let card = document.createElement('div');
           card.className = 'user-card';
           card.innerHTML = `
@@ -509,15 +548,12 @@
               <div class="user-avatar">${initial}</div>
               <div class="user-info">
                 <div class="user-name">${req.name}</div>
-                <div class="user-badges"><span class="badge-pending">Deposit Request</span></div>
+                <div class="user-badges">${statusBadge}</div>
                 <div class="user-date">ቀን: ${req.date} | መጠን: ${req.amount} ETB</div>
               </div>
             </div>
             ${req.img ? `<img src="${req.img}" class="receipt-img">` : ''}
-            <div style="display: flex; gap: 8px; margin-top: 8px;">
-              <button class="btn btn-approve" onclick="approveDeposit(${req.id})">Approve</button>
-              <button class="btn btn-reject" onclick="rejectDeposit(${req.id})">Reject</button>
-            </div>
+            ${actionButtons}
             <div style="margin-top: 8px; border-top: 1px solid #334155; padding-top: 8px;">
               <label style="font-size: 11px; color: #94a3b8;">ለ ${req.name} መልእክት ላክ፦</label>
               <input type="text" id="msgInput_${req.id}" placeholder="መልእክት እዚህ ይፃፉ..." style="margin-bottom: 4px;">
@@ -535,6 +571,17 @@
 
         withdrawRequests.forEach((req) => {
           let initial = req.name.charAt(0).toUpperCase();
+          let statusBadge = req.reqStatus === 'approved' 
+            ? '<span class="badge-status">Approved</span>' 
+            : '<span class="badge-pending" style="background:#0284c7; color:#e0f2fe;">Withdraw Request</span>';
+
+          let actionButtons = req.reqStatus === 'pending' 
+            ? `<div style="display: flex; gap: 8px; margin-top: 8px;">
+                 <button class="btn btn-approve" onclick="approveWithdraw(${req.id})">Approve</button>
+                 <button class="btn" style="background: #dc2626; flex: 1;" onclick="rejectWithdraw(${req.id})">Reject</button>
+               </div>` 
+            : '';
+
           let card = document.createElement('div');
           card.className = 'user-card';
           card.innerHTML = `
@@ -542,14 +589,11 @@
               <div class="user-avatar">${initial}</div>
               <div class="user-info">
                 <div class="user-name">${req.name}</div>
-                <div class="user-badges"><span class="badge-pending" style="background:#0284c7; color:#e0f2fe;">Withdraw Request</span></div>
+                <div class="user-badges">${statusBadge}</div>
                 <div class="user-date">ቀን: ${req.date} | መጠን: ${req.amount} ETB | ዘዴ: ${req.method} (${req.acc})</div>
               </div>
             </div>
-            <div style="display: flex; gap: 8px; margin-top: 8px;">
-              <button class="btn btn-approve" onclick="approveWithdraw(${req.id})">Approve</button>
-              <button class="btn btn-reject" onclick="rejectWithdraw(${req.id})">Reject</button>
-            </div>
+            ${actionButtons}
             <div style="margin-top: 8px; border-top: 1px solid #334155; padding-top: 8px;">
               <label style="font-size: 11px; color: #94a3b8;">ለ ${req.name} መልእክት ላክ፦</label>
               <input type="text" id="msgInput_${req.id}" placeholder="መልእክት እዚህ ይፃፉ..." style="margin-bottom: 4px;">
@@ -564,18 +608,18 @@
     function approveDeposit(id) {
       let req = depositRequests.find(r => r.id === id);
       if (req) {
+        req.reqStatus = 'approved';
         realBalance += req.amount;
-        userMessages.push(`✅ የ ${req.amount} ETB የመመዝገቢያ (Deposit) ጥያቄዎ ጸድቋል!`);
-        depositRequests = depositRequests.filter(r => r.id !== id);
+        userMessages.push(`✅ የ ${req.amount} ETB የመመዝገቢያ (Deposit) ጥያቄዎ ጸድቋል! አካውንትዎ active ሆኗል።`);
         renderAdminPanel();
-        alert('ጥያቄው ጸድቋል!');
+        alert('ጥያቄው ጸድቋል እና አካውንቱ active ሆኗል!');
       }
     }
 
     function rejectDeposit(id) {
       depositRequests = depositRequests.filter(r => r.id !== id);
       renderAdminPanel();
-      alert('የመመዝገቢያ ጥያቄው ውድቅ ተደርጓል!');
+      alert('የመመዝገቢያ ጥያቄው ውድቅ ተደርጎ ጠፍቷል!');
     }
 
     function approveWithdraw(id) {
@@ -584,8 +628,8 @@
         if (wonBalance >= req.amount) {
           wonBalance -= req.amount;
           realBalance -= req.amount;
+          req.reqStatus = 'approved';
           userMessages.push(`✅ የ ${req.amount} ETB የወጪ ጥያቄዎ ጸድቆ ተልኳል!`);
-          withdrawRequests = withdrawRequests.filter(r => r.id !== id);
           renderAdminPanel();
           alert('የወጪ ጥያቄው ጸድቋል!');
         } else {
@@ -597,7 +641,7 @@
     function rejectWithdraw(id) {
       withdrawRequests = withdrawRequests.filter(r => r.id !== id);
       renderAdminPanel();
-      alert('የወጪ ጥያቄው ውድቅ ተደርጓል!');
+      alert('የወጪ ጥያቄው ውድቅ ተደርጎ ጠፍቷል!');
     }
 
     function sendMsg(name, id) {
