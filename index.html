@@ -252,10 +252,12 @@
     let demoBalance = 500.00;
 
     let currentAdminTab = '';
-    let depositRequests = [];
+    let depositRequests = [
+      { id: 101, name: "Abenezer Beju", date: "10/15/2026", amount: 100, img: "", reqStatus: "pending" }
+    ];
     let withdrawRequests = [];
     let membersList = [
-      { id: 1, name: "Abenezer Beju", date: "10/15/2026", refCode: "KY-8562", status: "active" },
+      { id: 1, name: "Abenezer Beju", date: "10/15/2026", refCode: "KY-8562", status: "pending" },
       { id: 2, name: "Haile Kassa", date: "10/15/2026", refCode: "KY-9912", status: "active" }
     ];
     let userMessages = ["📌 እንኳን ወደ CerdionQuiz በደህና መጡ!"];
@@ -452,17 +454,17 @@
         imgSrc = URL.createObjectURL(fileInput.files[0]);
       }
 
-      let newReq = {
-        id: Date.now(),
+      let newId = Date.now();
+      depositRequests.push({
+        id: newId,
         name: name,
         date: new Date().toLocaleDateString(),
         amount: amount,
         img: imgSrc,
         reqStatus: "pending"
-      };
+      });
 
-      depositRequests.push(newReq);
-      membersList.push({ id: newReq.id, name: name, date: newReq.date, refCode: "KY-" + Math.floor(1000 + Math.random() * 9000), status: "pending" });
+      membersList.push({ id: newId, name: name, date: new Date().toLocaleDateString(), refCode: "KY-" + Math.floor(1000 + Math.random() * 9000), status: "pending" });
 
       alert('የክፍያ ደረሰኝዎ ለአድሚኑ ተልኳል!');
       document.getElementById('depName').value = '';
@@ -521,10 +523,6 @@
         withBadge.innerText = pendingWiths.length;
       } else {
         withBadge.style.display = 'none';
-      }
-
-      if (currentAdminTab) {
-        renderAdminPanel();
       }
     }
 
