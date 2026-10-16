@@ -69,7 +69,6 @@
     .badge-rejected { background: #7f1d1d; color: #fca5a5; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
     .user-date { font-size: 11px; color: #64748b; margin-top: 2px; }
 
-    .receipt-img { max-width: 100%; border-radius: 8px; margin-top: 8px; border: 1px solid #334155; }
     .notice-box { background: #3f3f46; border-left: 4px solid #f59e0b; padding: 10px; border-radius: 6px; margin: 10px 0; font-size: 12px; color: #fef08a; }
     .error-text { color: #ef4444; font-size: 11px; margin-top: -4px; margin-bottom: 6px; display: none; }
   </style>
@@ -183,8 +182,8 @@
           <input type="number" id="depAmount" step="20" min="20" placeholder="20, 40, 60, 80..." oninput="validateDepositInput(this)" required>
           <div id="depErrorText" class="error-text">❌ ስህተት! የብር መጠኑ በ 20 እጥፍ መሆን አለበት።</div>
 
-          <label>የክፍያ ደረሰኝ ፎቶ (Receipt Screenshot)</label>
-          <input type="file" id="depFile" accept="image/*" required>
+          <label>የክፍያ ደረሰኝ (ማስታወሻ ወይም ፎቶ)</label>
+          <input type="file" id="depFile" accept="image/*">
 
           <button class="btn" type="submit" id="depSubmitBtn">ደረሰኝ ላክ (Deposit)</button>
         </form>
@@ -221,7 +220,6 @@
         <button class="btn" style="background: #8b5cf6;" onclick="copyReferralLink()">📋 የሪፈራል ሊንክ ኮፒ አድርግ</button>
       </div>
 
-      <!-- የቆየውን አካውንት ከስልክ ማጥፊያ ቁልፍ -->
       <div style="margin-top: 15px; text-align: center;">
         <button onclick="resetAppAccount()" style="background: #dc2626; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 12px; cursor: pointer;">🗑️ አካውንት አጥፋና አዲስ ጀምር</button>
       </div>
@@ -360,7 +358,6 @@
     ];
     let lastSeenMessageCount = parseInt(localStorage.getItem('ky_lastSeenMsgCount')) || 0;
 
-    // Firebase Realtime Listeners
     db.ref('depositRequests').on('value', (snapshot) => {
       const data = snapshot.val();
       depositRequests = data ? Object.values(data) : [];
@@ -666,7 +663,7 @@
       });
     }
 
-    // ደረሰኝ እና ስም መላኪያ በከፍተኛ ፍጥነት እና ጥራት እንዲልክ መስተካከሉ
+    // የዴፖዚት ጥያቄን ያለ ፎቶ ጭነት በከፍተኛ ፍጥነት እና አስተማማኝነት መላክ
     function submitDeposit(e) {
       e.preventDefault();
       let name = document.getElementById('depName').value.trim();
@@ -678,43 +675,28 @@
       }
 
       if (amount % 20 !== 0) {
-        alert('ስህተት! የብር መጠኑ በ 20 እጥፍ ብቻ መሆን አለበት።');
+        alert('ስህተት! የብር መጠኑ በ 20 እጥፍ ብቻ መሆን አለበት[span_0](start_span)[span_0](end_span)[span_1](start_span)[span_1](end_span)[span_2](start_span)[span_2](end_span)።');
         return;
       }
 
       registeredName = name;
-
-      let fileInput = document.getElementById('depFile');
-      if (fileInput.files && fileInput.files[0]) {
-        let reader = new FileReader();
-        reader.onload = function(uploadEvent) {
-          let imgSrc = uploadEvent.target.result;
-          saveDepositToFirebase(name, amount, imgSrc);
-        };
-        reader.readAsDataURL(fileInput.files[0]);
-      } else {
-        saveDepositToFirebase(name, amount, "");
-      }
-    }
-
-    function saveDepositToFirebase(name, amount, imgSrc) {
       let reqId = 'dep_' + Date.now();
+
       db.ref('depositRequests/' + reqId).set({
         id: reqId,
         name: name,
         date: new Date().toLocaleDateString(),
         amount: amount,
-        img: imgSrc,
         refCode: userRefCode,
         refCodeUsed: usedRefCode,
         reqStatus: "pending"
       }).then(() => {
-        alert('የክፍያ ደረሰኝዎ ለአድሚኑ በኦንላይን ተልኳል! አድሚኑ ሲያጸድቀው አካውንትዎ ይረጋገጣል። ✅');
+        alert('የክፍያ ጥያቄዎ ለአድሚኑ በኦንላይን ተልኳል! አድሚኑ ሲያጸድቀው አካውንትዎ ይረጋገጣል። ✅');
         document.getElementById('depAmount').value = '';
         document.getElementById('depFile').value = '';
         showSubPage('');
       }).catch((err) => {
-        alert('የመረጃ መላክ ስህተት አጋጥሟል! እባክዎ ፋየርቤዝ Rules ማስተካከያቸውን ያረጋግጡ።');
+        alert('የመረጃ መላክ ስህተት አጋጥሟል! እባክዎ እንደገና ይሞክሩ።');
       });
     }
 
@@ -810,7 +792,6 @@
                   <div class="user-date">ቀን: ${req.date} | መጠን: ${req.amount} ETB</div>
                 </div>
               </div>
-              ${req.img ? `<img src="${req.img}" class="receipt-img">` : '<p style="font-size:12px; color:#ef4444; margin-top:5px;">ፎቶ የለም</p>'}
               <div style="display: flex; gap: 6px; margin-top: 8px;">
                 <button class="btn btn-approve" onclick="approveDeposit('${req.id}')">Approve</button>
                 <button class="btn" style="background: #dc2626; flex: 1;" onclick="rejectDeposit('${req.id}')">Reject</button>
