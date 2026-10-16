@@ -23,7 +23,7 @@
     .balance-title { font-size: 14px; color: #94a3b8; }
     .balance-amount { font-size: 28px; font-weight: bold; color: #4ade80; margin: 5px 0; }
 
-    .btn { width: 100%; padding: 10px; background: #6366f1; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 14px; }
+    .btn { width: 100%; padding: 10px; background: #6366f1; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 14px; text-align: center; text-decoration: none; display: inline-block; }
     .btn:hover { background: #4f46e5; }
     .btn-telegram { background: #0088cc; display: flex; align-items: center; justify-content: center; gap: 8px; }
     .btn-telegram:hover { background: #0077b5; }
@@ -164,6 +164,7 @@
         </div>
       </div>
 
+      <!-- DEPOSIT SUB-PAGE -->
       <div id="depSubPage" class="card" style="display: none;">
         <h3>Deposit (ብር ማስገቢያ)</h3>
         <p style="font-size: 12px; color: #94a3b8; margin-top: 5px;">
@@ -184,14 +185,16 @@
           <input type="number" id="depAmount" step="20" min="20" placeholder="20, 40, 60, 80..." oninput="validateDepositInput(this)" required>
           <div id="depErrorText" class="error-text">❌ ስህተት! የብር መጠኑ በ 20 እጥፍ መሆን አለበት።</div>
 
-          <p style="font-size: 12px; color: #94a3b8; margin-bottom: 8px;">
-            📲 «መረጃ መዝግብና በቴሌግራም ላክ» የሚለውን ሲጫኑ መረጃው ተመዝግቦ ደረሰኙን ፎቶ አያይዘው ለአድሚን ለመላክ ወደ ቴሌግራም ይወስድዎታል!
-          </p>
-
           <button class="btn btn-telegram" type="submit" id="depSubmitBtn">✈️ መረጃ መዝግብና በቴሌግራም ላክ</button>
         </form>
+
+        <!-- በቀጥታ የሚከፈት የቴሌግራም ሊንክ አዝራር (ብሮውዘር እንዳይከለክለው) -->
+        <div id="depTelegramLinkContainer" style="display: none; margin-top: 10px;">
+          <a id="depTgAnchor" href="#" target="_blank" class="btn btn-telegram" style="background: #16a34a; font-size: 13px;">📲 አሁን ጫንና ቴሌግራም ላይ ላክ</a>
+        </div>
       </div>
 
+      <!-- WITHDRAW SUB-PAGE -->
       <div id="withSubPage" class="card" style="display: none;">
         <h3>Withdraw (ብር ማውጫ)</h3>
         <form onsubmit="submitWithdraw(event)">
@@ -210,12 +213,13 @@
           <label>የስልክ / አካውንት ቁጥር</label>
           <input type="text" id="withAcc" placeholder="09..." required>
 
-          <p style="font-size: 12px; color: #94a3b8; margin-bottom: 8px; margin-top: 8px;">
-            📲 «ብር ማውጫ ጥያቄ ላክ» ሲጫኑ ጥያቄው ተመዝግቦ በቴሌግራም ለአድሚን ይላካል!
-          </p>
-
           <button class="btn btn-telegram" style="background: #0284c7;" type="submit">✈️ ብር ማውጫ ጥያቄ በቴሌግራም ላክ</button>
         </form>
+
+        <!-- በቀጥታ የሚከፈት የብር ማውጫ ቴሌግራም ሊንክ አዝራር -->
+        <div id="withTelegramLinkContainer" style="display: none; margin-top: 10px;">
+          <a id="withTgAnchor" href="#" target="_blank" class="btn btn-telegram" style="background: #16a34a; font-size: 13px;">📲 አሁን ጫንና ቴሌግራም ላይ ላክ</a>
+        </div>
       </div>
 
       <div id="refSubPage" class="card" style="display: none;">
@@ -673,7 +677,7 @@
       });
     }
 
-    // የ Deposit መረጃን ወደ ፋየርቤዝ አስገብቶ ወደ ቴሌግራም መላኪያ
+    // 1. የ Deposit መረጃን ወደ ፋየርቤዝ መዝግቦ በቀጥታ አዝራር እንዲታይ ማድረግ (Pop-up ብሎክ እንዳይደረግ)
     function submitDeposit(e) {
       e.preventDefault();
       let name = document.getElementById('depName').value.trim();
@@ -705,18 +709,19 @@
         
         let tgUrl = `https://t.me/${adminTelegramUsername}?text=${textMsg}`;
         
-        alert('መረጃዎ በሲስተሙ ተመዝግቧል! አሁን ደረሰኙን ፎቶ አያይዘው ለአድሚን ለመላክ ወደ ቴሌግራም ይወሰዳሉ። ✅');
-        
-        window.open(tgUrl, '_blank');
+        // ብሮውዘር እንዳይከለክለው በቀጥታ የሚጫን ሊንክ አዝራርን ማሳየት
+        let anchor = document.getElementById('depTgAnchor');
+        anchor.href = tgUrl;
+        document.getElementById('depTelegramLinkContainer').style.display = 'block';
 
+        alert('መረጃዎ በሲስተሙ ተመዝግቧል! አሁን ከታች የሚታየውን አረንጓዴ ቁልፍ በመጫን ደረሰኝዎን ለአድሚን ይላኩ። ✅');
         document.getElementById('depAmount').value = '';
-        showSubPage('');
       }).catch((err) => {
         alert('የመረጃ መላክ ስህተት አጋጥሟል! እባክዎ እንደገና ይሞክሩ።');
       });
     }
 
-    // የ Withdraw መረጃን ወደ ፋየርቤዝ አስገብቶ ወደ ቴሌግራም መላኪያ
+    // 2. የ Withdraw መረጃን ወደ ፋየርቤዝ መዝግቦ አዝራር ማሳየት
     function submitWithdraw(e) {
       e.preventDefault();
       let name = document.getElementById('withName').value.trim();
@@ -748,14 +753,15 @@
         
         let tgUrl = `https://t.me/${adminTelegramUsername}?text=${textMsg}`;
 
-        alert('የወጪ ጥያቄዎ በሲስተሙ ተመዝግቧል! አሁን ለአድሚን በቴሌግራም ለመላክ ይወሰዳሉ። ✅');
+        let anchor = document.getElementById('withTgAnchor');
+        anchor.href = tgUrl;
+        document.getElementById('withTelegramLinkContainer').style.display = 'block';
 
-        window.open(tgUrl, '_blank');
+        alert('የወጪ ጥያቄዎ በሲስተሙ ተመዝግቧል! አሁን ከታች የሚታየውን አረንጓዴ ቁልፍ በመጫን ለቴሌግራም አድሚን ይላኩ። ✅');
 
         document.getElementById('withName').value = '';
         document.getElementById('withAmount').value = '';
         document.getElementById('withAcc').value = '';
-        showSubPage('');
       }).catch((err) => {
         alert('የመረጃ መላክ ስህተት አጋጥሟል! እባክዎ እንደገና ይሞክሩ።');
       });
