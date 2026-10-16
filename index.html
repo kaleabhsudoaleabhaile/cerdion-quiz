@@ -300,7 +300,7 @@
   </div>
 
   <script>
-    // የተስተካከለው የቴሌግራም አድሚን Username
+    // የተስተካከለው የቴሌግራም አድሚን ዩዘርኔም
     const adminTelegramUsername = "CerdionQuiz_Admin";
 
     const firebaseConfig = {
@@ -362,7 +362,7 @@
 
     updateProfileDisplay();
 
-    let currentAdminTab = '';
+    let currentAdminTab = 'dep'; // በነባሪ 1ኛውን ታብ እንዲያሳይ
     let depositRequests = [];
     let membersList = [];
     let withdrawRequests = [];
@@ -374,6 +374,7 @@
     ];
     let lastSeenMessageCount = parseInt(localStorage.getItem('ky_lastSeenMsgCount')) || 0;
 
+    // የዳታቤዝ listener ዎች
     db.ref('depositRequests').on('value', (snapshot) => {
       const data = snapshot.val();
       depositRequests = data ? Object.values(data) : [];
@@ -469,7 +470,8 @@
         if (pass === "182418") {
           alert("ወደ አድሚን ፓነል ገብተዋል!");
           showPage('adminPanelPage');
-          updateBadges();
+          currentAdminTab = 'dep';
+          switchAdminTab('dep'); // ወደ አድሚን ሲገባ 1ኛውን ታብ በራስ ሰር እንዲያሳይ
         } else if (pass !== null) {
           alert("የተሳሳተ የይለፍ ቃል!");
         }
@@ -679,7 +681,7 @@
       });
     }
 
-    // 1. የ Deposit መረጃን ወደ ፋየርቤዝ መዝግቦ በቀጥታ ወደ `@CerdionQuiz_Admin` እንዲወስድ ማድረግ
+    // 1. Deposit ሲያደርግ መረጃውን መዝግቦ ወደ `@CerdionQuiz_Admin` ሊንክ ማዘጋጀት
     function submitDeposit(e) {
       e.preventDefault();
       let name = document.getElementById('depName').value.trim();
@@ -711,7 +713,6 @@
         
         let tgUrl = `https://t.me/${adminTelegramUsername}?text=${textMsg}`;
         
-        // አዝራሩን ሊንክ አድርጎ ማሳየት
         let anchor = document.getElementById('depTgAnchor');
         anchor.href = tgUrl;
         document.getElementById('depTelegramLinkContainer').style.display = 'block';
@@ -723,7 +724,7 @@
       });
     }
 
-    // 2. የ Withdraw መረጃን ወደ ፋየርቤዝ መዝግቦ ወደ `@CerdionQuiz_Admin` እንዲወስድ ማድረግ
+    // 2. Withdraw ሲጠይቅ መረጃውን መዝግቦ ወደ `@CerdionQuiz_Admin` ሊንክ ማዘጋጀት
     function submitWithdraw(e) {
       e.preventDefault();
       let name = document.getElementById('withName').value.trim();
@@ -886,7 +887,6 @@
 
       } else if (currentAdminTab === 'mem') {
         let card = document.createElement('div');
-        card.className, 'card';
         card.className = 'card';
         card.innerHTML = `
           <h3 style="color: #38bdf8; margin-bottom: 8px;">👥 አጠቃላይ የአባል ብዛት: ${membersList.length}</h3>
