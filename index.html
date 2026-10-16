@@ -126,6 +126,23 @@
 
     <!-- PAGE 5: REAL ACCOUNT (የኔ አካውንት) -->
     <div id="realAccountPage" class="page">
+      <!-- Profile Header / Name & Edit -->
+      <div class="card" style="background: linear-gradient(135deg, #1e1b4b, #1e293b); border: 1px solid #6366f1;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-size: 11px; color: #94a3b8;">የተጠቃሚ ስም (Profile)</div>
+            <div id="displayProfileName" style="font-size: 18px; font-weight: bold; color: #38bdf8; margin-top: 2px;">አልተመዘገበም</div>
+          </div>
+          <button class="btn" style="width: auto; padding: 6px 12px; font-size: 12px; background: #0284c7; margin-top: 0;" onclick="toggleEditProfile()">ስም አስተካክል</button>
+        </div>
+
+        <div id="editProfileBox" style="display: none; margin-top: 12px; border-top: 1px solid #334155; padding-top: 10px;">
+          <label>አዲስ ስም ያስገቡ</label>
+          <input type="text" id="editNameInput" placeholder="ሙሉ ስምዎ">
+          <button class="btn" style="background: #16a34a; padding: 6px; font-size: 12px;" onclick="saveProfileName()">ቀይር (Save)</button>
+        </div>
+      </div>
+
       <div class="card">
         <div class="balance-title">የእውነተኛ አካውንት ቀሪ ሂሳብ</div>
         <div class="balance-amount" id="userBalance">0.00 ETB</div>
@@ -289,6 +306,19 @@
     }
     document.getElementById('userReferralCode').value = userRefCode;
 
+    function updateProfileDisplay() {
+      let displayName = registeredName ? registeredName : 'አልተመዘገበም';
+      document.getElementById('displayProfileName').innerText = displayName;
+      let nameInput = document.getElementById('depName');
+      if (registeredName) {
+        nameInput.value = registeredName;
+        nameInput.readOnly = true;
+        nameInput.style.backgroundColor = '#1e293b';
+        nameInput.style.color = '#38bdf8';
+      }
+    }
+
+    updateProfileDisplay();
     document.getElementById('userBalance').innerText = realBalance.toFixed(2) + ' ETB';
     document.getElementById('wonAmount').innerText = wonBalance.toFixed(2) + ' ETB';
     document.getElementById('refCount').innerText = inviteCount;
@@ -304,26 +334,25 @@
       "🎁 ጓደኛ በመጋበዝ 50 ብር ቦነስ ያግኙ!"
     ];
 
-    let nameInput = document.getElementById('depName');
-    if (registeredName) {
-      nameInput.value = registeredName;
-      nameInput.readOnly = true;
-      nameInput.style.backgroundColor = '#1e293b';
-      nameInput.style.color = '#38bdf8';
-    }
-
     let currentQIndex = 0;
     let correctAnswersCount = 0;
     let timerInterval = null;
-    let timeLeft = 120; // 2 minutes
+    let timeLeft = 120;
     let isQuizActive = false;
+    let activeQuizQuestions = [];
 
-    const questions = [
+    // Expanded question pool (Simulating large 1M+ database pool)
+    const questionPool = [
       { q: "የዓድዋ ጦርነት የተካሄደበት ዓመተ ምህረት መቼ ነው?", opts: ["1888 ዓ.ም", "1896 ዓ.ም", "1928 ዓ.ም", "1933 ዓ.ም"], ans: 1 },
       { q: "የኢትዮጵያ ረጅሙ ወንዝ የትኛው ነው?", opts: ["አዋሽ", "ተከዜ", "ዓባይ", "ኦሞ"], ans: 2 },
       { q: "የላሊበላ ውቅር አብያተ ክርስቲያናት በየትኛው ክልል ይገኛሉ?", opts: ["ትግራይ", "አማራ", "ኦሮሚያ", "ደቡብ"], ans: 1 },
       { q: "የኢትዮጵያ የመጀመሪያው የባቡር መስመር የተዘረጋው በየትኞቹ ከተሞች መካከል ነው?", opts: ["አዲስ አበባ - ድሬዳዋ", "አዲስ አበባ - ጂቡቲ", "ሐረር - ጂቡቲ", "አዳማ - አዲስ አበባ"], ans: 1 },
-      { q: "ዓለም አቀፉ የቡና መገኛ ሀገር የትኛዋ ናት?", opts: ["ብራዚል", "ኮሎምቢያ", "ኢትዮጵያ", "ኬንያ"], ans: 2 }
+      { q: "ዓለም አቀፉ የቡና መገኛ ሀገር የትኛዋ ናት?", opts: ["ብራዚል", "ኮሎምቢያ", "ኢትዮጵያ", "ኬንያ"], ans: 2 },
+      { q: "የኢትዮጵያ ከፍተኛው ቦታ ራስ ዳሽን በየትኛው ተራራማ ክልል ይገኛል?", opts: ["ሰሜን ተራሮች", "ባሌ ተራሮች", "አዳማ ተራሮች", "አምባሰል"], ans: 0 },
+      { q: "የአፍሪካ ህብረት ዋና መሥሪያ ቤት የየትኛዋ ሀገር ከተማ ውስጥ ይገኛል?", opts: ["ኬንያ", "ኢትዮጵያ", "ግብፅ", "ደቡብ አፍሪካ"], ans: 1 },
+      { q: "የኬንያ ዋና ከተማ ናይሮቢ በምን ይታወቃል?", opts: ["ብሔራዊ ፓርክ በከተማ ውስጥ መኖሩ", "ባህር ዳርቻ በመኖሩ", "በረሃ በመሆኑ", "ከፍተኛ ተራራ በመኖሩ"], ans: 0 },
+      { q: "በዓለም ትልቁ ውቅያኖስ የትኛው ነው?", opts: ["አትላንቲክ ውቅያኖስ", "ህንድ ውቅያኖስ", "ፓስፊክ ውቅያኖስ", "አርክቲክ ውቅያኖስ"], ans: 2 },
+      { q: "የሰው አካል ትልቁ ውጫዊ አካል (ኦርጋን) የትኛው ነው?", opts: ["πα", "ጉበት", "ቆዳ", "ልብ"], ans: 2 }
     ];
 
     function saveData() {
@@ -337,6 +366,27 @@
       if (registeredName) {
         localStorage.setItem('ky_registeredName', registeredName);
       }
+    }
+
+    function toggleEditProfile() {
+      let box = document.getElementById('editProfileBox');
+      box.style.display = (box.style.display === 'block') ? 'none' : 'block';
+      if(box.style.display === 'block' && registeredName) {
+        document.getElementById('editNameInput').value = registeredName;
+      }
+    }
+
+    function saveProfileName() {
+      let newName = document.getElementById('editNameInput').value.trim();
+      if (!newName) {
+        alert('እባክዎ ትክክለኛ ስም ያስገቡ!');
+        return;
+      }
+      registeredName = newName;
+      saveData();
+      updateProfileDisplay();
+      toggleEditProfile();
+      alert('የተጠቃሚ ስምዎ በተሳካ ሁኔታ ተቀይሯል! ✅');
     }
 
     function handleSettingsClick() {
@@ -397,6 +447,7 @@
         document.getElementById('userBalance').innerText = realBalance.toFixed(2) + ' ETB';
         document.getElementById('wonAmount').innerText = wonBalance.toFixed(2) + ' ETB';
         document.getElementById('refCount').innerText = inviteCount;
+        updateProfileDisplay();
       } else if (pageId === 'messagesPage') {
         let badge = document.getElementById('msgBadge');
         if (badge) badge.style.display = 'none';
@@ -459,8 +510,13 @@
     function beginQuizSession() {
       currentQIndex = 0;
       correctAnswersCount = 0;
-      timeLeft = 120; // 2 minutes
+      timeLeft = 120;
       isQuizActive = true;
+      
+      // Shuffle and pick 5 random questions from database pool
+      let shuffled = [...questionPool].sort(() => 0.5 - Math.random());
+      activeQuizQuestions = shuffled.slice(0, 5);
+
       showPage('quizPlayPage');
       startTimer();
       loadQuestion(currentQIndex);
@@ -490,14 +546,10 @@
     }
 
     function loadQuestion(idx) {
-      if (idx >= questions.length) {
-        clearInterval(timerIdentifier = timerInterval);
+      if (idx >= activeQuizQuestions.length) {
+        clearInterval(timerInterval);
         isQuizActive = false;
 
-        // Scoring rules:
-        // 5 correct -> 300 ETB
-        // 4 correct -> Refund 20 ETB
-        // <= 3 correct -> Lose
         if (correctAnswersCount === 5) {
           alert("እንኳን ደስ አለዎት! 5ቱንም ጥያቄዎች በትክክል መልሰዋል 🎉 300 ብር አሸንፈዋል!");
           if (currentMode === 'real') {
@@ -510,7 +562,7 @@
         } else if (correctAnswersCount === 4) {
           alert("ጥሩ ሙከራ! 4 ጥያቄዎችን መልሰዋል 🎉 የመግቢያ ብርዎ (20 ETB) ተመልሶልዎታል!");
           if (currentMode === 'real') {
-            realBalance += 20; // Refund 20 ETB
+            realBalance += 20;
           }
         } else {
           alert(`ጨዋታውን ጨርሰዋል! 5 ጥያቄዎች ውስጥ ${correctAnswersCount} ትክክል መልሰዋል። (ማሸነፍ የሚቻለው 5ቱን ሲመልሱ፣ 4 ሲመልሱ ደግሞ ብርዎ ይመለሳል)።`);
@@ -525,7 +577,7 @@
         return;
       }
 
-      let q = questions[idx];
+      let q = activeQuizQuestions[idx];
       document.getElementById('qText').innerText = `ጥያቄ ${idx + 1}/5: ${q.q}`;
       let cont = document.getElementById('optionsContainer');
       cont.innerHTML = '';
@@ -546,12 +598,12 @@
 
     function submitDeposit(e) {
       e.preventDefault();
-      let name = nameInput.value.trim();
+      let name = document.getElementById('depName').value.trim();
       let amount = parseFloat(document.getElementById('depAmount').value);
 
       if (registeredName && registeredName !== name) {
-        alert('ስህተት! እርስዎ አስቀድመው በ "' + registeredName + '" ስም ተመዝግበዋል! በሌላ ስም አካውንት መክፈት አይችሉም።');
-        nameInput.value = registeredName;
+        alert('ስህተት! እርስዎ አስቀድመው በ "' + registeredName + '" ስም ተመዝግበዋል! ስምዎን ከፈለጉ ከላይ ከሚገኘው "ስም አስተካክል" መቀየር ይችላሉ።');
+        document.getElementById('depName').value = registeredName;
         return;
       }
 
@@ -562,9 +614,7 @@
 
       if (!registeredName) {
         registeredName = name;
-        nameInput.readOnly = true;
-        nameInput.style.backgroundColor = '#1e293b';
-        nameInput.style.color = '#38bdf8';
+        updateProfileDisplay();
       }
 
       let fileInput = document.getElementById('depFile');
@@ -575,7 +625,7 @@
 
       depositRequests.push({
         id: Date.now(),
-        name: name,
+        name: registeredName,
         date: new Date().toLocaleDateString(),
         amount: amount,
         img: imgSrc,
