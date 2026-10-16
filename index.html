@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CerdionQuiz (K Y)</title>
   
-  <!-- Firebase App & Realtime Database SDKs -->
+  <!-- Firebase App & Realtime Database SDKs (Compat version for HTML) -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
@@ -27,7 +27,6 @@
     .btn:hover { background: #4f46e5; }
     .btn-approve { background: #16a34a; margin-top: 5px; flex: 1; }
     .btn-reject { background: #dc2626; margin-top: 5px; flex: 1; }
-    .btn-msg { background: #0284c7; margin-top: 5px; }
 
     .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
     .stat-box { background: #0f172a; padding: 10px; border-radius: 8px; text-align: center; }
@@ -63,13 +62,10 @@
     .user-info { flex: 1; }
     .user-name { font-size: 16px; font-weight: bold; color: #f8fafc; }
     .user-badges { display: flex; gap: 6px; align-items: center; margin-top: 3px; }
-    .badge-status { background: #14532d; color: #4ade80; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
     .badge-pending { background: #78350f; color: #fde047; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
     .user-date { font-size: 11px; color: #64748b; margin-top: 2px; }
 
     .receipt-img { max-width: 100%; border-radius: 8px; margin-top: 8px; border: 1px solid #334155; }
-    .msg-box { background: #0f172a; padding: 10px; border-radius: 8px; margin-top: 8px; border-left: 3px solid #6366f1; font-size: 13px; line-height: 1.4; }
-    
     .notice-box { background: #3f3f46; border-left: 4px solid #f59e0b; padding: 10px; border-radius: 6px; margin: 10px 0; font-size: 12px; color: #fef08a; }
     .error-text { color: #ef4444; font-size: 11px; margin-top: -4px; margin-bottom: 6px; display: none; }
   </style>
@@ -86,8 +82,8 @@
     <!-- PAGE 1: HOME -->
     <div id="homePage" class="page active">
       <div class="card">
-        <h3 id="quizTitle">CerdionQuiz</h3>
-        <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;" id="quizDesc">
+        <h3>CerdionQuiz</h3>
+        <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">
           5 ጥያቄዎችን በ 1 ደቂቃ ውስጥ በመመለስ 300 ብር ያሸንፉ! 4 ትክክለኛ መልስ ብርዎን ይመልሳል። የመግቢያ ሂሳብ 20 ETB።
         </p>
         <button class="btn" style="margin-top: 15px;" onclick="startQuiz()">Quiz ጀምር</button>
@@ -98,9 +94,7 @@
     <div id="demoQuizPage" class="page">
       <div class="card">
         <h3>የመለማመጃ ኳይዝ (Demo Questions)</h3>
-        <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">
-          እዚህ ላይ ያለምንም ክፍያ በ 1 ደቂቃ ውስጥ መለማመድ ይችላሉ!
-        </p>
+        <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">ያለንም ክፍያ በ 1 ደቂቃ ውስጥ መለማመድ ይችላሉ!</p>
         <button class="btn" style="background: #d97706; margin-top: 15px;" onclick="startDemoQuiz()">የመለማመጃ ጥያቄ ጀምር</button>
       </div>
     </div>
@@ -292,7 +286,7 @@
   </div>
 
   <script>
-    // Firebase Configuration setup from user project
+    // Updated Firebase Configuration with exact credentials
     const firebaseConfig = {
       apiKey: "AIzaSyCFBuMejhBpPeC6KDe...",
       authDomain: "cerdionquiz.firebaseapp.com",
@@ -300,8 +294,8 @@
       projectId: "cerdionquiz",
       storageBucket: "cerdionquiz.appspot.com",
       messagingSenderId: "11951685719",
-      appId: "1:11951685719:web:e1fe1de...",
-      measurementId: "G-DNP6J83RXQ"
+      appId: "1:11951685719:web:4333366...",
+      measurementId: "G-4VVZT67XEC"
     };
 
     firebase.initializeApp(firebaseConfig);
@@ -346,13 +340,11 @@
     let withdrawRequests = [];
     
     let userMessages = JSON.parse(localStorage.getItem('ky_userMessages')) || [
-      "📌 እንኳን ወደ CerdionQuiz በደህና መጡ! ጨዋታውን ለመጀመር 'የኔ አካውንት' በመሄድ በ 20 እጥፍ ብር ዴፖዚት ያድርጉ።",
-      "💡 ጠቃሚ ማሳሰቢያ፡ በውድድር ሰዓት ከጥያቄው ገጽ መውጣት ጨዋታውን ያስሸንፍዎታል።"
+      "📌 እንኳን ወደ CerdionQuiz በደህና መጡ! ጨዋታውን ለመጀመር 'የኔ አካውንት' በመሄድ በ 20 እጥፍ ብር ዴፖዚት ያድርጉ።"
     ];
-
     let lastSeenMessageCount = parseInt(localStorage.getItem('ky_lastSeenMsgCount')) || userMessages.length;
 
-    // Firebase Realtime Sync Listeners
+    // Firebase Realtime Listeners
     db.ref('depositRequests').on('value', (snapshot) => {
       const data = snapshot.val();
       depositRequests = data ? Object.values(data) : [];
@@ -491,7 +483,6 @@
         updateMessageBadge();
         renderUserMessages();
       }
-
       showPage(pageId);
     }
 
@@ -520,12 +511,6 @@
       saveData();
       alert('ጓደኛ በመጋበዝዎ 50 ብር ቦነስ አግኝተዋል! 🎉');
     }
-
-    document.addEventListener("visibilitychange", function() {
-      if (document.hidden && isQuizActive) {
-        triggerQuizLoss("ከጥያቄው ገጽ ወጥተዋልና ጨዋታውን ተሸንፈዋል!");
-      }
-    });
 
     function startQuiz() {
       if (currentMode === 'real' && realBalance < 20) {
@@ -675,12 +660,14 @@
         refCode: userRefCode,
         refInvites: inviteCount,
         reqStatus: "pending"
+      }).then(() => {
+        alert('የክፍያ ደረሰኝዎ ለአድሚኑ በኦንላይን ተልኳል! ✅');
+        document.getElementById('depAmount').value = '';
+        document.getElementById('depFile').value = '';
+        showSubPage('');
+      }).catch((err) => {
+        alert('የመረጃ መላክ ስህተት አጋጥሟል: ፋየርቤዝ ሩልስ (Rules) ትክክል መሆናቸውን ያረጋግጡ።');
       });
-
-      alert('የክፍያ ደረሰኝዎ ለአድሚኑ በኦንላይን ተልኳል! ✅');
-      document.getElementById('depAmount').value = '';
-      document.getElementById('depFile').value = '';
-      showSubPage('');
     }
 
     function submitWithdraw(e) {
@@ -704,13 +691,13 @@
         method: method,
         acc: acc,
         reqStatus: "pending"
+      }).then(() => {
+        alert('የወጪ ጥያቄዎ ለአድሚኑ በኦንላይን ተልኳል! ✅');
+        document.getElementById('withName').value = '';
+        document.getElementById('withAmount').value = '';
+        document.getElementById('withAcc').value = '';
+        showSubPage('');
       });
-
-      alert('የወጪ ጥያቄዎ ለአድሚኑ በኦንላይን ተልኳል! ✅');
-      document.getElementById('withName').value = '';
-      document.getElementById('withAmount').value = '';
-      document.getElementById('withAcc').value = '';
-      showSubPage('');
     }
 
     function updateBadges() {
@@ -854,8 +841,6 @@
       db.ref('membersList/' + id).remove();
       alert('አባሉ ከአባል ዝርዝር ተወግደዋል!');
     }
-
-    updateMessageBadge();
   </script>
 </body>
 </html>
