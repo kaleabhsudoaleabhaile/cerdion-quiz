@@ -27,6 +27,8 @@
     .btn:hover { background: #4f46e5; }
     .btn-approve { background: #16a34a; margin-top: 5px; flex: 1; }
     .btn-reject { background: #dc2626; margin-top: 5px; flex: 1; }
+    .btn-delete { background: #64748b; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: bold; }
+    .btn-delete:hover { background: #475569; }
 
     .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
     .stat-box { background: #0f172a; padding: 10px; border-radius: 8px; text-align: center; }
@@ -57,8 +59,8 @@
     .red-badge { background: #ef4444; color: white; border-radius: 50%; padding: 2px 5px; font-size: 10px; font-weight: bold; display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; }
 
     .user-card { background: #1e293b; border-radius: 12px; padding: 12px; margin-bottom: 12px; border: 1px solid #334155; display: flex; flex-direction: column; gap: 6px; }
-    .user-card.approved { border-left: 5px solid #16a34a; opacity: 0.85; }
-    .user-card.rejected { border-left: 5px solid #dc2626; opacity: 0.7; }
+    .user-card.approved { border-left: 5px solid #16a34a; opacity: 0.9; }
+    .user-card.rejected { border-left: 5px solid #dc2626; opacity: 0.85; }
 
     .user-header { display: flex; align-items: center; gap: 12px; }
     .user-avatar { width: 45px; height: 45px; border-radius: 10px; background: #334155; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; color: #38bdf8; }
@@ -107,9 +109,9 @@
     <!-- PAGE 3: MESSAGES -->
     <div id="messagesPage" class="page">
       <div class="card">
-        <h3>የደረሱዎት መልእክቶች (Notifications)</h3>
-        <p style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">ከአድሚን የተላኩ ማሳወቂያዎች፦</p>
-        <div id="userMessagesList"></div>
+        <h3>የድርጅቱ ህጎች እና ማሳወቂያዎች (Notifications)</h3>
+        <p style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">ከአድሚን የተላኩ መልእክቶች፦</p>
+        <div id="userMessagesList" style="display: flex; flex-direction: column; gap: 8px;"></div>
       </div>
     </div>
 
@@ -291,7 +293,6 @@
   </div>
 
   <script>
-    // Updated Firebase Configuration with exact credentials
     const firebaseConfig = {
       apiKey: "AIzaSyCFBuMejhBpPeC6KDe...",
       authDomain: "cerdionquiz.firebaseapp.com",
@@ -343,11 +344,14 @@
     let depositRequests = [];
     let membersList = [];
     let withdrawRequests = [];
+    let globalMessages = [];
     
+    // የድርጅቱ ህጎች እና ነባሪ መልእክቶች ለሁሉም ደንበኛ እንዲታዩ
     let userMessages = JSON.parse(localStorage.getItem('ky_userMessages')) || [
-      "📌 እንኳን ወደ CerdionQuiz በደህና መጡ! ጨዋታውን ለመጀመር 'የኔ አካውንት' በመሄድ በ 20 እጥፍ ብር ዴፖዚት ያድርጉ።"
+      "📌 እንኳን ወደ CerdionQuiz በደህና መጡ!",
+      "📜 የድርጅቱ ህጎች እና ደንቦች:\n1. ማንኛውም ተሳታፊ በ 20 እጥፍ ብር ብቻ ዴፖዚት ማድረግ አለበት።\n2. በጨዋታው ወቅት ከገጽ መውጣት ክልክል ነው።\n3. ማጭበርበር ወይም ሀሰተኛ ደረሰኝ መላክ አካውንት ያስወግዳል!"
     ];
-    let lastSeenMessageCount = parseInt(localStorage.getItem('ky_lastSeenMsgCount')) || userMessages.length;
+    let lastSeenMessageCount = parseInt(localStorage.getItem('ky_lastSeenMsgCount')) || 0;
 
     // Firebase Realtime Listeners
     db.ref('depositRequests').on('value', (snapshot) => {
@@ -367,7 +371,31 @@
     db.ref('membersList').on('value', (snapshot) => {
       const data = snapshot.val();
       membersList = data ? Object.values(data) : [];
+      
+      // ከዚህ አባል ሪፈራል ኮድ ጋር የተመዘገቡ ሰዎችን ብዛት ማስላት
+      let myReferrals = membersList.filter(m => m.refCodeUsed === userRefCode || (m.refCode && m.refCode === userRefCode));
+      inviteCount = myReferrals.length;
+      document.getElementById('refCount').innerText = inviteCount;
+      saveData();
+
       if(currentAdminTab === 'mem') renderAdminPanel();
+    });
+
+    // አድሚን የሚለውን ግሎባል መልእክት ከዳታቤዝ ማዳመጥ
+    db.ref('globalMessages').on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        globalMessages = Object.values(data);
+        userMessages = [
+          "📌 እንኳን ወደ CerdionQuiz በደህና መጡ!",
+          "📜 የድርጅቱ ህጎች እና ደንቦች:\n1. ማንኛውም ተሳታፊ በ 20 እጥፍ ብር ብቻ ዴፖዚት ማድረግ አለበት።\n2. በጨዋታው ወቅት ከገጽ መውጣት ክልክል ነው።\n3. ማጭበርበር ወይም ሀሰተኛ ደረሰኝ መላክ አካውንት ያስወግዳል!",
+          ...globalMessages
+        ];
+      }
+      updateMessageBadge();
+      if (document.getElementById('messagesPage').classList.contains('active')) {
+        renderUserMessages();
+      }
     });
 
     let currentQIndex = 0;
@@ -394,7 +422,6 @@
       localStorage.setItem('ky_realBalance', realBalance);
       localStorage.setItem('ky_wonBalance', wonBalance);
       localStorage.setItem('ky_inviteCount', inviteCount);
-      localStorage.setItem('ky_userMessages', JSON.stringify(userMessages));
       localStorage.setItem('ky_lastSeenMsgCount', lastSeenMessageCount);
       if (registeredName) {
         localStorage.setItem('ky_registeredName', registeredName);
@@ -424,7 +451,7 @@
 
     function handleSettingsClick() {
       clickCount++;
-      if (clickCount >= 10) {
+      if (clickCount >= 5) {
         clickCount = 0;
         let pass = prompt("የአድሚን የይለፍ ቃል ያስገቡ:");
         if (pass === "182418") {
@@ -464,6 +491,17 @@
       } else {
         badge.style.display = 'none';
       }
+    }
+
+    function renderUserMessages() {
+      let container = document.getElementById('userMessagesList');
+      container.innerHTML = '';
+      userMessages.forEach((msg) => {
+        let div = document.createElement('div');
+        div.style.cssText = "background: #1e293b; padding: 12px; border-radius: 8px; border: 1px solid #334155; font-size: 13px; color: #f8fafc; white-space: pre-line;";
+        div.innerText = msg;
+        container.appendChild(div);
+      });
     }
 
     function switchNavTab(pageId, el) {
@@ -653,7 +691,7 @@
       if (fileInput.files && fileInput.files[0]) {
         let reader = new FileReader();
         reader.onload = function(uploadEvent) {
-          let imgSrc = uploadEvent.target.result; // Base64 image format
+          let imgSrc = uploadEvent.target.result;
           saveDepositToFirebase(name, amount, imgSrc);
         };
         reader.readAsDataURL(fileInput.files[0]);
@@ -671,7 +709,7 @@
         amount: amount,
         img: imgSrc,
         refCode: userRefCode,
-        refInvites: inviteCount,
+        refCodeUsed: "", // ከተጠቃሚው ሪፈራል ጋር ሊያያዝ ይችላል
         reqStatus: "pending"
       }).then(() => {
         alert('የክፍያ ደረሰኝዎ ለአድሚኑ በኦንላይን ተልኳል! ✅');
@@ -679,7 +717,7 @@
         document.getElementById('depFile').value = '';
         showSubPage('');
       }).catch((err) => {
-        alert('የመረጃ መላክ ስህተት አጋጥሟል: ፋየርቤዝ ሩልስ (Rules) ትክክል መሆናቸውን ያረጋግጡ።');
+        alert('የመረጃ መላክ ስህተት አጋጥሟል!');
       });
     }
 
@@ -754,7 +792,6 @@
           return;
         }
 
-        // Pending በመጀመሪያ እንዲታይ፣ የታሪክ (Approved/Rejected) ጥያቄዎች ከታች በትንሹ እንዲቀመጡ መደርደር
         let sortedDeps = [...depositRequests].sort((a, b) => {
           if (a.reqStatus === 'pending' && b.reqStatus !== 'pending') return -1;
           if (a.reqStatus !== 'pending' && b.reqStatus === 'pending') return 1;
@@ -777,13 +814,13 @@
                 </div>
               </div>
               ${req.img ? `<img src="${req.img}" class="receipt-img">` : '<p style="font-size:12px; color:#ef4444; margin-top:5px;">ፎቶ የለም</p>'}
-              <div style="display: flex; gap: 8px; margin-top: 8px;">
+              <div style="display: flex; gap: 6px; margin-top: 8px;">
                 <button class="btn btn-approve" onclick="approveDeposit('${req.id}')">Approve</button>
                 <button class="btn" style="background: #dc2626; flex: 1;" onclick="rejectDeposit('${req.id}')">Reject</button>
+                <button class="btn-delete" onclick="deleteDepositPermanently('${req.id}')">🗑️ አጥፋ</button>
               </div>
             `;
           } else {
-            // Approved ወይም Rejected ሲደረግ በትንሹ (Compact view) እንዲቀመጥ
             card.className = `user-card ${req.reqStatus}`;
             let statusBadge = req.reqStatus === 'approved' ? '<span class="badge-approved">Approved</span>' : '<span class="badge-rejected">Rejected</span>';
             card.innerHTML = `
@@ -792,7 +829,10 @@
                   <div style="font-size: 14px; font-weight: bold; color: #f8fafc;">${req.name} - ${req.amount} ETB</div>
                   <div style="font-size: 11px; color: #94a3b8;">ቀን: ${req.date}</div>
                 </div>
-                <div>${statusBadge}</div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  ${statusBadge}
+                  <button class="btn-delete" onclick="deleteDepositPermanently('${req.id}')">🗑️ አጥፋ</button>
+                </div>
               </div>
             `;
           }
@@ -828,40 +868,71 @@
         });
 
       } else if (currentAdminTab === 'mem') {
+        // 1. ለአባል ብዛት ዝርዝር ውስጥ አድሚኑ መልእክት የሚልክበት መሣሪያ እና የሪፈራል ብዛት ማሳያ ተጨምሯል
         let card = document.createElement('div');
         card.className = 'card';
         card.innerHTML = `
           <h3 style="color: #38bdf8; margin-bottom: 8px;">👥 አጠቃላይ የአባል ብዛት: ${membersList.length}</h3>
+          
+          <div style="background: #0f172a; padding: 12px; border-radius: 8px; margin: 10px 0; border: 1px solid #334155;">
+            <label style="color: #38bdf8; font-weight: bold;">📢 ለሁሉም ደንበኛ መልእክት አስተላልፍ</label>
+            <textarea id="adminBroadcastMsg" rows="3" placeholder="ማስታወቂያ ወይም ህግ እዚህ ይጻፉ..." style="margin-top: 6px;"></textarea>
+            <button class="btn" style="background: #16a34a; margin-top: 4px;" onclick="sendAdminBroadcast()">መልእክት ላክ</button>
+          </div>
+
           <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
-            ${membersList.length === 0 ? '<p style="font-size: 12px; color: #64748b; text-align: center;">ምንም አባል የለም።</p>' : membersList.map((m) => `
+            ${membersList.length === 0 ? '<p style="font-size: 12px; color: #64748b; text-align: center;">ምንም አባል የለም።</p>' : membersList.map((m) => {
+              // 2. እያንዳንዱ አባል በራሱ ሪፈራል ኮድ ያስገባቸውን ሰዎች ብዛት ማስላት
+              let refCount = membersList.filter(sub => sub.refCodeUsed === m.refCode || (sub.refCode && sub.refCode === m.refCode)).length;
+              return `
               <div style="background: #0f172a; padding: 10px; border-radius: 8px; border: 1px solid #334155; display: flex; justify-content: space-between; align-items: center;">
                 <div>
                   <div style="font-weight: bold; font-size: 14px; color: #f8fafc;">${m.name}</div>
                   <div style="font-size: 11px; color: #94a3b8;">ቀን: ${m.date} \vert{} Ref:${m.refCode}</div>
+                  <div style="font-size: 11px; color: #4ade80; margin-top: 2px;">ሪፈራል ያስገባቸው ሰዎች ብዛት: <b>${refCount}</b></div>
                 </div>
                 <button onclick="removeMember('${m.id}')" style="background: #dc2626; color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 11px; cursor: pointer;">አስወጣ</button>
               </div>
-            `).join('')}
+            `}).join('')}
           </div>
         `;
         container.appendChild(card);
       }
     }
 
+    // አድሚኑ መልእክት ለሁሉም ደንበኛ የሚልክበት ተግባር
+    function sendAdminBroadcast() {
+      let text = document.getElementById('adminBroadcastMsg').value.trim();
+      if (!text) {
+        alert('እባክዎ የሚተላለፍ መልእክት ይጻፉ!');
+        return;
+      }
+      let msgId = 'msg_' + Date.now();
+      db.ref('globalMessages/' + msgId).set(text).then(() => {
+        alert('መልእክቱ ለሁሉም ደንበኞች በኦንላይን ተልኳል! ✅');
+        document.getElementById('adminBroadcastMsg').value = '';
+      });
+    }
+
     function approveDeposit(id) {
       let req = depositRequests.find(r => r.id === id);
       if (req) {
         db.ref('membersList/' + req.id).set(req);
-        // ዳታቤዙ ላይ ከማጥፋት ይልቅ ስተተሱን ወደ approved እንለውጠዋለን (ታሪክ ሆኖ እንዲቀመጥ)
         db.ref('depositRequests/' + id).update({ reqStatus: 'approved' });
         alert('ጥያቄው ጸድቆ ወደ አባል ብዛት እና ታሪክ ተዛውሯል! ✅');
       }
     }
 
     function rejectDeposit(id) {
-      // ስተተሱን ወደ rejected እንለውጠዋለን (ታሪክ ሆኖ በትንሹ እንዲታይ)
       db.ref('depositRequests/' + id).update({ reqStatus: 'rejected' });
       alert('የመመዝገቢያ ጥያቄው ውድቅ ተደርጓል!');
+    }
+
+    function deleteDepositPermanently(id) {
+      if (confirm('ይህንን ጥያቄ ሙሉ በሙሉ ማጥፋት ይፈልጋሉ?')) {
+        db.ref('depositRequests/' + id).remove();
+        alert('ጥያቄው ሙሉ በሙሉ ተጠፍቷል! 🗑️');
+      }
     }
 
     function approveWithdraw(id) {
