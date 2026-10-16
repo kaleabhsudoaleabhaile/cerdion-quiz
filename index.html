@@ -220,6 +220,11 @@
         <input type="text" id="userReferralLink" readonly>
         <button class="btn" style="background: #8b5cf6;" onclick="copyReferralLink()">📋 የሪፈራል ሊንክ ኮፒ አድርግ</button>
       </div>
+
+      <!-- የቆየውን አካውንት ከስልክ ማጥፊያ ቁልፍ -->
+      <div style="margin-top: 15px; text-align: center;">
+        <button onclick="resetAppAccount()" style="background: #dc2626; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 12px; cursor: pointer;">🗑️ አካውንት አጥፋና አዲስ ጀምር</button>
+      </div>
     </div>
 
     <!-- ADMIN PANEL PAGE -->
@@ -304,7 +309,6 @@
     let isApprovedUser = localStorage.getItem('ky_isApproved') === 'true';
     let registeredName = localStorage.getItem('ky_registeredName') || '';
 
-    // ተጠቃሚው ገና ያልተረጋገጠ ከሆነ ቀሪ ሂሳቡ 0.00 ETB እንዲሆን ተደርጓል
     let realBalance = isApprovedUser ? (parseFloat(localStorage.getItem('ky_realBalance')) || 0.00) : 0.00;
     let wonBalance = isApprovedUser ? (parseFloat(localStorage.getItem('ky_wonBalance')) || 0.00) : 0.00;
     let inviteCount = parseInt(localStorage.getItem('ky_inviteCount')) || 0;
@@ -434,6 +438,14 @@
       localStorage.setItem('ky_wonBalance', wonBalance);
       localStorage.setItem('ky_inviteCount', inviteCount);
       localStorage.setItem('ky_lastSeenMsgCount', lastSeenMessageCount);
+    }
+
+    function resetAppAccount() {
+      if (confirm('እርግጠኛ ነዎት ይህንን አካውንት አጥፍተው አዲስ መጀመር ይፈልጋሉ?')) {
+        localStorage.clear();
+        alert('የቆየው አካውንት ተጠፍቷል! ገጹ አዲስ ሆኖ ይከፈታል።');
+        window.location.reload();
+      }
     }
 
     function handleSettingsClick() {
@@ -654,7 +666,7 @@
       });
     }
 
-    // ደረሰኝ እና ስም መላኪያ በትክክል ተስተካክሏል
+    // ደረሰኝ እና ስም መላኪያ በከፍተኛ ፍጥነት እና ጥራት እንዲልክ መስተካከሉ
     function submitDeposit(e) {
       e.preventDefault();
       let name = document.getElementById('depName').value.trim();
