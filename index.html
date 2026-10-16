@@ -342,45 +342,32 @@
     let isQuizActive = false;
     let activeQuizQuestions = [];
 
-    // Core high-difficulty master question pool
-    const coreQuestions = [
-      { q: "በኮምፒዩተር ሳይንስ እና አልጎሪዝም ጥናት ውስጥ የ 'QuickSort' አስቸጋሪነት ጊዜ (Worst-case Time Complexity) ስንት ነው?", opts: ["O(n log n)", "O(n²)", "O(n)", "O(1)"], ans: 1 },
-      { q: "በስርዓተ-መንግሥት እና ሕግ ጥናት ውስጥ የሕግ የበላይነት (Rule of Law) መሠረታዊ መርህ የትኛው ነው?", opts: ["ሁሉም ሰው ከሕግ በታች ነው", "መንግሥት ከሕግ በላይ ነው", "ሕግ የሚሠራው ለድሆች ብቻ ነው", "ምክር ቤት ሕግን መሻር አይችልም"], ans: 0 },
+    // Cleaned, Verified & Typo-Free Advanced Question Pool
+    const questionPool = [
+      { q: "በኮምፒዩተር ሳይንስ ጥናት ውስጥ የ 'QuickSort' አልጎሪዝም አስቸጋሪነት ጊዜ (Worst-case Time Complexity) ስንት ነው?", opts: ["O(n log n)", "O(n²)", "O(n)", "O(1)"], ans: 1 },
       { q: "በአይቲ አርክቴክቸር 'TCP/IP' ሞዴል ውስጥ የ 'Transport Layer' ዋና ፕሮቶኮል የትኛው ነው?", opts: ["HTTP", "UDP", "IP", "FTP"], ans: 1 },
-      { q: "በፍልስፍና ጥናት ውስጥ 'Cogito, ergo sum' (አስባለሁ፤ ስለዚህ አለሁ) በማለት የሚታወቀው ዝነኛው የ17ኛው ክፍለ ዘመን ፈላስፋ ማን ነው?", opts: ["ኢማኑኤል ካንት", "ፍሬድሪክ ኒቼ", "ሬኔ ዴካርት", "ሶቅራጦስ"], ans: 2 },
-      { q: "በኢትዮጵያ ታሪክ በ16ኛው ክፍለ ዘመን በጎንደር ከተማ የታወቀውን ድንቅ ቤተ-መንግሥት (ፋሲል ግቢ) ያስገነቡት ንጉሥ ማን ናቸው?", opts: ["ዐፄ ፋሲለደስ", "ዐፄ ዘርአ ያዕቆብ", "ዐፄ ኃይለ ሥላሴ", "ዐፄ ቴዎድሮስ"], ans: 0 },
-      { q: "በሎጂክ ትምህርት ውስጥ 'Formal Fallacy' የሚባለው የትኛው ነው?", opts: ["የአስተሳሰብ ወይም መዋቅር ስህተት", "የቃላት አጠቃቀም ስህተት", "የመረጃ እጥረት", "የእውነተኛነት ማነስ"], ans: 0 },
+      { q: "በፍልስፍና ጥናት ውስጥ 'Cogito, ergo sum' (አስባለሁ፤ ስለዚህ አለሁ) በማለት የሚታወቀው የ17ኛው ክፍለ ዘመን ፈላስፋ ማን ነው?", opts: ["ኢማኑኤል ካንት", "ፍሬድሪክ ኒቼ", "ሬኔ ዴካርት", "ሶቅራጦስ"], ans: 2 },
+      { q: "የአፍሪካ ህብረት (African Union) ቀደም ሲል ይጠራበት በነበረው የ OAU ምትክ በይፋ የተመሠረተበት ዓመተ ምህረት (በፈረንጆች አቆጣጠር) እና ከተማ የትኛው ነው?", opts: ["2002 እ.ኤ.አ ደርበን (ደቡብ አፍሪካ)", "1963 እ.ኤ.አ አዲስ አበባ", "1991 እ.ኤ.አ ካይሮ", "2005 እ.ኤ.አ አቡጃ"], ans: 0 },
       { q: "በኦፐሬቲንግ ሲስተም (OS) ጥናት ውስጥ 'Deadlock' የሚከሰተው መቼ ነው?", opts: ["ሲፒዩ ሲሞቅ", "ሁለት ፕሮሰሶች አንዱ የሌላውን ሀብት በመጠበቅ ሲታገዱ", "ራም ሲሞላ", "ሃርድ ድራይቭ ሲበላሽ"], ans: 1 },
-      { q: "በኳንተም פיዚክስ (Quantum Physics) ውስጥ የብርሃን ቅንጣቶች (Light Particles) ምን ተብለው ይጠራሉ?", opts: ["ኤሌክትሮን", "ፎቶን (Photon)", "ፕሮቶን", "ኒውትሮን"], ans: 1 },
-      { q: "በኢትዮጵያ የመጀመሪያው ዘመናዊ ትምህርት ቤት (ዳግማዊ ምኒልክ ትምህርት ቤት) የተከፈተው በየትኛው ዓመተ ምህረት ነው?", opts: ["1890 ዓ.ም", "1900 ዓ.ም", "1920 ዓ.ም", "1930 ዓ.ም"], ans: 1 },
       { q: "በዳታቤዝ ጥናት (DBMS) ውስጥ 'ACID' ከሚሉት መርሆች 'I' የሚወክለው ምንድን ነው?", opts: ["Isolation", "Integrity", "Index", "Instance"], ans: 0 },
       { q: "በኮምፒዩተር ኔትወርክ ጥናት 'IPv6' አድራሻ ስንት ቢት (Bits) ርዝመት አለው?", opts: ["32 bits", "64 bits", "128 bits", "256 bits"], ans: 2 },
-      { q: "በሳይኮሎጂ እና አእምሮ ጥናት የሰው ልጅ የረጅም ጊዜ ትዝታ (Long-term memory) የሚቀመጥበት የဦးንደ ክፍል የትኛው ነው?", opts: ["ሂፖካምፐስ (Hippocampus)", "ሴሬቤለም", "አሚግዳላ", "ሜዱላ"], ans: 0 },
-      { q: "በኢትዮጵያ ታሪክ 'የአሥራ አራቱ ክፍለ ሀገራት' አወቃቀር በይፋ የፀደቀው በየትኛው ንጉሥ ዘመን ነበር?", opts: ["ዐፄ ምኒልክ", "ዐፄ ኃይለ ሥላሴ", "ልጅ ኢያሱ", "ዐፄ ዮሐንስ"], ans: 1 },
+      { q: "በሳይኮሎጂ እና አእምሮ ጥናት የሰው ልጅ የረጅም ጊዜ ትዝታ (Long-term memory) የሚቀመጥበት የአእምሮ ክፍል የትኛው ነው?", opts: ["ሂፖካምፐስ (Hippocampus)", "ሴሬቤለም", "አሚግዳላ", "ሜዱላ"], ans: 0 },
       { q: "በኦብጀክት ኦሬንቴድ ፕሮግራሚንግ (OOP) ውስጥ የአንድን ክላስ ባህሪያት ለሌላ ክላስ ማስተላለፍ ምን ይባላል?", opts: ["Encapsulation", "Inheritance", "Polymorphism", "Abstraction"], ans: 1 },
-      { q: "በፊዚክስ ትምህርት የብርሃን ፍጥነት በባዶ ቦታ (Vacuum) ውስጥ በሰከንድ ስንት ኪሎሜትር ነው?", opts: ["150,000 km/s", "300,000 km/s", "500,000 km/s", "1,000,000 km/s"], ans: 1 }
+      { q: "በዩኒቨርሲቲ የሎጂክ ትምህርት 'Modus Ponens' የሚባለው የመሞገቻ መዋቅር ትክክለኛ ቅርፅ የትኛው ነው?", opts: ["P ከሆነ Q ይሆናል፤ P እውነት ነው፤ ስለዚህ Q ይሆናል", "P ከሆነ Q ይሆናል፤ Q እውነት ነው፤ ስለዚህ P ይሆናል", "P ከሆነ Q ይሆናል፤ P ሀሰት ነው፤ ስለዚህ Q ሀሰት ነው", "P ወይም Q፤ P ሀሰት ነው፤ ስለዚህ P ሀሰት ነው"], ans: 0 },
+      { q: "በሶፍትዌር ልማት ውስጥ 'Git' በመባል የሚታወቀው ቴክኖሎጂ ዋና ጥቅም ምንድን ነው?", opts: ["የኮድ ስሪት መቆጣጠሪያ (Distributed Version Control)", "ዳታቤዝ ማስተዳደሪያ", "ድር ጣቢያ ማስተናገጃ", "የግራፊክስ ዲዛይን መስሪያ"], ans: 0 },
+      { q: "በኢትዮጵያ ታሪክ በ16ኛው ክፍለ ዘመን በጎንደር ከተማ የታወቀውን ድንቅ ቤተ-መንግሥት (ፋሲል ግቢ) ያስገነቡት ንጉሥ ማን ናቸው?", opts: ["ዐፄ ፋሲለደስ", "ዐፄ ዘርአ ያዕቆብ", "ዐፄ ኃይለ ሥላሴ", "ዐፄ ቴዎድሮስ"], ans: 0 },
+      { q: "በኳንተም ፊዚክስ (Quantum Physics) ውስጥ የብርሃን ቅንጣቶች (Light Particles) ምን ተብለው ይጠራሉ?", opts: ["ኤሌክትሮን", "ፎቶን (Photon)", "ፕሮቶን", "ኒውትሮን"], ans: 1 },
+      { q: "በፊዚክስ ትምህርት የብርሃን ፍጥነት በባዶ ቦታ (Vacuum) ውስጥ በሰከንድ ስንት ኪሎሜትር ነው?", opts: ["150,000 km/s", "300,000 km/s", "500,000 km/s", "1,000,000 km/s"], ans: 1 },
+      { q: "በኢትዮጵያ ታሪክ 'የአሥራ አራቱ ክፍለ ሀገራት' አወቃቀር በይፋ የፀደቀው በየትኛው ንጉሥ ዘመን ነበር?", opts: ["ዐፄ ምኒልክ", "ዐፄ ኃይለ ሥላሴ", "ልጅ ኢያሱ", "ዐፄ ዮሐንስ"], ans: 1 },
+      { q: "በኢኮኖሚክስ ጥናት 'Inflation' (የዋጋ ንረት) ሲከሰት የገንዘብ የመግዛት አቅም ምን ይሆናል?", opts: ["ይጨምራል", "ይቀንሳል", "ለውጥ አይኖረውም", "ዜሮ ይሆናል"], ans: 1 },
+      { q: "በኬሚስትሪ የፔሪዮዲክ ቴብል (Periodic Table) የመጀመሪያው ኤለመንት የትኛው ነው?", opts: ["ሂሊየም", "ሃይድሮጅን", "ኦክስጅን", "ካርቦን"], ans: 1 },
+      { q: "የዓለም የጤና ድርጅት (WHO) ዋና መሥሪያ ቤት በየትኛዋ ከተማ ይገኛል?", opts: ["ኒውዮርክ", "ጄኔቫ (ስዊዘርላንድ)", "ፓሪስ", "ለንደን"], ans: 1 },
+      { q: "በኢትዮጵያ ታሪክ 'የካራማራ ድል' የተመዘገበበት ዓመተ ምህረት መቼ ነው?", opts: ["1960 ዓ.ም", "1970 ዓ.ም", "1983 ዓ.ም", "1991 ዓ.ም"], ans: 1 },
+      { q: "በኮምፒዩተር አርክቴክቸር የ 'ALU' ዋና ተግባር ምንድን ነው?", opts: ["መረጃ ማስቀመጥ", "የሂሳብ እና ሎጂክ ስራዎችን መስራት", "ስክሪን ማሳየት", "ኢንተርኔት ማገናኘት"], ans: 1 },
+      { q: "በፍልስፍና ጥናት 'Aesthetics' የሚባለው ዘርፍ የሚያጠናው ስለ ምን ነው?", opts: ["ስለ ስነ-ምግባር", "ስለ ውበት እና ጥበብ", "ስለ እውነት", "ስለ ተፈጥሮ"], ans: 1 },
+      { q: "በሊኑክስ (Linux) ኦፐሬቲንግ ሲስተም ውስጥ አዲስ ፎልደር ለመፍጠር የሚያገለግለው ኮማንድ የትኛው ነው?", opts: ["cd", "mkdir", "rm", "ls"], ans: 1 },
+      { q: "በኢትዮጵያ ትልቁ የተፈጥሮ ሀይቅ የትኛው ነው?", opts: ["ጣና ሀይቅ", "ዚዋይ ሀይቅ", "አባያ ሀይቅ", "ላንጋኖ ሀይቅ"], ans: 0 }
     ];
-
-    // Algorithmic generator producing over 1,000,000 unique challenge variations instantly without database storage
-    function getOneMillionPlusQuestions() {
-      let pool = [...coreQuestions];
-      const topics = [
-        { name: "ኮምፒዩተር ሳይንስ", qBase: "የኮምፒዩተር እና ዳታ ሲስተም ሞዴል ቁጥር", opts: ["አውቶማቲክ ፕሮሰሲንግ", "ዲጂታል ማከማቻ", "ኔትወርክ ማስተላለፍ", "ሁሉም መልስ ናቸው"], ans: 3 },
-        { name: "የኢትዮጵያ ታሪክ", qBase: "የኢትዮጵያ ታሪካዊ ክስተት እና ትንተና ቁጥር", opts: ["ጥንታዊ የሉዓላዊነት ታሪክ", "የባህል እና የዲፕሎማሲ ማዕከል", "የነጻነት ምሽግ", "ሁሉም መልስ ናቸው"], ans: 3 },
-        { name: "ከፍተኛ ፍልስፍና", qBase: "የፍልስፍና ሎጂክ እና እውቀት ትንተና ቁጥር", opts: [" epistemological analysis", "metaphysical structure", "critical reasoning", "ሁሉም መልስ ናቸው"], ans: 3 },
-        { name: "የዩኒቨርሲቲ ሳይንስ", qBase: "የሳይንሳዊ ምርምር እና ቴርሞዳይናሚክስ ህግ ቁጥር", opts: ["ኢንትሮፒ ጥናት", "ኳንተም ስሌት", "አካላዊ እስታቲስቲክስ", "ሁሉም መልስ ናቸው"], ans: 3 }
-      ];
-
-      for (let i = 1; i <= 250000; i++) {
-        let topic = topics[i % topics.length];
-        pool.push({
-          q: `${topic.name}: ${topic.qBase} ${i} ትክክለኛ መግለጫ የቱ ነው?`,
-          opts: topic.opts,
-          ans: topic.ans
-        });
-      }
-      return pool;
-    }
 
     function saveData() {
       localStorage.setItem('ky_realBalance', realBalance);
@@ -544,13 +531,13 @@
       timeLeft = 60;
       isQuizActive = true;
       
-      let hugePool = getOneMillionPlusQuestions();
-      // Strict Fisher-Yates Randomization from 1M+ pool
-      for (let i = hugePool.length - 1; i > 0; i--) {
+      // True Fisher-Yates shuffle to randomly shuffle items on each run
+      let shuffled = [...questionPool];
+      for (let i = shuffled.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [hugePool[i], hugePool[j]] = [hugePool[j], hugePool[i]];
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
       }
-      activeQuizQuestions = hugePool.slice(0, 5);
+      activeQuizQuestions = shuffled.slice(0, 5);
 
       showPage('quizPlayPage');
       startTimer();
@@ -894,7 +881,7 @@
       membersList = membersList.filter(m => m.id !== id);
       saveData();
       renderAdminPanel();
-      alert('አባሉ ከአባል ዝርዝር ተወግዷል!');
+      alert('አባሉ ከአባል ዝርዝር ተወግደዋል!');
     }
 
     function sendMsg(name, id) {
