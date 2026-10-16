@@ -333,10 +333,12 @@
       "🎁 ጓደኛ በመጋበዝ 50 ብር ቦነስ ያግኙ!"
     ];
 
+    let lastSeenMessageCount = parseInt(localStorage.getItem('ky_lastSeenMsgCount')) || userMessages.length;
+
     let currentQIndex = 0;
     let correctAnswersCount = 0;
     let timerInterval = null;
-    let timeLeft = 60; // 1 minute (60 seconds)
+    let timeLeft = 60;
     let isQuizActive = false;
     let activeQuizQuestions = [];
 
@@ -361,6 +363,7 @@
       localStorage.setItem('ky_membersList', JSON.stringify(membersList));
       localStorage.setItem('ky_withdrawRequests', JSON.stringify(withdrawRequests));
       localStorage.setItem('ky_userMessages', JSON.stringify(userMessages));
+      localStorage.setItem('ky_lastSeenMsgCount', lastSeenMessageCount);
       if (registeredName) {
         localStorage.setItem('ky_registeredName', registeredName);
       }
@@ -422,9 +425,10 @@
 
     function updateMessageBadge() {
       let badge = document.getElementById('msgBadge');
-      if (userMessages.length > 0) {
+      let unreadCount = userMessages.length - lastSeenMessageCount;
+      if (unreadCount > 0) {
         badge.style.display = 'inline-flex';
-        badge.innerText = userMessages.length;
+        badge.innerText = unreadCount;
       } else {
         badge.style.display = 'none';
       }
@@ -447,8 +451,10 @@
         document.getElementById('refCount').innerText = inviteCount;
         updateProfileDisplay();
       } else if (pageId === 'messagesPage') {
-        let badge = document.getElementById('msgBadge');
-        if (badge) badge.style.display = 'none';
+        lastSeenMessageCount = userMessages.length;
+        saveData();
+        updateMessageBadge();
+        renderUserMessages();
       }
 
       showPage(pageId);
@@ -508,7 +514,7 @@
     function beginQuizSession() {
       currentQIndex = 0;
       correctAnswersCount = 0;
-      timeLeft = 60; // 1 minute
+      timeLeft = 60;
       isQuizActive = true;
       
       let shuffled = [...questionPool].sort(() => 0.5 - Math.random());
