@@ -57,12 +57,17 @@
     .red-badge { background: #ef4444; color: white; border-radius: 50%; padding: 2px 5px; font-size: 10px; font-weight: bold; display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; }
 
     .user-card { background: #1e293b; border-radius: 12px; padding: 12px; margin-bottom: 12px; border: 1px solid #334155; display: flex; flex-direction: column; gap: 6px; }
+    .user-card.approved { border-left: 5px solid #16a34a; opacity: 0.85; }
+    .user-card.rejected { border-left: 5px solid #dc2626; opacity: 0.7; }
+
     .user-header { display: flex; align-items: center; gap: 12px; }
     .user-avatar { width: 45px; height: 45px; border-radius: 10px; background: #334155; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; color: #38bdf8; }
     .user-info { flex: 1; }
     .user-name { font-size: 16px; font-weight: bold; color: #f8fafc; }
     .user-badges { display: flex; gap: 6px; align-items: center; margin-top: 3px; }
     .badge-pending { background: #78350f; color: #fde047; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
+    .badge-approved { background: #14532d; color: #4ade80; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
+    .badge-rejected { background: #7f1d1d; color: #fca5a5; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
     .user-date { font-size: 11px; color: #64748b; margin-top: 2px; }
 
     .receipt-img { max-width: 100%; border-radius: 8px; margin-top: 8px; border: 1px solid #334155; }
@@ -467,7 +472,7 @@
         return;
       }
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      el.classList.add('active');
+      if(el) el.classList.add('active');
 
       if (pageId === 'demoAccountPage') {
         currentMode = 'demo';
@@ -645,15 +650,23 @@
       }
 
       let fileInput = document.getElementById('depFile');
-      let imgSrc = "";
       if (fileInput.files && fileInput.files[0]) {
-        imgSrc = URL.createObjectURL(fileInput.files[0]);
+        let reader = new FileReader();
+        reader.onload = function(uploadEvent) {
+          let imgSrc = uploadEvent.target.result; // Base64 image format
+          saveDepositToFirebase(name, amount, imgSrc);
+        };
+        reader.readAsDataURL(fileInput.files[0]);
+      } else {
+        saveDepositToFirebase(name, amount, "");
       }
+    }
 
+    function saveDepositToFirebase(name, amount, imgSrc) {
       let reqId = 'dep_' + Date.now();
       db.ref('depositRequests/' + reqId).set({
         id: reqId,
-        name: registeredName,
+        name: name,
         date: new Date().toLocaleDateString(),
         amount: amount,
         img: imgSrc,
@@ -736,31 +749,53 @@
       container.innerHTML = '';
 
       if (currentAdminTab === 'dep') {
-        let pendingDeps = depositRequests.filter(r => r.reqStatus === 'pending');
-        if (pendingDeps.length === 0) {
+        if (depositRequests.length === 0) {
           container.innerHTML = '<p style="font-size: 13px; color: #64748b; text-align: center; margin-top: 20px;">ምንም የመመዝገቢያ ጥያቄ የለም።</p>';
           return;
         }
 
-        pendingDeps.forEach((req) => {
-          let initial = req.name.charAt(0).toUpperCase();
+        // Pending በመጀመሪያ እንዲታይ፣ የታሪክ (Approved/Rejected) ጥያቄዎች ከታች በትንሹ እንዲቀመጡ መደርደር
+        let sortedDeps = [...depositRequests].sort((a, b) => {
+          if (a.reqStatus === 'pending' && b.reqStatus !== 'pending') return -1;
+          if (a.reqStatus !== 'pending' && b.reqStatus === 'pending') return 1;
+          return 0;
+        });
+
+        sortedDeps.forEach((req) => {
+          let initial = req.name ? req.name.charAt(0).toUpperCase() : '?';
           let card = document.createElement('div');
-          card.className = 'user-card';
-          card.innerHTML = `
-            <div class="user-header">
-              <div class="user-avatar">${initial}</div>
-              <div class="user-info">
-                <div class="user-name">${req.name}</div>
-                <div class="user-badges"><span class="badge-pending">Pending Deposit</span></div>
-                <div class="user-date">ቀን: ${req.date} | መጠን: ${req.amount} ETB</div>
+          
+          if (req.reqStatus === 'pending') {
+            card.className = 'user-card';
+            card.innerHTML = `
+              <div class="user-header">
+                <div class="user-avatar">${initial}</div>
+                <div class="user-info">
+                  <div class="user-name">${req.name}</div>
+                  <div class="user-badges"><span class="badge-pending">Pending Deposit</span></div>
+                  <div class="user-date">ቀን: ${req.date} | መጠን: ${req.amount} ETB</div>
+                </div>
               </div>
-            </div>
-            ${req.img ? `<img src="${req.img}" class="receipt-img">` : ''}
-            <div style="display: flex; gap: 8px; margin-top: 8px;">
-              <button class="btn btn-approve" onclick="approveDeposit('${req.id}')">Approve</button>
-              <button class="btn" style="background: #dc2626; flex: 1;" onclick="rejectDeposit('${req.id}')">Reject</button>
-            </div>
-          `;
+              ${req.img ? `<img src="${req.img}" class="receipt-img">` : '<p style="font-size:12px; color:#ef4444; margin-top:5px;">ፎቶ የለም</p>'}
+              <div style="display: flex; gap: 8px; margin-top: 8px;">
+                <button class="btn btn-approve" onclick="approveDeposit('${req.id}')">Approve</button>
+                <button class="btn" style="background: #dc2626; flex: 1;" onclick="rejectDeposit('${req.id}')">Reject</button>
+              </div>
+            `;
+          } else {
+            // Approved ወይም Rejected ሲደረግ በትንሹ (Compact view) እንዲቀመጥ
+            card.className = `user-card ${req.reqStatus}`;
+            let statusBadge = req.reqStatus === 'approved' ? '<span class="badge-approved">Approved</span>' : '<span class="badge-rejected">Rejected</span>';
+            card.innerHTML = `
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div style="font-size: 14px; font-weight: bold; color: #f8fafc;">${req.name} - ${req.amount} ETB</div>
+                  <div style="font-size: 11px; color: #94a3b8;">ቀን: ${req.date}</div>
+                </div>
+                <div>${statusBadge}</div>
+              </div>
+            `;
+          }
           container.appendChild(card);
         });
 
@@ -772,7 +807,7 @@
         }
 
         pendingWiths.forEach((req) => {
-          let initial = req.name.charAt(0).toUpperCase();
+          let initial = req.name ? req.name.charAt(0).toUpperCase() : '?';
           let card = document.createElement('div');
           card.className = 'user-card';
           card.innerHTML = `
@@ -817,14 +852,16 @@
       let req = depositRequests.find(r => r.id === id);
       if (req) {
         db.ref('membersList/' + req.id).set(req);
-        db.ref('depositRequests/' + id).remove();
-        alert('ጥያቄው ጸድቆ ወደ አባል ብዛት ተዛውሯል! ✅');
+        // ዳታቤዙ ላይ ከማጥፋት ይልቅ ስተተሱን ወደ approved እንለውጠዋለን (ታሪክ ሆኖ እንዲቀመጥ)
+        db.ref('depositRequests/' + id).update({ reqStatus: 'approved' });
+        alert('ጥያቄው ጸድቆ ወደ አባል ብዛት እና ታሪክ ተዛውሯል! ✅');
       }
     }
 
     function rejectDeposit(id) {
-      db.ref('depositRequests/' + id).remove();
-      alert('የመመዝገቢያ ጥያቄው ውድቅ ተደርጎ ጠፍቷል!');
+      // ስተተሱን ወደ rejected እንለውጠዋለን (ታሪክ ሆኖ በትንሹ እንዲታይ)
+      db.ref('depositRequests/' + id).update({ reqStatus: 'rejected' });
+      alert('የመመዝገቢያ ጥያቄው ውድቅ ተደርጓል!');
     }
 
     function approveWithdraw(id) {
