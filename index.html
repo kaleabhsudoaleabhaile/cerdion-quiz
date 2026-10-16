@@ -83,7 +83,7 @@
       <div class="card">
         <h3 id="quizTitle">CerdionQuiz</h3>
         <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;" id="quizDesc">
-          5 ጥያቄዎችን በ 2 ደቂቃ ውስጥ በመመለስ 300 ብር ያሸንፉ! 4 ትክክለኛ መልስ ብርዎን ይመልሳል። የመግቢያ ሂሳብ 20 ETB።
+          5 ጥያቄዎችን በ 1 ደቂቃ ውስጥ በመመለስ 300 ብር ያሸንፉ! 4 ትክክለኛ መልስ ብርዎን ይመልሳል። የመግቢያ ሂሳብ 20 ETB።
         </p>
         <button class="btn" style="margin-top: 15px;" onclick="startQuiz()">Quiz ጀምር</button>
       </div>
@@ -94,7 +94,7 @@
       <div class="card">
         <h3>የመለማመጃ ኳይዝ (Demo Questions)</h3>
         <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">
-          እዚህ ላይ ያለምንም ክፍያ በ 2 ደቂቃ ውስጥ መለማመድ ይችላሉ!
+          እዚህ ላይ ያለምንም ክፍያ በ 1 ደቂቃ ውስጥ መለማመድ ይችላሉ!
         </p>
         <button class="btn" style="background: #d97706; margin-top: 15px;" onclick="startDemoQuiz()">የመለማመጃ ጥያቄ ጀምር</button>
       </div>
@@ -119,14 +119,13 @@
       </div>
       <div class="card">
         <h3>የመለማመጃ ኳይዝ</h3>
-        <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">ያለ ክፍያ በ 2 ደቂቃ ውስጥ መለማመድ ይችላሉ!</p>
+        <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">ያለ ክፍያ በ 1 ደቂቃ ውስጥ መለማመድ ይችላሉ!</p>
         <button class="btn" style="background: #d97706; margin-top: 10px;" onclick="switchNavTab('demoQuizPage', document.getElementById('navDemo'))">Demo ኳይዝ ጀምር</button>
       </div>
     </div>
 
     <!-- PAGE 5: REAL ACCOUNT (የኔ አካውንት) -->
     <div id="realAccountPage" class="page">
-      <!-- Profile Header / Name & Edit -->
       <div class="card" style="background: linear-gradient(135deg, #1e1b4b, #1e293b); border: 1px solid #6366f1;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <div>
@@ -255,7 +254,7 @@
     <!-- QUIZ PLAY INTERFACE -->
     <div id="quizPlayPage" class="page">
       <div class="card">
-        <div class="timer-box" id="timerDisplay">ቀሪ ሰዓት: 02:00</div>
+        <div class="timer-box" id="timerDisplay">ቀሪ ሰዓት: 01:00</div>
         <h3 id="qCategory">CerdionQuiz ጥያቄዎች</h3>
         <p id="qText" style="font-size: 16px; margin: 15px 0; color: #f8fafc;">ጥያቄ እዚህ ይመጣል...</p>
         <div id="optionsContainer"></div>
@@ -337,11 +336,10 @@
     let currentQIndex = 0;
     let correctAnswersCount = 0;
     let timerInterval = null;
-    let timeLeft = 120;
+    let timeLeft = 60; // 1 minute (60 seconds)
     let isQuizActive = false;
     let activeQuizQuestions = [];
 
-    // Expanded question pool (Simulating large 1M+ database pool)
     const questionPool = [
       { q: "የዓድዋ ጦርነት የተካሄደበት ዓመተ ምህረት መቼ ነው?", opts: ["1888 ዓ.ም", "1896 ዓ.ም", "1928 ዓ.ም", "1933 ዓ.ም"], ans: 1 },
       { q: "የኢትዮጵያ ረጅሙ ወንዝ የትኛው ነው?", opts: ["አዋሽ", "ተከዜ", "ዓባይ", "ኦሞ"], ans: 2 },
@@ -352,7 +350,7 @@
       { q: "የአፍሪካ ህብረት ዋና መሥሪያ ቤት የየትኛዋ ሀገር ከተማ ውስጥ ይገኛል?", opts: ["ኬንያ", "ኢትዮጵያ", "ግብፅ", "ደቡብ አፍሪካ"], ans: 1 },
       { q: "የኬንያ ዋና ከተማ ናይሮቢ በምን ይታወቃል?", opts: ["ብሔራዊ ፓርክ በከተማ ውስጥ መኖሩ", "ባህር ዳርቻ በመኖሩ", "በረሃ በመሆኑ", "ከፍተኛ ተራራ በመኖሩ"], ans: 0 },
       { q: "በዓለም ትልቁ ውቅያኖስ የትኛው ነው?", opts: ["አትላንቲክ ውቅያኖስ", "ህንድ ውቅያኖስ", "ፓስፊክ ውቅያኖስ", "አርክቲክ ውቅያኖስ"], ans: 2 },
-      { q: "የሰው አካል ትልቁ ውጫዊ አካል (ኦርጋን) የትኛው ነው?", opts: ["πα", "ጉበት", "ቆዳ", "ልብ"], ans: 2 }
+      { q: "የሰው አካል ትልቁ ውጫዊ አካል (ኦርጋን) የትኛው ነው?", opts: ["አንጎል", "ጉበት", "ቆዳ", "ልብ"], ans: 2 }
     ];
 
     function saveData() {
@@ -510,10 +508,9 @@
     function beginQuizSession() {
       currentQIndex = 0;
       correctAnswersCount = 0;
-      timeLeft = 120;
+      timeLeft = 60; // 1 minute
       isQuizActive = true;
       
-      // Shuffle and pick 5 random questions from database pool
       let shuffled = [...questionPool].sort(() => 0.5 - Math.random());
       activeQuizQuestions = shuffled.slice(0, 5);
 
