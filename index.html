@@ -342,8 +342,8 @@
     let isQuizActive = false;
     let activeQuizQuestions = [];
 
-    // Master 1,000,000+ Scalable Dynamic Question Pool (Advanced Topics: History, Tech, Science, Philosophy, University Freshmen Courses)
-    const baseQuestionPool = [
+    // Real, rich, and varied professional question database (History, Geography, Tech, Science, Logic)
+    const questionPool = [
       { q: "የዓድዋ ጦርነት የተካሄደበት እና የኢትዮጵያ ሠራዊት ድል የተቀዳጀበት ዓመተ ምህረት መቼ ነው?", opts: ["1880 ዓ.ም", "1896 ዓ.ም", "1908 ዓ.ም", "1928 ዓ.ም"], ans: 1 },
       { q: "የአፍሪካ ህብረት ዋና መሥሪያ ቤት በየትኛዋ አፍሪካዊት ሀገር ከተማ ውስጥ ይገኛል?", opts: ["ናይሮቢ፣ ኬንያ", "አዲስ አበባ፣ ኢትዮጵያ", "ካይሮ፣ ግብፅ", "ፕሪቶሪያ፣ ደቡብ አፍሪካ"], ans: 1 },
       { q: "በኢትዮጵያ ከፍተኛው ቦታ ራስ ዳሽን ተራራ በየትኛው የሀገሪቱ ክፍል ይገኛል?", opts: ["ሰሜን ተራሮች (አማራ)", "ባሌ ተራሮች (ኦሮሚያ)", "ሲሜን ዋልያ", "ጉጂ ተራሮች"], ans: 0 },
@@ -358,19 +358,11 @@
       { q: "የዓለም ረጅሙ ወንዝ በመባል የሚታወቀው የትኛው ነው?", opts: ["አማዞን ወንዝ", "ናይል (ዓባይ) ወንዝ", "ሚሲሲፒ ወንዝ", "ዳኑብ ወንዝ"], ans: 1 },
       { q: "በኬሚስትሪ ውስጥ የውሃ ሞለኪውል ቀመር (Chemical Formula) ምን ይባላል?", opts: ["CO2", "H2O", "NaCl", "O2"], ans: 1 },
       { q: "የኢትዮጵያ ፌዴራላዊ ዲሞክራሲያዊ ሪፐብሊክ ሕገ መንግሥት የጸደቀበት ዓመተ ምህረት መቼ ነው?", opts: ["1983 ዓ.ም", "1987 ዓ.ም", "1991 ዓ.ም", "1993 ዓ.ም"], ans: 1 },
-      { q: "የአፍሪካ አንድነት ድርጅት (OAU) በየትኛው ዓመት ተመሠረተ?", opts: ["1958 እ.ኤ.አ", "1963 እ.ኤ.አ", "1975 እ.ኤ.አ", "1981 እ.ኤ.አ"], ans: 1 }
+      { q: "የአፍሪካ አንድነት ድርጅት (OAU) በየትኛው ዓመት ተመሠረተ?", opts: ["1958 እ.ኤ.አ", "1963 እ.ኤ.አ", "1975 እ.ኤ.አ", "1981 እ.ኤ.አ"], ans: 1 },
+      { q: "የኢትዮጵያ ንግሥት ሳባ (የንግሥተ ሰባ) ወደ ኢየሩሳሌም ተጉዛ የጎበኘችው ማንን ነው?", opts: ["ንጉሥ ዳዊትን", "ንጉሥ ሰሎሞንን", "ንጉሥ ሄሮድን", "ሙሴን"], ans: 1 },
+      { q: "የኢንተርኔት አባት (Father of the Internet) ተብሎ የሚታወቀው ማን ነው?", opts: ["ቢል ጌትስ", "ስቲቭ ጆብስ", "ቪንት ሰርፍ (Vint Cerf)", "ማርክ ዙከርበርግ"], ans: 2 },
+      { q: "የግዕዝ ፊደላት ስንት ዋና ዋና ፊደላት (ቤተሰቦች) አሉት?", opts: ["26", "33", "247", "12"], ans: 1 }
     ];
-
-    // Function to generate 1,000,000+ unique algorithmic challenge variations
-    function getHugeQuestionPool() {
-      let pool = [...baseQuestionPool];
-      // Algorithmic expansion to guarantee 1M+ distinct combination queries without lagging browser
-      for (let i = 1; i <= 5000; i++) {
-        pool.push({ q: `የኢትዮጵያ ታሪካዊ ክስተት ቁጥር ${i} ትክክለኛ መግለጫ የቱ ነው?`, opts: ["ጥንታዊ ቅርሶች መገኛ", "የነጻነት ታሪክ አርማ", "የንግድ እና የባህል ማዕከል", "ሁሉም መልስ ናቸው"], ans: 3 });
-        pool.push({ q: `በሳይንስ እና ቴክኖሎጂ ጥናት ውስጥ የዘመኑ ስልት ቁጥር ${i} ዋና ግብ ምንድን ነው?`, opts: ["ፍጥነትን መጨመር", "መረጃዎችን ማቀናጀት", "አውቶሜሽን መስራት", "ሁሉም መልስ ናቸው"], ans: 3 });
-      }
-      return pool;
-    }
 
     function saveData() {
       localStorage.setItem('ky_realBalance', realBalance);
@@ -534,8 +526,7 @@
       timeLeft = 60;
       isQuizActive = true;
       
-      let fullPool = getHugeQuestionPool();
-      let shuffled = fullPool.sort(() => 0.5 - Math.random());
+      let shuffled = [...questionPool].sort(() => 0.5 - Math.random());
       activeQuizQuestions = shuffled.slice(0, 5);
 
       showPage('quizPlayPage');
