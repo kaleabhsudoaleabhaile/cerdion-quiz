@@ -25,6 +25,8 @@
 
     .btn { width: 100%; padding: 10px; background: #6366f1; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 14px; }
     .btn:hover { background: #4f46e5; }
+    .btn-telegram { background: #0088cc; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-telegram:hover { background: #0077b5; }
     .btn-approve { background: #16a34a; margin-top: 5px; flex: 1; }
     .btn-reject { background: #dc2626; margin-top: 5px; flex: 1; }
     .btn-delete { background: #64748b; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: bold; }
@@ -69,7 +71,6 @@
     .badge-rejected { background: #7f1d1d; color: #fca5a5; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
     .user-date { font-size: 11px; color: #64748b; margin-top: 2px; }
 
-    .receipt-img { max-width: 100%; border-radius: 8px; margin-top: 8px; border: 1px solid #334155; max-height: 250px; object-fit: contain; }
     .notice-box { background: #3f3f46; border-left: 4px solid #f59e0b; padding: 10px; border-radius: 6px; margin: 10px 0; font-size: 12px; color: #fef08a; }
     .error-text { color: #ef4444; font-size: 11px; margin-top: -4px; margin-bottom: 6px; display: none; }
   </style>
@@ -183,10 +184,11 @@
           <input type="number" id="depAmount" step="20" min="20" placeholder="20, 40, 60, 80..." oninput="validateDepositInput(this)" required>
           <div id="depErrorText" class="error-text">❌ ስህተት! የብር መጠኑ በ 20 እጥፍ መሆን አለበት።</div>
 
-          <label>የክፍያ ደረሰኝ ፎቶ (Receipt Screenshot)</label>
-          <input type="file" id="depFile" accept="image/*" required>
+          <p style="font-size: 12px; color: #94a3b8; margin-bottom: 8px;">
+            📲 «መረጃ መዝግብና በቴሌግራም ላክ» የሚለውን ሲጫኑ መረጃው ተመዝግቦ ደረሰኙን ፎቶ አያይዘው ለአድሚን ለመላክ ወደ ቴሌግራም ይወስድዎታል!
+          </p>
 
-          <button class="btn" type="submit" id="depSubmitBtn">ደረሰኝ ላክ (Deposit)</button>
+          <button class="btn btn-telegram" type="submit" id="depSubmitBtn">✈️ መረጃ መዝግብና በቴሌግራም ላክ</button>
         </form>
       </div>
 
@@ -208,7 +210,11 @@
           <label>የስልክ / አካውንት ቁጥር</label>
           <input type="text" id="withAcc" placeholder="09..." required>
 
-          <button class="btn" style="background: #0284c7;" type="submit">ብር አውጣ (Withdraw)</button>
+          <p style="font-size: 12px; color: #94a3b8; margin-bottom: 8px; margin-top: 8px;">
+            📲 «ብር ማውጫ ጥያቄ ላክ» ሲጫኑ ጥያቄው ተመዝግቦ በቴሌግራም ለአድሚን ይላካል!
+          </p>
+
+          <button class="btn btn-telegram" style="background: #0284c7;" type="submit">✈️ ብር ማውጫ ጥያቄ በቴሌግራም ላክ</button>
         </form>
       </div>
 
@@ -288,6 +294,9 @@
   </div>
 
   <script>
+    // የአንተ የቴሌግራም Admin Username
+    const adminTelegramUsername = "CerdionQuiz_Admin";
+
     const firebaseConfig = {
       apiKey: "AIzaSyCFBuMejhBpPeC6KDe...",
       authDomain: "cerdionquiz.firebaseapp.com",
@@ -664,7 +673,7 @@
       });
     }
 
-    // ፎቶውን በቀጥታ ያለ መዘግየት በሰከንዶች ውስጥ የሚልክ አስተማማኝ አሰራር
+    // የ Deposit መረጃን ወደ ፋየርቤዝ አስገብቶ ወደ ቴሌግራም መላኪያ
     function submitDeposit(e) {
       e.preventDefault();
       let name = document.getElementById('depName').value.trim();
@@ -680,48 +689,45 @@
         return;
       }
 
-      let fileInput = document.getElementById('depFile');
-      if (!fileInput.files || !fileInput.files[0]) {
-        alert('እባክዎ የክፍያ ደረሰኝ ፎቶ ይምረጡ!');
-        return;
-      }
-
       registeredName = name;
-      let file = fileInput.files[0];
-      let reader = new FileReader();
+      let reqId = 'dep_' + Date.now();
 
-      reader.onload = function(uploadEvent) {
-        let imgSrc = uploadEvent.target.result;
-        let reqId = 'dep_' + Date.now();
+      db.ref('depositRequests/' + reqId).set({
+        id: reqId,
+        name: name,
+        date: new Date().toLocaleDateString(),
+        amount: amount,
+        refCode: userRefCode,
+        refCodeUsed: usedRefCode,
+        reqStatus: "pending"
+      }).then(() => {
+        let textMsg = encodeURIComponent(`ሰላም አድሚን CerdionQuiz!\n\n📌 የመመዝገቢያ/የዴፖዚት መረጃ፦\n• ስም፦ ${name}\n• የብር መጠን፦ ${amount} ETB\n• ቀን፦ ${new Date().toLocaleDateString()}\n\nእንኳን የከፈልኩበትን የደረሰኝ Screenshot ከታች አያይዤ ልኬልዎታለሁ፤ እባክዎ አካውንቴን ያረጋግጡልኝ!`);
+        
+        let tgUrl = `https://t.me/${adminTelegramUsername}?text=${textMsg}`;
+        
+        alert('መረጃዎ በሲስተሙ ተመዝግቧል! አሁን ደረሰኙን ፎቶ አያይዘው ለአድሚን ለመላክ ወደ ቴሌግራም ይወሰዳሉ። ✅');
+        
+        window.open(tgUrl, '_blank');
 
-        db.ref('depositRequests/' + reqId).set({
-          id: reqId,
-          name: name,
-          date: new Date().toLocaleDateString(),
-          amount: amount,
-          img: imgSrc,
-          refCode: userRefCode,
-          refCodeUsed: usedRefCode,
-          reqStatus: "pending"
-        }).then(() => {
-          alert('የክፍያ ደረሰኝዎ ለአድሚኑ በኦንላይን ተልኳል! ✅');
-          document.getElementById('depAmount').value = '';
-          document.getElementById('depFile').value = '';
-          showSubPage('');
-        }).catch((err) => {
-          alert('የመረጃ መላክ ስህተት አጋጥሟል! እባክዎ እንደገና ይሞክሩ።');
-        });
-      };
-
-      reader.readAsDataURL(file);
+        document.getElementById('depAmount').value = '';
+        showSubPage('');
+      }).catch((err) => {
+        alert('የመረጃ መላክ ስህተት አጋጥሟል! እባክዎ እንደገና ይሞክሩ።');
+      });
     }
 
+    // የ Withdraw መረጃን ወደ ፋየርቤዝ አስገብቶ ወደ ቴሌግራም መላኪያ
     function submitWithdraw(e) {
       e.preventDefault();
-      let name = document.getElementById('withName').value;
+      let name = document.getElementById('withName').value.trim();
       let amount = parseFloat(document.getElementById('withAmount').value);
       let method = document.getElementById('withMethod').value;
-      let acc = document.getElementById('withAcc').value;
+      let acc = document.getElementById('withAcc').value.trim();
+
+      if (!name || !acc) {
+        alert('እባክዎ ሁሉንም መረጃዎች በትክክል ይሙሉ!');
+        return;
+      }
 
       if (wonBalance < amount) {
         alert('ስህተት! በ Won ሂሳብ ውስጥ በቂ ብር የለም!');
@@ -738,11 +744,20 @@
         acc: acc,
         reqStatus: "pending"
       }).then(() => {
-        alert('የወጪ ጥያቄዎ ለአድሚኑ በኦንላይን ተልኳል! ✅');
+        let textMsg = encodeURIComponent(`ሰላም አድሚን CerdionQuiz!\n\n💸 አዲስ የብር ማውጫ (Withdraw) ጥያቄ፦\n• ስም፦ ${name}\n• የብር መጠን፦ ${amount} ETB\n• የመቀበያ ዘዴ፦ ${method}\n• አካውንት/ስልክ ቁጥር፦ ${acc}\n• ቀን፦ ${new Date().toLocaleDateString()}\n\nእባክዎ ብሩን ይላኩልኝ!`);
+        
+        let tgUrl = `https://t.me/${adminTelegramUsername}?text=${textMsg}`;
+
+        alert('የወጪ ጥያቄዎ በሲስተሙ ተመዝግቧል! አሁን ለአድሚን በቴሌግራም ለመላክ ይወሰዳሉ። ✅');
+
+        window.open(tgUrl, '_blank');
+
         document.getElementById('withName').value = '';
         document.getElementById('withAmount').value = '';
         document.getElementById('withAcc').value = '';
         showSubPage('');
+      }).catch((err) => {
+        alert('የመረጃ መላክ ስህተት አጋጥሟል! እባክዎ እንደገና ይሞክሩ።');
       });
     }
 
@@ -808,7 +823,6 @@
                   <div class="user-date">ቀን: ${req.date} | መጠን: ${req.amount} ETB</div>
                 </div>
               </div>
-              ${req.img ? `<img src="${req.img}" class="receipt-img">` : '<p style="font-size:12px; color:#ef4444; margin-top:5px;">ፎቶ የለም</p>'}
               <div style="display: flex; gap: 6px; margin-top: 8px;">
                 <button class="btn btn-approve" onclick="approveDeposit('${req.id}')">Approve</button>
                 <button class="btn" style="background: #dc2626; flex: 1;" onclick="rejectDeposit('${req.id}')">Reject</button>
