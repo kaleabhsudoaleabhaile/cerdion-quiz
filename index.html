@@ -28,7 +28,6 @@
     .btn-approve { background: #16a34a; margin-top: 5px; flex: 1; }
     .btn-reject { background: #dc2626; margin-top: 5px; flex: 1; }
     .btn-delete { background: #64748b; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: bold; }
-    .btn-delete:hover { background: #475569; }
 
     .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
     .stat-box { background: #0f172a; padding: 10px; border-radius: 8px; text-align: center; }
@@ -48,8 +47,6 @@
     .page.active { display: block; }
 
     .quiz-option { background: #0f172a; border: 1px solid #334155; padding: 12px; border-radius: 8px; margin-top: 8px; cursor: pointer; font-size: 14px; }
-    .quiz-option:hover { border-color: #6366f1; }
-
     .timer-box { font-size: 16px; font-weight: bold; color: #f59e0b; margin-bottom: 10px; text-align: right; }
 
     .admin-tabs { display: flex; gap: 6px; margin-bottom: 15px; flex-wrap: wrap; }
@@ -132,7 +129,6 @@
     <div id="realAccountPage" class="page">
       <div class="card" style="background: linear-gradient(135deg, #1e1b4b, #1e293b); border: 1px solid #6366f1;">
         <div style="display: flex; align-items: center; gap: 12px;">
-          <!-- የተጠቃሚ PP (Profile Picture Avatar) -->
           <div class="user-avatar" id="userPPAvatar">?</div>
           <div style="flex: 1;">
             <div style="font-size: 11px; color: #94a3b8;">የተጠቃሚ ስም (Profile)</div>
@@ -176,7 +172,7 @@
         </p>
 
         <div class="notice-box">
-          ⚠️ <b>ማስታወሻ፦</b> የሚገቡት ገንዘቦች <b>በ 20 እጥፍ</b> (ለምሳሌ፦ 20፣ 40፣ 60፣ 80፣ 100...) ብቻ መሆን አለባቸው።
+          ⚠️ <b>ማስታወሻ፦</b> የሚገቡት ገንዘቦች <b>በ 20 እጥፍ</b> (ለምሳሌ፦ 20፣ 40፣ 60፣ 80...) ብቻ መሆን አለባቸው።
         </div>
 
         <form style="margin-top: 10px;" onsubmit="submitDeposit(event)">
@@ -216,7 +212,6 @@
         </form>
       </div>
 
-      <!-- 3. የራሱ የሪፈራል ሊንክ እና ኮፒ ማድረጊያ -->
       <div id="refSubPage" class="card" style="display: none;">
         <h3>Invite & My Referral Link</h3>
         <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">በእርስዎ ሊንክ ሰዎችን በመጋበዝ የ 50 ብር ቦነስ ያግኙ!</p>
@@ -306,12 +301,15 @@
     let clickCount = 0;
     let currentMode = 'real';
     
-    let realBalance = parseFloat(localStorage.getItem('ky_realBalance')) || 0.00;
-    let wonBalance = parseFloat(localStorage.getItem('ky_wonBalance')) || 0.00;
+    let isApprovedUser = localStorage.getItem('ky_isApproved') === 'true';
+    let registeredName = localStorage.getItem('ky_registeredName') || '';
+
+    // ተጠቃሚው ገና ያልተረጋገጠ ከሆነ ቀሪ ሂሳቡ 0.00 ETB እንዲሆን ተደርጓል
+    let realBalance = isApprovedUser ? (parseFloat(localStorage.getItem('ky_realBalance')) || 0.00) : 0.00;
+    let wonBalance = isApprovedUser ? (parseFloat(localStorage.getItem('ky_wonBalance')) || 0.00) : 0.00;
     let inviteCount = parseInt(localStorage.getItem('ky_inviteCount')) || 0;
     let demoBalance = 500.00;
     
-    // 1. የሪፈራል ኮድ እና የሊንክ አያያዝ
     let userRefCode = localStorage.getItem('ky_refCode');
     if (!userRefCode) {
       userRefCode = 'KY-' + Math.floor(1000 + Math.random() * 9000);
@@ -322,31 +320,29 @@
     const fullRefLink = currentUrl + '?ref=' + userRefCode;
     document.getElementById('userReferralLink').value = fullRefLink;
 
-    // ሊንክ ይዞ የመጣ አዲስ ሰው ካለ የጋበዘውን ሰው ሪፈራል ኮድ መያዝ
     const urlParams = new URLSearchParams(window.location.search);
     const usedRefCode = urlParams.get('ref') || '';
-
-    let isApprovedUser = localStorage.getItem('ky_isApproved') === 'true';
-    let registeredName = localStorage.getItem('ky_registeredName') || '';
 
     function updateProfileDisplay() {
       let displayNameEl = document.getElementById('displayProfileName');
       let ppAvatarEl = document.getElementById('userPPAvatar');
 
-      // 1. አድሚኑ approve ካላደረገ በስተቀር ስሙ ከላይ አይፃፍም
       if (isApprovedUser && registeredName) {
         displayNameEl.innerText = registeredName;
         ppAvatarEl.innerText = registeredName.charAt(0).toUpperCase();
       } else {
         displayNameEl.innerText = "ያልተረጋገጠ (Pending)";
         ppAvatarEl.innerText = "?";
+        realBalance = 0.00;
+        wonBalance = 0.00;
       }
+
+      document.getElementById('userBalance').innerText = realBalance.toFixed(2) + ' ETB';
+      document.getElementById('wonAmount').innerText = wonBalance.toFixed(2) + ' ETB';
+      document.getElementById('refCount').innerText = inviteCount;
     }
 
     updateProfileDisplay();
-    document.getElementById('userBalance').innerText = realBalance.toFixed(2) + ' ETB';
-    document.getElementById('wonAmount').innerText = wonBalance.toFixed(2) + ' ETB';
-    document.getElementById('refCount').innerText = inviteCount;
 
     let currentAdminTab = '';
     let depositRequests = [];
@@ -360,7 +356,7 @@
     ];
     let lastSeenMessageCount = parseInt(localStorage.getItem('ky_lastSeenMsgCount')) || 0;
 
-    // Firebase Listeners
+    // Firebase Realtime Listeners
     db.ref('depositRequests').on('value', (snapshot) => {
       const data = snapshot.val();
       depositRequests = data ? Object.values(data) : [];
@@ -375,22 +371,21 @@
       if(currentAdminTab === 'with') renderAdminPanel();
     });
 
-    // 2. ከአባል ብዛት እንዳይጠፋ በ Firebase የሚደመጥ
     db.ref('membersList').on('value', (snapshot) => {
       const data = snapshot.val();
       membersList = data ? Object.values(data) : [];
 
-      // የአሁኑ ተጠቃሚ በአድሚን approve መደረጉን ማረጋገጥ
-      let currentMember = membersList.find(m => m.refCode === userRefCode || m.name === registeredName);
+      let currentMember = membersList.find(m => m.refCode === userRefCode || (registeredName && m.name === registeredName));
       if (currentMember) {
         isApprovedUser = true;
         registeredName = currentMember.name;
+        realBalance = parseFloat(currentMember.amount) || 0.00;
         localStorage.setItem('ky_isApproved', 'true');
         localStorage.setItem('ky_registeredName', registeredName);
+        localStorage.setItem('ky_realBalance', realBalance);
         updateProfileDisplay();
       }
 
-      // 4. በራሱ ሪፈራል ሊንክ የገቡ ሰዎችን ብዛት ስሎ ማሳየት
       let myInvitedList = membersList.filter(m => m.refCodeUsed === userRefCode);
       inviteCount = myInvitedList.length;
       document.getElementById('refCount').innerText = inviteCount;
@@ -508,9 +503,6 @@
         currentMode = 'demo';
       } else if (pageId === 'realAccountPage') {
         currentMode = 'real';
-        document.getElementById('userBalance').innerText = realBalance.toFixed(2) + ' ETB';
-        document.getElementById('wonAmount').innerText = wonBalance.toFixed(2) + ' ETB';
-        document.getElementById('refCount').innerText = inviteCount;
         updateProfileDisplay();
       } else if (pageId === 'messagesPage') {
         lastSeenMessageCount = userMessages.length;
@@ -546,6 +538,12 @@
     }
 
     function startQuiz() {
+      if (!isApprovedUser) {
+        alert('አካውንትዎ ገና አልተረጋገጠም! እባክዎ አስቀድመው ዴፖዚት ያድርጉ እና የአድሚኑን ማረጋገጫ ይበቁ።');
+        switchNavTab('realAccountPage', document.getElementById('navRealAcc'));
+        showSubPage('depSubPage');
+        return;
+      }
       if (currentMode === 'real' && realBalance < 20) {
         alert('ለኳይዙ መግቢያ በቂ ሂሳብ (20 ETB) የለዎትም! ወደ ዴፖዚት ገጽ በመሄድ ብር ያስገቡ።');
         switchNavTab('realAccountPage', document.getElementById('navRealAcc'));
@@ -656,10 +654,16 @@
       });
     }
 
+    // ደረሰኝ እና ስም መላኪያ በትክክል ተስተካክሏል
     function submitDeposit(e) {
       e.preventDefault();
       let name = document.getElementById('depName').value.trim();
       let amount = parseFloat(document.getElementById('depAmount').value);
+
+      if (!name) {
+        alert('እባክዎ ሙሉ ስምዎን ያስገቡ!');
+        return;
+      }
 
       if (amount % 20 !== 0) {
         alert('ስህተት! የብር መጠኑ በ 20 እጥፍ ብቻ መሆን አለበት።');
@@ -698,7 +702,7 @@
         document.getElementById('depFile').value = '';
         showSubPage('');
       }).catch((err) => {
-        alert('የመረጃ መላክ ስህተት አጋጥሟል!');
+        alert('የመረጃ መላክ ስህተት አጋጥሟል! እባክዎ ፋየርቤዝ Rules ማስተካከያቸውን ያረጋግጡ።');
       });
     }
 
@@ -862,7 +866,6 @@
 
           <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
             ${membersList.length === 0 ? '<p style="font-size: 12px; color: #64748b; text-align: center;">ምንም አባል የለም።</p>' : membersList.map((m) => {
-              // 4. በአባል ብዛት ስር ከእያንዳንዱ አባል ስም አጠገብ በሪፈራል ሊንኩ ያስገባቸውን ሰዎች ብዛት ማሳየት
               let refCount = membersList.filter(sub => sub.refCodeUsed === m.refCode).length;
               let initial = m.name ? m.name.charAt(0).toUpperCase() : '?';
               return `
@@ -900,7 +903,6 @@
     function approveDeposit(id) {
       let req = depositRequests.find(r => r.id === id);
       if (req) {
-        // 2. አድሚኑ approve ሲያደርግ በቋሚነት ወደ membersList ይላካል
         db.ref('membersList/' + req.id).set({
           id: req.id,
           name: req.name,
