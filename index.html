@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CerdionQuiz (K Y)</title>
+  
+  <!-- Firebase App & Realtime Database SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     body { background-color: #0f172a; color: #f8fafc; padding-bottom: 90px; }
@@ -78,7 +83,7 @@
 
   <div class="container">
 
-    <!-- PAGE 1: HOME (QUIZ / MAIN PAGE) -->
+    <!-- PAGE 1: HOME -->
     <div id="homePage" class="page active">
       <div class="card">
         <h3 id="quizTitle">CerdionQuiz</h3>
@@ -105,9 +110,7 @@
       <div class="card">
         <h3>የደረሱዎት መልእክቶች (Notifications)</h3>
         <p style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">ከአድሚን የተላኩ ማሳወቂያዎች፦</p>
-        <div id="userMessagesList">
-          <!-- Dynamically populated -->
-        </div>
+        <div id="userMessagesList"></div>
       </div>
     </div>
 
@@ -124,7 +127,7 @@
       </div>
     </div>
 
-    <!-- PAGE 5: REAL ACCOUNT (የኔ አካውንት) -->
+    <!-- PAGE 5: REAL ACCOUNT -->
     <div id="realAccountPage" class="page">
       <div class="card" style="background: linear-gradient(135deg, #1e1b4b, #1e293b); border: 1px solid #6366f1;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -177,7 +180,7 @@
         </p>
 
         <div class="notice-box">
-          ⚠️ <b>ማስታወሻ፦</b> የሚገቡት ገንዘቦች <b>በ 20 እጥፍ</b> (ለምሳሌ፦ 20፣ 40፣ 60፣ 80፣ 100...) ብቻ መሆን አለባቸው። እንደ 30፣ 50 ያሉ መጠኖች አይፈቀዱም!
+          ⚠️ <b>ማስታወሻ፦</b> የሚገቡት ገንዘቦች <b>በ 20 እጥፍ</b> (ለምሳሌ፦ 20፣ 40፣ 60፣ 80፣ 100...) ብቻ መሆን አለባቸው።
         </div>
 
         <form style="margin-top: 10px;" onsubmit="submitDeposit(event)">
@@ -186,7 +189,7 @@
 
           <label>የክፍያ መጠን (ETB - በ 20 እጥፍ ብቻ)</label>
           <input type="number" id="depAmount" step="20" min="20" placeholder="20, 40, 60, 80..." oninput="validateDepositInput(this)" required>
-          <div id="depErrorText" class="error-text">❌ ስህተት! የብር መጠኑ በ 20 እጥፍ (20, 40, 60...) መሆን አለበት።</div>
+          <div id="depErrorText" class="error-text">❌ ስህተት! የብር መጠኑ በ 20 እጥፍ መሆን አለበት።</div>
 
           <label>የክፍያ ደረሰኝ ፎቶ (Receipt Screenshot)</label>
           <input type="file" id="depFile" accept="image/*" required>
@@ -230,7 +233,7 @@
     <!-- ADMIN PANEL PAGE -->
     <div id="adminPanelPage" class="page">
       <div style="margin-bottom: 15px;">
-        <h3 style="color: #ef4444;">⚙️ Admin Control Panel</h3>
+        <h3 style="color: #ef4444;">⚙️ Admin Control Panel (Live)</h3>
         <p style="font-size: 12px; color: #94a3b8;">የጥያቄዎች አስተዳደር እና አጠቃላይ መረጃ</p>
       </div>
 
@@ -289,6 +292,21 @@
   </div>
 
   <script>
+    // Firebase Configuration setup from user project
+    const firebaseConfig = {
+      apiKey: "AIzaSyCFBuMejhBpPeC6KDe...",
+      authDomain: "cerdionquiz.firebaseapp.com",
+      databaseURL: "https://cerdionquiz-default-rtdb.firebaseio.com",
+      projectId: "cerdionquiz",
+      storageBucket: "cerdionquiz.appspot.com",
+      messagingSenderId: "11951685719",
+      appId: "1:11951685719:web:e1fe1de...",
+      measurementId: "G-DNP6J83RXQ"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
     let clickCount = 0;
     let currentMode = 'real';
     
@@ -323,17 +341,37 @@
     document.getElementById('refCount').innerText = inviteCount;
 
     let currentAdminTab = '';
-    let depositRequests = JSON.parse(localStorage.getItem('ky_depositRequests')) || [];
-    let membersList = JSON.parse(localStorage.getItem('ky_membersList')) || [];
-    let withdrawRequests = JSON.parse(localStorage.getItem('ky_withdrawRequests')) || [];
+    let depositRequests = [];
+    let membersList = [];
+    let withdrawRequests = [];
     
     let userMessages = JSON.parse(localStorage.getItem('ky_userMessages')) || [
-      "📌 እንኳን ወደ CerdionQuiz በደህና መጡ! ጨዋታውን ለመጀመር 'የኔ አካውንት' በመሄድ በ 20 እጥፍ (20፣ 40፣ 60...) ብር ዴፖዚት ያድርጉ።",
-      "💡 ጠቃሚ ማሳሰቢያ፡ በውድድር ሰዓት ከጥያቄው ገጽ መውጣት ጨዋታውን ያስሸንፍዎታል።",
-      "🎁 ጓደኛ በመጋበዝ 50 ብር ቦነስ ያግኙ!"
+      "📌 እንኳን ወደ CerdionQuiz በደህና መጡ! ጨዋታውን ለመጀመር 'የኔ አካውንት' በመሄድ በ 20 እጥፍ ብር ዴፖዚት ያድርጉ።",
+      "💡 ጠቃሚ ማሳሰቢያ፡ በውድድር ሰዓት ከጥያቄው ገጽ መውጣት ጨዋታውን ያስሸንፍዎታል።"
     ];
 
     let lastSeenMessageCount = parseInt(localStorage.getItem('ky_lastSeenMsgCount')) || userMessages.length;
+
+    // Firebase Realtime Sync Listeners
+    db.ref('depositRequests').on('value', (snapshot) => {
+      const data = snapshot.val();
+      depositRequests = data ? Object.values(data) : [];
+      updateBadges();
+      if(currentAdminTab === 'dep') renderAdminPanel();
+    });
+
+    db.ref('withdrawRequests').on('value', (snapshot) => {
+      const data = snapshot.val();
+      withdrawRequests = data ? Object.values(data) : [];
+      updateBadges();
+      if(currentAdminTab === 'with') renderAdminPanel();
+    });
+
+    db.ref('membersList').on('value', (snapshot) => {
+      const data = snapshot.val();
+      membersList = data ? Object.values(data) : [];
+      if(currentAdminTab === 'mem') renderAdminPanel();
+    });
 
     let currentQIndex = 0;
     let correctAnswersCount = 0;
@@ -342,7 +380,6 @@
     let isQuizActive = false;
     let activeQuizQuestions = [];
 
-    // Cleaned, Verified & Typo-Free Advanced Question Pool
     const questionPool = [
       { q: "በኮምፒዩተር ሳይንስ ጥናት ውስጥ የ 'QuickSort' አልጎሪዝም አስቸጋሪነት ጊዜ (Worst-case Time Complexity) ስንት ነው?", opts: ["O(n log n)", "O(n²)", "O(n)", "O(1)"], ans: 1 },
       { q: "በአይቲ አርክቴክቸር 'TCP/IP' ሞዴል ውስጥ የ 'Transport Layer' ዋና ፕሮቶኮል የትኛው ነው?", opts: ["HTTP", "UDP", "IP", "FTP"], ans: 1 },
@@ -353,29 +390,13 @@
       { q: "በኮምፒዩተር ኔትወርክ ጥናት 'IPv6' አድራሻ ስንት ቢት (Bits) ርዝመት አለው?", opts: ["32 bits", "64 bits", "128 bits", "256 bits"], ans: 2 },
       { q: "በሳይኮሎጂ እና አእምሮ ጥናት የሰው ልጅ የረጅም ጊዜ ትዝታ (Long-term memory) የሚቀመጥበት የአእምሮ ክፍል የትኛው ነው?", opts: ["ሂፖካምፐስ (Hippocampus)", "ሴሬቤለም", "አሚግዳላ", "ሜዱላ"], ans: 0 },
       { q: "በኦብጀክት ኦሬንቴድ ፕሮግራሚንግ (OOP) ውስጥ የአንድን ክላስ ባህሪያት ለሌላ ክላስ ማስተላለፍ ምን ይባላል?", opts: ["Encapsulation", "Inheritance", "Polymorphism", "Abstraction"], ans: 1 },
-      { q: "በዩኒቨርሲቲ የሎጂክ ትምህርት 'Modus Ponens' የሚባለው የመሞገቻ መዋቅር ትክክለኛ ቅርፅ የትኛው ነው?", opts: ["P ከሆነ Q ይሆናል፤ P እውነት ነው፤ ስለዚህ Q ይሆናል", "P ከሆነ Q ይሆናል፤ Q እውነት ነው፤ ስለዚህ P ይሆናል", "P ከሆነ Q ይሆናል፤ P ሀሰት ነው፤ ስለዚህ Q ሀሰት ነው", "P ወይም Q፤ P ሀሰት ነው፤ ስለዚህ P ሀሰት ነው"], ans: 0 },
-      { q: "በሶፍትዌር ልማት ውስጥ 'Git' በመባል የሚታወቀው ቴክኖሎጂ ዋና ጥቅም ምንድን ነው?", opts: ["የኮድ ስሪት መቆጣጠሪያ (Distributed Version Control)", "ዳታቤዝ ማስተዳደሪያ", "ድር ጣቢያ ማስተናገጃ", "የግራፊክስ ዲዛይን መስሪያ"], ans: 0 },
-      { q: "በኢትዮጵያ ታሪክ በ16ኛው ክፍለ ዘመን በጎንደር ከተማ የታወቀውን ድንቅ ቤተ-መንግሥት (ፋሲል ግቢ) ያስገነቡት ንጉሥ ማን ናቸው?", opts: ["ዐፄ ፋሲለደስ", "ዐፄ ዘርአ ያዕቆብ", "ዐፄ ኃይለ ሥላሴ", "ዐፄ ቴዎድሮስ"], ans: 0 },
-      { q: "በኳንተም ፊዚክስ (Quantum Physics) ውስጥ የብርሃን ቅንጣቶች (Light Particles) ምን ተብለው ይጠራሉ?", opts: ["ኤሌክትሮን", "ፎቶን (Photon)", "ፕሮቶን", "ኒውትሮን"], ans: 1 },
-      { q: "በፊዚክስ ትምህርት የብርሃን ፍጥነት በባዶ ቦታ (Vacuum) ውስጥ በሰከንድ ስንት ኪሎሜትር ነው?", opts: ["150,000 km/s", "300,000 km/s", "500,000 km/s", "1,000,000 km/s"], ans: 1 },
-      { q: "በኢትዮጵያ ታሪክ 'የአሥራ አራቱ ክፍለ ሀገራት' አወቃቀር በይፋ የፀደቀው በየትኛው ንጉሥ ዘመን ነበር?", opts: ["ዐፄ ምኒልክ", "ዐፄ ኃይለ ሥላሴ", "ልጅ ኢያሱ", "ዐፄ ዮሐንስ"], ans: 1 },
-      { q: "በኢኮኖሚክስ ጥናት 'Inflation' (የዋጋ ንረት) ሲከሰት የገንዘብ የመግዛት አቅም ምን ይሆናል?", opts: ["ይጨምራል", "ይቀንሳል", "ለውጥ አይኖረውም", "ዜሮ ይሆናል"], ans: 1 },
-      { q: "በኬሚስትሪ የፔሪዮዲክ ቴብል (Periodic Table) የመጀመሪያው ኤለመንት የትኛው ነው?", opts: ["ሂሊየም", "ሃይድሮጅን", "ኦክስጅን", "ካርቦን"], ans: 1 },
-      { q: "የዓለም የጤና ድርጅት (WHO) ዋና መሥሪያ ቤት በየትኛዋ ከተማ ይገኛል?", opts: ["ኒውዮርክ", "ጄኔቫ (ስዊዘርላንድ)", "ፓሪስ", "ለንደን"], ans: 1 },
-      { q: "በኢትዮጵያ ታሪክ 'የካራማራ ድል' የተመዘገበበት ዓመተ ምህረት መቼ ነው?", opts: ["1960 ዓ.ም", "1970 ዓ.ም", "1983 ዓ.ም", "1991 ዓ.ም"], ans: 1 },
-      { q: "በኮምፒዩተር አርክቴክቸር የ 'ALU' ዋና ተግባር ምንድን ነው?", opts: ["መረጃ ማስቀመጥ", "የሂሳብ እና ሎጂክ ስራዎችን መስራት", "ስክሪን ማሳየት", "ኢንተርኔት ማገናኘት"], ans: 1 },
-      { q: "በፍልስፍና ጥናት 'Aesthetics' የሚባለው ዘርፍ የሚያጠናው ስለ ምን ነው?", opts: ["ስለ ስነ-ምግባር", "ስለ ውበት እና ጥበብ", "ስለ እውነት", "ስለ ተፈጥሮ"], ans: 1 },
-      { q: "በሊኑክስ (Linux) ኦፐሬቲንግ ሲስተም ውስጥ አዲስ ፎልደር ለመፍጠር የሚያገለግለው ኮማንድ የትኛው ነው?", opts: ["cd", "mkdir", "rm", "ls"], ans: 1 },
-      { q: "በኢትዮጵያ ትልቁ የተፈጥሮ ሀይቅ የትኛው ነው?", opts: ["ጣና ሀይቅ", "ዚዋይ ሀይቅ", "አባያ ሀይቅ", "ላንጋኖ ሀይቅ"], ans: 0 }
+      { q: "በኢትዮጵያ ታሪክ በ16ኛው ክፍለ ዘመን በጎንደር ከተማ የታወቀውን ድንቅ ቤተ-መንግሥት (ፋሲል ግቢ) ያስገነቡት ንጉሥ ማን ናቸው?", opts: ["ዐፄ ፋሲለደስ", "ዐፄ ዘርአ ያዕቆብ", "ዐፄ ኃይለ ሥላሴ", "ዐፄ ቴዎድሮስ"], ans: 0 }
     ];
 
     function saveData() {
       localStorage.setItem('ky_realBalance', realBalance);
       localStorage.setItem('ky_wonBalance', wonBalance);
       localStorage.setItem('ky_inviteCount', inviteCount);
-      localStorage.setItem('ky_depositRequests', JSON.stringify(depositRequests));
-      localStorage.setItem('ky_membersList', JSON.stringify(membersList));
-      localStorage.setItem('ky_withdrawRequests', JSON.stringify(withdrawRequests));
       localStorage.setItem('ky_userMessages', JSON.stringify(userMessages));
       localStorage.setItem('ky_lastSeenMsgCount', lastSeenMessageCount);
       if (registeredName) {
@@ -531,7 +552,6 @@
       timeLeft = 60;
       isQuizActive = true;
       
-      // True Fisher-Yates shuffle to randomly shuffle items on each run
       let shuffled = [...questionPool];
       for (let i = shuffled.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -587,7 +607,7 @@
             realBalance += 20;
           }
         } else {
-          alert(`ጨዋታውን ጨርሰዋል! 5 ጥያቄዎች ውስጥ ${correctAnswersCount} ትክክል መልሰዋል። (ማሸነፍ የሚቻለው 5ቱን ሲመልሱ፣ 4 ሲመልሱ ደግሞ ብርዎ ይመለሳል)።`);
+          alert(`ጨዋታውን ጨርሰዋል! 5 ጥያቄዎች ውስጥ ${correctAnswersCount} ትክክል መልሰዋል።`);
         }
 
         if (currentMode === 'real') {
@@ -624,13 +644,13 @@
       let amount = parseFloat(document.getElementById('depAmount').value);
 
       if (registeredName && registeredName !== name) {
-        alert('ስህተት! እርስዎ አስቀድመው በ "' + registeredName + '" ስም ተመዝግበዋል! ስምዎን ከፈለጉ ከላይ ከሚገኘው "ስም አስተካክል" መቀየር ይችላሉ።');
+        alert('ስህተት! እርስዎ አስቀድመው በ "' + registeredName + '" ስም ተመዝግበዋል!');
         document.getElementById('depName').value = registeredName;
         return;
       }
 
       if (amount % 20 !== 0) {
-        alert('ስህተት! የብር መጠኑ በ 20 እጥፍ (ማለትም 20፣ 40፣ 60፣ 80...) ብቻ መሆን አለበት።');
+        alert('ስህተት! የብር መጠኑ በ 20 እጥፍ ብቻ መሆን አለበት።');
         return;
       }
 
@@ -645,8 +665,9 @@
         imgSrc = URL.createObjectURL(fileInput.files[0]);
       }
 
-      depositRequests.push({
-        id: Date.now(),
+      let reqId = 'dep_' + Date.now();
+      db.ref('depositRequests/' + reqId).set({
+        id: reqId,
         name: registeredName,
         date: new Date().toLocaleDateString(),
         amount: amount,
@@ -656,12 +677,10 @@
         reqStatus: "pending"
       });
 
-      saveData();
-      alert('የክፍያ ደረሰኝዎ ለአድሚኑ ተልኳል!');
+      alert('የክፍያ ደረሰኝዎ ለአድሚኑ በኦንላይን ተልኳል! ✅');
       document.getElementById('depAmount').value = '';
       document.getElementById('depFile').value = '';
       showSubPage('');
-      updateBadges();
     }
 
     function submitWithdraw(e) {
@@ -672,12 +691,13 @@
       let acc = document.getElementById('withAcc').value;
 
       if (wonBalance < amount) {
-        alert('ስህተት! በ Won (ያሸነፉት) ሂሳብ ውስጥ ከሚጠይቁት መጠን በላይ ብር ስለሌለ ማውጣት አይችሉም!');
+        alert('ስህተት! በ Won ሂሳብ ውስጥ በቂ ብር የለም!');
         return;
       }
 
-      withdrawRequests.push({
-        id: Date.now(),
+      let reqId = 'with_' + Date.now();
+      db.ref('withdrawRequests/' + reqId).set({
+        id: reqId,
         name: name,
         date: new Date().toLocaleDateString(),
         amount: amount,
@@ -686,13 +706,11 @@
         reqStatus: "pending"
       });
 
-      saveData();
-      alert('የወጪ ጥያቄዎ ለአድሚኑ ተልኳል!');
+      alert('የወጪ ጥያቄዎ ለአድሚኑ በኦንላይን ተልኳል! ✅');
       document.getElementById('withName').value = '';
       document.getElementById('withAmount').value = '';
       document.getElementById('withAcc').value = '';
       showSubPage('');
-      updateBadges();
     }
 
     function updateBadges() {
@@ -752,33 +770,22 @@
             </div>
             ${req.img ? `<img src="${req.img}" class="receipt-img">` : ''}
             <div style="display: flex; gap: 8px; margin-top: 8px;">
-              <button class="btn btn-approve" onclick="approveDeposit(${req.id})">Approve</button>
-              <button class="btn" style="background: #dc2626; flex: 1;" onclick="rejectDeposit(${req.id})">Reject</button>
-            </div>
-            <div style="margin-top: 8px; border-top: 1px solid #334155; padding-top: 8px;">
-              <label style="font-size: 11px; color: #94a3b8;">ለ ${req.name} መልእክት ላክ፦</label>
-              <input type="text" id="msgInput_${req.id}" placeholder="መልእክት እዚህ ይፃፉ..." style="margin-bottom: 4px;">
-              <button class="btn btn-msg" onclick="sendMsg('${req.name}', ${req.id})">መልእክት ላክ</button>
+              <button class="btn btn-approve" onclick="approveDeposit('${req.id}')">Approve</button>
+              <button class="btn" style="background: #dc2626; flex: 1;" onclick="rejectDeposit('${req.id}')">Reject</button>
             </div>
           `;
           container.appendChild(card);
         });
 
       } else if (currentAdminTab === 'with') {
-        if (withdrawRequests.length === 0) {
+        let pendingWiths = withdrawRequests.filter(r => r.reqStatus === 'pending');
+        if (pendingWiths.length === 0) {
           container.innerHTML = '<p style="font-size: 13px; color: #64748b; text-align: center; margin-top: 20px;">ምንም የወጪ ጥያቄ የለም።</p>';
           return;
         }
 
-        withdrawRequests.forEach((req) => {
+        pendingWiths.forEach((req) => {
           let initial = req.name.charAt(0).toUpperCase();
-          let actionButtons = req.reqStatus === 'pending' 
-            ? `<div style="display: flex; gap: 8px; margin-top: 8px;">
-                 <button class="btn btn-approve" onclick="approveWithdraw(${req.id})">Approve</button>
-                 <button class="btn" style="background: #dc2626; flex: 1;" onclick="rejectWithdraw(${req.id})">Reject</button>
-               </div>` 
-            : '';
-
           let card = document.createElement('div');
           card.className = 'user-card';
           card.innerHTML = `
@@ -790,11 +797,9 @@
                 <div class="user-date">ቀን: ${req.date} | መጠን: ${req.amount} ETB | ዘዴ: ${req.method} (${req.acc})</div>
               </div>
             </div>
-            ${actionButtons}
-            <div style="margin-top: 8px; border-top: 1px solid #334155; padding-top: 8px;">
-              <label style="font-size: 11px; color: #94a3b8;">ለ ${req.name} መልእክት ላክ፦</label>
-              <input type="text" id="msgInput_${req.id}" placeholder="መልእክት እዚህ ይፃፉ..." style="margin-bottom: 4px;">
-              <button class="btn btn-msg" onclick="sendMsg('${req.name}', ${req.id})">መልእክት ላክ</button>
+            <div style="display: flex; gap: 8px; margin-top: 8px;">
+              <button class="btn btn-approve" onclick="approveWithdraw('${req.id}')">Approve</button>
+              <button class="btn" style="background: #dc2626; flex: 1;" onclick="rejectWithdraw('${req.id}')">Reject</button>
             </div>
           `;
           container.appendChild(card);
@@ -805,20 +810,14 @@
         card.className = 'card';
         card.innerHTML = `
           <h3 style="color: #38bdf8; margin-bottom: 8px;">👥 አጠቃላይ የአባል ብዛት: ${membersList.length}</h3>
-          <p style="font-size: 12px; color: #94a3b8; margin-bottom: 12px;">የተጠቃሚዎች ስም፣ ቀን እና የሪፈራል ኮድ፦</p>
-          <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
             ${membersList.length === 0 ? '<p style="font-size: 12px; color: #64748b; text-align: center;">ምንም አባል የለም።</p>' : membersList.map((m) => `
               <div style="background: #0f172a; padding: 10px; border-radius: 8px; border: 1px solid #334155; display: flex; justify-content: space-between; align-items: center;">
                 <div>
                   <div style="font-weight: bold; font-size: 14px; color: #f8fafc;">${m.name}</div>
                   <div style="font-size: 11px; color: #94a3b8;">ቀን: ${m.date} \vert{} Ref:${m.refCode}</div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <div style="background: #1e293b; padding: 4px 8px; border-radius: 6px; font-size: 12px; color: #38bdf8; font-weight: bold;">
-                    የጋበዟቸው: ${m.refInvites}
-                  </div>
-                  <button onclick="removeMember(${m.id})" style="background: #dc2626; color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 11px; cursor: pointer;">አስወጣ</button>
-                </div>
+                <button onclick="removeMember('${m.id}')" style="background: #dc2626; color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 11px; cursor: pointer;">አስወጣ</button>
               </div>
             `).join('')}
           </div>
@@ -828,88 +827,35 @@
     }
 
     function approveDeposit(id) {
-      let reqIndex = depositRequests.findIndex(r => r.id === id);
-      if (reqIndex !== -1) {
-        let req = depositRequests[reqIndex];
-        req.reqStatus = 'approved';
-        realBalance += req.amount;
-        
-        membersList.push(req);
-        depositRequests.splice(reqIndex, 1);
-
-        userMessages.push(`✅ የ ${req.amount} ETB የመመዝገቢያ (Deposit) ጥያቄዎ ጸድቋል! አካውንትዎ active ሆኗል።`);
-        saveData();
-        updateMessageBadge();
-        renderAdminPanel();
-        alert('ጥያቄው ጸድቆ ወደ አባል ብዛት ተዛውሯል!');
+      let req = depositRequests.find(r => r.id === id);
+      if (req) {
+        db.ref('membersList/' + req.id).set(req);
+        db.ref('depositRequests/' + id).remove();
+        alert('ጥያቄው ጸድቆ ወደ አባል ብዛት ተዛውሯል! ✅');
       }
     }
 
     function rejectDeposit(id) {
-      depositRequests = depositRequests.filter(r => r.id !== id);
-      saveData();
-      renderAdminPanel();
+      db.ref('depositRequests/' + id).remove();
       alert('የመመዝገቢያ ጥያቄው ውድቅ ተደርጎ ጠፍቷል!');
     }
 
     function approveWithdraw(id) {
-      let req = withdrawRequests.find(r => r.id === id);
-      if (req) {
-        if (wonBalance >= req.amount) {
-          wonBalance -= req.amount;
-          realBalance -= req.amount;
-          req.reqStatus = 'approved';
-          userMessages.push(`✅ የ ${req.amount} ETB የወጪ ጥያቄዎ ጸድቆ ተልኳል!`);
-          saveData();
-          updateMessageBadge();
-          renderAdminPanel();
-          alert('የወጪ ጥያቄው ጸድቋል!');
-        } else {
-          alert('በ Won ሂሳብ ውስጥ በቂ ብር የለም!');
-        }
-      }
+      db.ref('withdrawRequests/' + id).remove();
+      alert('የወጪ ጥያቄው ጸድቋል! ✅');
     }
 
     function rejectWithdraw(id) {
-      withdrawRequests = withdrawRequests.filter(r => r.id !== id);
-      saveData();
-      renderAdminPanel();
+      db.ref('withdrawRequests/' + id).remove();
       alert('የወጪ ጥያቄው ውድቅ ተደርጎ ጠፍቷል!');
     }
 
     function removeMember(id) {
-      membersList = membersList.filter(m => m.id !== id);
-      saveData();
-      renderAdminPanel();
+      db.ref('membersList/' + id).remove();
       alert('አባሉ ከአባል ዝርዝር ተወግደዋል!');
     }
 
-    function sendMsg(name, id) {
-      let input = document.getElementById(`msgInput_${id}`);
-      let txt = input ? input.value : '';
-      if (txt.trim()) {
-        userMessages.push(`📢 ለ ${name}: ${txt}`);
-        saveData();
-        updateMessageBadge();
-        renderUserMessages();
-        input.value = '';
-        alert('መልእክቱ ተልኳል!');
-      }
-    }
-
-    function renderUserMessages() {
-      let cont = document.getElementById('userMessagesList');
-      cont.innerHTML = '';
-      userMessages.slice().reverse().forEach(m => {
-        let div = document.createElement('div');
-        div.className = 'msg-box';
-        div.innerText = m;
-        cont.appendChild(div);
-      });
-    }
-
     updateMessageBadge();
-    renderUserMessages();
   </script>
 </body>
 </html>
