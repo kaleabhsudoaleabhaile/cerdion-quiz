@@ -183,7 +183,7 @@
           <input type="number" id="depAmount" step="20" min="20" placeholder="20, 40, 60, 80..." oninput="validateDepositInput(this)" required>
           <div id="depErrorText" class="error-text">❌ ስህተት! የብር መጠኑ በ 20 እጥፍ መሆን አለበት።</div>
 
-          <label>የክፍያ ደረሰኝ ፎቶ (Receipt Screenshot - ግዴታ ነው)</label>
+          <label>የክፍያ ደረሰኝ ፎቶ (Receipt Screenshot)</label>
           <input type="file" id="depFile" accept="image/*" required>
 
           <button class="btn" type="submit" id="depSubmitBtn">ደረሰኝ ላክ (Deposit)</button>
@@ -664,9 +664,10 @@
       });
     }
 
-    // ደረሰኝ ፎቶን (ምስል) ወደ Base64 ቀይሮ ከሙሉ መረጃ ጋር ወደ firebase የሚልክ አሰራር
+    // ምስሉን ኮምፕረስ አድርጎ በከፍተኛ ፍጥነት ለአድሚን የሚልክ አሰራር
     function submitDeposit(e) {
       e.preventDefault();
+      let submitBtn = document.getElementById('depSubmitBtn');
       let name = document.getElementById('depName').value.trim();
       let amount = parseFloat(document.getElementById('depAmount').value);
 
@@ -680,23 +681,47 @@
         return;
       }
 
-      registeredName = name;
       let fileInput = document.getElementById('depFile');
-      
-      if (fileInput.files && fileInput.files[0]) {
-        let reader = new FileReader();
-        reader.onload = function(uploadEvent) {
-          let imgSrc = uploadEvent.target.result;
-          saveDepositToFirebase(name, amount, imgSrc);
-        };
-        reader.readAsDataURL(fileInput.files[0]);
-      } else {
+      if (!fileInput.files || !fileInput.files[0]) {
         alert('እባክዎ የክፍያ ደረሰኝ ፎቶ ይምረጡ!');
+        return;
       }
+
+      submitBtn.innerText = "እየላከ ነው... ⏳";
+      submitBtn.disabled = true;
+
+      registeredName = name;
+      let file = fileInput.files[0];
+
+      let img = new Image();
+      let reader = new FileReader();
+
+      reader.onload = function(uploadEvent) {
+        img.src = uploadEvent.target.result;
+      };
+
+      img.onload = function() {
+        let canvas = document.createElement('canvas');
+        let ctx = canvas.getContext('2d');
+        let maxWidth = 400; // ምስሉን በስፋት ማሳነስ
+        let scaleSize = maxWidth / img.width;
+        
+        canvas.width = maxWidth;
+        canvas.height = img.height * scaleSize;
+
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        let compressedImgData = canvas.toDataURL('image/jpeg', 0.6); // መጠኑን እጅግ ማሳነስ
+
+        saveDepositToFirebase(name, amount, compressedImgData);
+      };
+
+      reader.readAsDataURL(file);
     }
 
     function saveDepositToFirebase(name, amount, imgSrc) {
+      let submitBtn = document.getElementById('depSubmitBtn');
       let reqId = 'dep_' + Date.now();
+
       db.ref('depositRequests/' + reqId).set({
         id: reqId,
         name: name,
@@ -710,9 +735,13 @@
         alert('የክፍያ ደረሰኝዎ ፎቶ ለአድሚኑ በኦንላይን ተልኳል! አድሚኑ ሲያጸድቀው አካውንትዎ ይረጋገጣል። ✅');
         document.getElementById('depAmount').value = '';
         document.getElementById('depFile').value = '';
+        submitBtn.innerText = "ደረሰኝ ላክ (Deposit)";
+        submitBtn.disabled = false;
         showSubPage('');
       }).catch((err) => {
-        alert('የመረጃ መላክ ስህተት አጋጥሟል! እባክዎ እንደገና ይሞክሩ።');
+        alert('የመረጃ መላክ ስህተት አጋጥሟል! እባክዎ የፋየርቤዝ Rules ማስተካከያዎን ያረጋግጡ።');
+        submitBtn.innerText = "ደረሰኝ ላክ (Deposit)";
+        submitBtn.disabled = false;
       });
     }
 
