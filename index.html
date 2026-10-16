@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CerdionQuiz (K Y)</title>
   
-  <!-- Firebase App & Realtime Database SDKs (Compat version for HTML) -->
+  <!-- Firebase App & Realtime Database SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
@@ -63,7 +63,7 @@
     .user-card.rejected { border-left: 5px solid #dc2626; opacity: 0.85; }
 
     .user-header { display: flex; align-items: center; gap: 12px; }
-    .user-avatar { width: 45px; height: 45px; border-radius: 10px; background: #334155; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; color: #38bdf8; }
+    .user-avatar { width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, #38bdf8, #6366f1); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; color: #ffffff; border: 2px solid #38bdf8; }
     .user-info { flex: 1; }
     .user-name { font-size: 16px; font-weight: bold; color: #f8fafc; }
     .user-badges { display: flex; gap: 6px; align-items: center; margin-top: 3px; }
@@ -131,18 +131,13 @@
     <!-- PAGE 5: REAL ACCOUNT -->
     <div id="realAccountPage" class="page">
       <div class="card" style="background: linear-gradient(135deg, #1e1b4b, #1e293b); border: 1px solid #6366f1;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <!-- የተጠቃሚ PP (Profile Picture Avatar) -->
+          <div class="user-avatar" id="userPPAvatar">?</div>
+          <div style="flex: 1;">
             <div style="font-size: 11px; color: #94a3b8;">የተጠቃሚ ስም (Profile)</div>
-            <div id="displayProfileName" style="font-size: 18px; font-weight: bold; color: #38bdf8; margin-top: 2px;">አልተመዘገበም</div>
+            <div id="displayProfileName" style="font-size: 18px; font-weight: bold; color: #38bdf8; margin-top: 2px;">ያልተረጋገጠ (Pending)</div>
           </div>
-          <button class="btn" style="width: auto; padding: 6px 12px; font-size: 12px; background: #0284c7; margin-top: 0;" onclick="toggleEditProfile()">ስም አስተካክል</button>
-        </div>
-
-        <div id="editProfileBox" style="display: none; margin-top: 12px; border-top: 1px solid #334155; padding-top: 10px;">
-          <label>አዲስ ስም ያስገቡ</label>
-          <input type="text" id="editNameInput" placeholder="ሙሉ ስምዎ">
-          <button class="btn" style="background: #16a34a; padding: 6px; font-size: 12px;" onclick="saveProfileName()">ቀይር (Save)</button>
         </div>
       </div>
 
@@ -185,7 +180,7 @@
         </div>
 
         <form style="margin-top: 10px;" onsubmit="submitDeposit(event)">
-          <label>ስምዎ (የተመዘገበበት)</label>
+          <label>ሙሉ ስምዎ</label>
           <input type="text" id="depName" placeholder="ሙሉ ስም ያስገቡ" required>
 
           <label>የክፍያ መጠን (ETB - በ 20 እጥፍ ብቻ)</label>
@@ -221,13 +216,14 @@
         </form>
       </div>
 
+      <!-- 3. የራሱ የሪፈራል ሊንክ እና ኮፒ ማድረጊያ -->
       <div id="refSubPage" class="card" style="display: none;">
-        <h3>Invite & My Referral</h3>
-        <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">1 ሰው ሲጋብዙ 50 ብር ያገኛሉ!</p>
+        <h3>Invite & My Referral Link</h3>
+        <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">በእርስዎ ሊንክ ሰዎችን በመጋበዝ የ 50 ብር ቦነስ ያግኙ!</p>
         <br>
-        <label>የእርስዎ የሪፈራል ኮድ (Referral Code)</label>
-        <input type="text" id="userReferralCode" readonly>
-        <button class="btn" style="background: #8b5cf6;" onclick="addReferralBonus()">ጓደኛ ጋብዝ (+50 ብር)</button>
+        <label>የእርስዎ የጋበዛ ሊንክ (Referral Link)</label>
+        <input type="text" id="userReferralLink" readonly>
+        <button class="btn" style="background: #8b5cf6;" onclick="copyReferralLink()">📋 የሪፈራል ሊንክ ኮፒ አድርግ</button>
       </div>
     </div>
 
@@ -314,24 +310,36 @@
     let wonBalance = parseFloat(localStorage.getItem('ky_wonBalance')) || 0.00;
     let inviteCount = parseInt(localStorage.getItem('ky_inviteCount')) || 0;
     let demoBalance = 500.00;
-    let registeredName = localStorage.getItem('ky_registeredName') || '';
     
+    // 1. የሪፈራል ኮድ እና የሊንክ አያያዝ
     let userRefCode = localStorage.getItem('ky_refCode');
     if (!userRefCode) {
       userRefCode = 'KY-' + Math.floor(1000 + Math.random() * 9000);
       localStorage.setItem('ky_refCode', userRefCode);
     }
-    document.getElementById('userReferralCode').value = userRefCode;
+
+    const currentUrl = window.location.origin + window.location.pathname;
+    const fullRefLink = currentUrl + '?ref=' + userRefCode;
+    document.getElementById('userReferralLink').value = fullRefLink;
+
+    // ሊንክ ይዞ የመጣ አዲስ ሰው ካለ የጋበዘውን ሰው ሪፈራል ኮድ መያዝ
+    const urlParams = new URLSearchParams(window.location.search);
+    const usedRefCode = urlParams.get('ref') || '';
+
+    let isApprovedUser = localStorage.getItem('ky_isApproved') === 'true';
+    let registeredName = localStorage.getItem('ky_registeredName') || '';
 
     function updateProfileDisplay() {
-      let displayName = registeredName ? registeredName : 'አልተመዘገበም';
-      document.getElementById('displayProfileName').innerText = displayName;
-      let nameInput = document.getElementById('depName');
-      if (registeredName) {
-        nameInput.value = registeredName;
-        nameInput.readOnly = true;
-        nameInput.style.backgroundColor = '#1e293b';
-        nameInput.style.color = '#38bdf8';
+      let displayNameEl = document.getElementById('displayProfileName');
+      let ppAvatarEl = document.getElementById('userPPAvatar');
+
+      // 1. አድሚኑ approve ካላደረገ በስተቀር ስሙ ከላይ አይፃፍም
+      if (isApprovedUser && registeredName) {
+        displayNameEl.innerText = registeredName;
+        ppAvatarEl.innerText = registeredName.charAt(0).toUpperCase();
+      } else {
+        displayNameEl.innerText = "ያልተረጋገጠ (Pending)";
+        ppAvatarEl.innerText = "?";
       }
     }
 
@@ -346,14 +354,13 @@
     let withdrawRequests = [];
     let globalMessages = [];
     
-    // የድርጅቱ ህጎች እና ነባሪ መልእክቶች ለሁሉም ደንበኛ እንዲታዩ
-    let userMessages = JSON.parse(localStorage.getItem('ky_userMessages')) || [
+    let userMessages = [
       "📌 እንኳን ወደ CerdionQuiz በደህና መጡ!",
       "📜 የድርጅቱ ህጎች እና ደንቦች:\n1. ማንኛውም ተሳታፊ በ 20 እጥፍ ብር ብቻ ዴፖዚት ማድረግ አለበት።\n2. በጨዋታው ወቅት ከገጽ መውጣት ክልክል ነው።\n3. ማጭበርበር ወይም ሀሰተኛ ደረሰኝ መላክ አካውንት ያስወግዳል!"
     ];
     let lastSeenMessageCount = parseInt(localStorage.getItem('ky_lastSeenMsgCount')) || 0;
 
-    // Firebase Realtime Listeners
+    // Firebase Listeners
     db.ref('depositRequests').on('value', (snapshot) => {
       const data = snapshot.val();
       depositRequests = data ? Object.values(data) : [];
@@ -368,20 +375,29 @@
       if(currentAdminTab === 'with') renderAdminPanel();
     });
 
+    // 2. ከአባል ብዛት እንዳይጠፋ በ Firebase የሚደመጥ
     db.ref('membersList').on('value', (snapshot) => {
       const data = snapshot.val();
       membersList = data ? Object.values(data) : [];
-      
-      // ከዚህ አባል ሪፈራል ኮድ ጋር የተመዘገቡ ሰዎችን ብዛት ማስላት
-      let myReferrals = membersList.filter(m => m.refCodeUsed === userRefCode || (m.refCode && m.refCode === userRefCode));
-      inviteCount = myReferrals.length;
+
+      // የአሁኑ ተጠቃሚ በአድሚን approve መደረጉን ማረጋገጥ
+      let currentMember = membersList.find(m => m.refCode === userRefCode || m.name === registeredName);
+      if (currentMember) {
+        isApprovedUser = true;
+        registeredName = currentMember.name;
+        localStorage.setItem('ky_isApproved', 'true');
+        localStorage.setItem('ky_registeredName', registeredName);
+        updateProfileDisplay();
+      }
+
+      // 4. በራሱ ሪፈራል ሊንክ የገቡ ሰዎችን ብዛት ስሎ ማሳየት
+      let myInvitedList = membersList.filter(m => m.refCodeUsed === userRefCode);
+      inviteCount = myInvitedList.length;
       document.getElementById('refCount').innerText = inviteCount;
-      saveData();
 
       if(currentAdminTab === 'mem') renderAdminPanel();
     });
 
-    // አድሚን የሚለውን ግሎባል መልእክት ከዳታቤዝ ማዳመጥ
     db.ref('globalMessages').on('value', (snapshot) => {
       const data = snapshot.val();
       if (data) {
@@ -423,30 +439,6 @@
       localStorage.setItem('ky_wonBalance', wonBalance);
       localStorage.setItem('ky_inviteCount', inviteCount);
       localStorage.setItem('ky_lastSeenMsgCount', lastSeenMessageCount);
-      if (registeredName) {
-        localStorage.setItem('ky_registeredName', registeredName);
-      }
-    }
-
-    function toggleEditProfile() {
-      let box = document.getElementById('editProfileBox');
-      box.style.display = (box.style.display === 'block') ? 'none' : 'block';
-      if(box.style.display === 'block' && registeredName) {
-        document.getElementById('editNameInput').value = registeredName;
-      }
-    }
-
-    function saveProfileName() {
-      let newName = document.getElementById('editNameInput').value.trim();
-      if (!newName) {
-        alert('እባክዎ ትክክለኛ ስም ያስገቡ!');
-        return;
-      }
-      registeredName = newName;
-      saveData();
-      updateProfileDisplay();
-      toggleEditProfile();
-      alert('የተጠቃሚ ስምዎ በተሳካ ሁኔታ ተቀይሯል! ✅');
     }
 
     function handleSettingsClick() {
@@ -546,13 +538,11 @@
       document.getElementById(pageId).classList.add('active');
     }
 
-    function addReferralBonus() {
-      inviteCount++;
-      realBalance += 50;
-      document.getElementById('refCount').innerText = inviteCount;
-      document.getElementById('userBalance').innerText = realBalance.toFixed(2) + ' ETB';
-      saveData();
-      alert('ጓደኛ በመጋበዝዎ 50 ብር ቦነስ አግኝተዋል! 🎉');
+    function copyReferralLink() {
+      let input = document.getElementById('userReferralLink');
+      input.select();
+      document.execCommand("copy");
+      alert('የሪፈራል ሊንክዎ ኮፒ ተደርጓል! ለጓደኞችዎ መላክ ይችላሉ። 📋');
     }
 
     function startQuiz() {
@@ -671,21 +661,12 @@
       let name = document.getElementById('depName').value.trim();
       let amount = parseFloat(document.getElementById('depAmount').value);
 
-      if (registeredName && registeredName !== name) {
-        alert('ስህተት! እርስዎ አስቀድመው በ "' + registeredName + '" ስም ተመዝግበዋል!');
-        document.getElementById('depName').value = registeredName;
-        return;
-      }
-
       if (amount % 20 !== 0) {
         alert('ስህተት! የብር መጠኑ በ 20 እጥፍ ብቻ መሆን አለበት።');
         return;
       }
 
-      if (!registeredName) {
-        registeredName = name;
-        updateProfileDisplay();
-      }
+      registeredName = name;
 
       let fileInput = document.getElementById('depFile');
       if (fileInput.files && fileInput.files[0]) {
@@ -709,10 +690,10 @@
         amount: amount,
         img: imgSrc,
         refCode: userRefCode,
-        refCodeUsed: "", // ከተጠቃሚው ሪፈራል ጋር ሊያያዝ ይችላል
+        refCodeUsed: usedRefCode,
         reqStatus: "pending"
       }).then(() => {
-        alert('የክፍያ ደረሰኝዎ ለአድሚኑ በኦንላይን ተልኳል! ✅');
+        alert('የክፍያ ደረሰኝዎ ለአድሚኑ በኦንላይን ተልኳል! አድሚኑ ሲያጸድቀው አካውንትዎ ይረጋገጣል። ✅');
         document.getElementById('depAmount').value = '';
         document.getElementById('depFile').value = '';
         showSubPage('');
@@ -868,7 +849,6 @@
         });
 
       } else if (currentAdminTab === 'mem') {
-        // 1. ለአባል ብዛት ዝርዝር ውስጥ አድሚኑ መልእክት የሚልክበት መሣሪያ እና የሪፈራል ብዛት ማሳያ ተጨምሯል
         let card = document.createElement('div');
         card.className = 'card';
         card.innerHTML = `
@@ -882,14 +862,18 @@
 
           <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
             ${membersList.length === 0 ? '<p style="font-size: 12px; color: #64748b; text-align: center;">ምንም አባል የለም።</p>' : membersList.map((m) => {
-              // 2. እያንዳንዱ አባል በራሱ ሪፈራል ኮድ ያስገባቸውን ሰዎች ብዛት ማስላት
-              let refCount = membersList.filter(sub => sub.refCodeUsed === m.refCode || (sub.refCode && sub.refCode === m.refCode)).length;
+              // 4. በአባል ብዛት ስር ከእያንዳንዱ አባል ስም አጠገብ በሪፈራል ሊንኩ ያስገባቸውን ሰዎች ብዛት ማሳየት
+              let refCount = membersList.filter(sub => sub.refCodeUsed === m.refCode).length;
+              let initial = m.name ? m.name.charAt(0).toUpperCase() : '?';
               return `
               <div style="background: #0f172a; padding: 10px; border-radius: 8px; border: 1px solid #334155; display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                  <div style="font-weight: bold; font-size: 14px; color: #f8fafc;">${m.name}</div>
-                  <div style="font-size: 11px; color: #94a3b8;">ቀን: ${m.date} \vert{} Ref:${m.refCode}</div>
-                  <div style="font-size: 11px; color: #4ade80; margin-top: 2px;">ሪፈራል ያስገባቸው ሰዎች ብዛት: <b>${refCount}</b></div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div class="user-avatar" style="width:35px; height:35px; font-size:14px;">${initial}</div>
+                  <div>
+                    <div style="font-weight: bold; font-size: 14px; color: #f8fafc;">${m.name}</div>
+                    <div style="font-size: 11px; color: #94a3b8;">ቀን: ${m.date}</div>
+                    <div style="font-size: 11px; color: #4ade80; margin-top: 2px;">የጋበዛቸው ሰዎች ብዛት: <b>${refCount}</b></div>
+                  </div>
                 </div>
                 <button onclick="removeMember('${m.id}')" style="background: #dc2626; color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 11px; cursor: pointer;">አስወጣ</button>
               </div>
@@ -900,7 +884,6 @@
       }
     }
 
-    // አድሚኑ መልእክት ለሁሉም ደንበኛ የሚልክበት ተግባር
     function sendAdminBroadcast() {
       let text = document.getElementById('adminBroadcastMsg').value.trim();
       if (!text) {
@@ -917,9 +900,17 @@
     function approveDeposit(id) {
       let req = depositRequests.find(r => r.id === id);
       if (req) {
-        db.ref('membersList/' + req.id).set(req);
+        // 2. አድሚኑ approve ሲያደርግ በቋሚነት ወደ membersList ይላካል
+        db.ref('membersList/' + req.id).set({
+          id: req.id,
+          name: req.name,
+          date: req.date,
+          amount: req.amount,
+          refCode: req.refCode,
+          refCodeUsed: req.refCodeUsed || ''
+        });
         db.ref('depositRequests/' + id).update({ reqStatus: 'approved' });
-        alert('ጥያቄው ጸድቆ ወደ አባል ብዛት እና ታሪክ ተዛውሯል! ✅');
+        alert('ጥያቄው ጸድቆ ተጠቃሚው ተረጋግጧል! ✅');
       }
     }
 
