@@ -246,7 +246,7 @@
       </div>
 
       <div class="admin-tabs">
-        <button class="admin-tab-btn" id="tabDepBtn" onclick="switchAdminTab('dep')">
+        <button class="admin-tab-btn active" id="tabDepBtn" onclick="switchAdminTab('dep')">
           1. መመዝገቢያ <span class="red-badge" id="depCountBadge" style="display:none;">0</span>
         </button>
         <button class="admin-tab-btn" id="tabWithBtn" onclick="switchAdminTab('with')">
@@ -258,7 +258,7 @@
       </div>
 
       <div id="adminListContainer">
-        <p style="font-size: 13px; color: #64748b; text-align: center; margin-top: 20px;">እባክዎ ከላይ ከሚገኙት አማራጮች አንዱን ይምረጡ።</p>
+        <p style="font-size: 13px; color: #64748b; text-align: center; margin-top: 20px;">መረጃዎችን በመጫን ላይ...</p>
       </div>
     </div>
 
@@ -300,7 +300,6 @@
   </div>
 
   <script>
-    // የተስተካከለው የቴሌግራም አድሚን ዩዘርኔም
     const adminTelegramUsername = "CerdionQuiz_Admin";
 
     const firebaseConfig = {
@@ -362,7 +361,7 @@
 
     updateProfileDisplay();
 
-    let currentAdminTab = 'dep'; // በነባሪ 1ኛውን ታብ እንዲያሳይ
+    let currentAdminTab = 'dep';
     let depositRequests = [];
     let membersList = [];
     let withdrawRequests = [];
@@ -374,19 +373,23 @@
     ];
     let lastSeenMessageCount = parseInt(localStorage.getItem('ky_lastSeenMsgCount')) || 0;
 
-    // የዳታቤዝ listener ዎች
+    // Database Listeners
     db.ref('depositRequests').on('value', (snapshot) => {
       const data = snapshot.val();
       depositRequests = data ? Object.values(data) : [];
       updateBadges();
-      if(currentAdminTab === 'dep') renderAdminPanel();
+      if(document.getElementById('adminPanelPage').classList.contains('active') && currentAdminTab === 'dep') {
+        renderAdminPanel();
+      }
     });
 
     db.ref('withdrawRequests').on('value', (snapshot) => {
       const data = snapshot.val();
       withdrawRequests = data ? Object.values(data) : [];
       updateBadges();
-      if(currentAdminTab === 'with') renderAdminPanel();
+      if(document.getElementById('adminPanelPage').classList.contains('active') && currentAdminTab === 'with') {
+        renderAdminPanel();
+      }
     });
 
     db.ref('membersList').on('value', (snapshot) => {
@@ -408,7 +411,9 @@
       inviteCount = myInvitedList.length;
       document.getElementById('refCount').innerText = inviteCount;
 
-      if(currentAdminTab === 'mem') renderAdminPanel();
+      if(document.getElementById('adminPanelPage').classList.contains('active') && currentAdminTab === 'mem') {
+        renderAdminPanel();
+      }
     });
 
     db.ref('globalMessages').on('value', (snapshot) => {
@@ -422,9 +427,6 @@
         ];
       }
       updateMessageBadge();
-      if (document.getElementById('messagesPage').classList.contains('active')) {
-        renderUserMessages();
-      }
     });
 
     let currentQIndex = 0;
@@ -471,7 +473,7 @@
           alert("ወደ አድሚን ፓነል ገብተዋል!");
           showPage('adminPanelPage');
           currentAdminTab = 'dep';
-          switchAdminTab('dep'); // ወደ አድሚን ሲገባ 1ኛውን ታብ በራስ ሰር እንዲያሳይ
+          switchAdminTab('dep');
         } else if (pass !== null) {
           alert("የተሳሳተ የይለፍ ቃል!");
         }
@@ -681,7 +683,7 @@
       });
     }
 
-    // 1. Deposit ሲያደርግ መረጃውን መዝግቦ ወደ `@CerdionQuiz_Admin` ሊንክ ማዘጋጀት
+    // 1. Submit Deposit
     function submitDeposit(e) {
       e.preventDefault();
       let name = document.getElementById('depName').value.trim();
@@ -724,7 +726,7 @@
       });
     }
 
-    // 2. Withdraw ሲጠይቅ መረጃውን መዝግቦ ወደ `@CerdionQuiz_Admin` ሊንክ ማዘጋጀት
+    // 2. Submit Withdraw
     function submitWithdraw(e) {
       e.preventDefault();
       let name = document.getElementById('withName').value.trim();
