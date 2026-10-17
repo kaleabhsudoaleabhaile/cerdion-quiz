@@ -25,10 +25,8 @@
 
     .btn { width: 100%; padding: 12px; background: #6366f1; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 14px; text-align: center; text-decoration: none; display: block; }
     .btn:hover { background: #4f46e5; }
-    .btn-telegram { background: #0088cc; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
-    .btn-telegram:hover { background: #0077b5; }
     .btn-approve { background: #16a34a; margin-top: 5px; flex: 1; }
-    .btn-delete { background: #64748b; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: bold; }
+    .btn-delete { background: #dc2626; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: bold; }
 
     .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
     .stat-box { background: #0f172a; padding: 10px; border-radius: 8px; text-align: center; }
@@ -173,12 +171,8 @@
           <label>የክፍያ መጠን (ETB - በ 20 እጥፍ ብቻ)</label>
           <input type="number" id="depAmount" step="20" min="20" placeholder="20, 40, 60, 80..." required>
 
-          <button class="btn" type="submit">መረጃ መዝግብና ወደ ቴሌግራም ሂድ</button>
+          <button class="btn" type="submit" style="background: #16a34a;">✅ መረጃ መዝግብ</button>
         </form>
-
-        <div id="depTelegramLinkContainer" style="display: none; margin-top: 10px; text-align: center;">
-          <a id="depTgAnchor" href="#" target="_blank" class="btn btn-telegram" style="background: #16a34a; padding: 12px;">📲 ቴሌግራም ላይ ለአድሚን ላክ (@CerdionQuiz_Admin)</a>
-        </div>
       </div>
 
       <!-- WITHDRAW SUB-PAGE -->
@@ -200,12 +194,8 @@
           <label>የስልክ / አካውንት ቁጥር</label>
           <input type="text" id="withAcc" placeholder="09..." required>
 
-          <button class="btn" style="background: #0284c7;" type="submit">ብር ማውጫ ጥያቄ መዝግብ</button>
+          <button class="btn" style="background: #0284c7;" type="submit">✅ ብር ማውጫ ጥያቄ መዝግብ</button>
         </form>
-
-        <div id="withTelegramLinkContainer" style="display: none; margin-top: 10px; text-align: center;">
-          <a id="withTgAnchor" href="#" target="_blank" class="btn btn-telegram" style="background: #16a34a; padding: 12px;">📲 ቴሌግራም ላይ ለአድሚን ላክ (@CerdionQuiz_Admin)</a>
-        </div>
       </div>
 
       <!-- REFERRAL SUB-PAGE -->
@@ -284,8 +274,6 @@
   </div>
 
   <script>
-    const adminTelegramUsername = "CerdionQuiz_Admin";
-
     const firebaseConfig = {
       apiKey: "AIzaSyCFBuMejhBpPeC6KDe...",
       authDomain: "cerdionquiz.firebaseapp.com",
@@ -308,7 +296,6 @@
     let realBalance = isApprovedUser ? (parseFloat(localStorage.getItem('ky_realBalance')) || 0.00) : 0.00;
     let wonBalance = isApprovedUser ? (parseFloat(localStorage.getItem('ky_wonBalance')) || 0.00) : 0.00;
     let inviteCount = parseInt(localStorage.getItem('ky_inviteCount')) || 0;
-    let demoBalance = 500.00;
     
     let userRefCode = localStorage.getItem('ky_refCode');
     if (!userRefCode) {
@@ -349,7 +336,7 @@
     let membersList = [];
     let withdrawRequests = [];
 
-    // Database Listeners
+    // Firebase Database Listeners
     db.ref('depositRequests').on('value', (snapshot) => {
       const data = snapshot.val();
       depositRequests = data ? Object.values(data) : [];
@@ -438,7 +425,6 @@
       alert('የሪፈራል ሊንክዎ ኮፒ ተደርጓል! 📋');
     }
 
-    // 🗑️ አካውንት ማጥፊያ ፋንክሽን
     function resetAppAccount() {
       if (confirm('እርግጠኛ ነዎት ይህንን አካውንት አጥፍተው አዲስ መጀመር ይፈልጋሉ?')) {
         localStorage.clear();
@@ -447,7 +433,7 @@
       }
     }
 
-    // 1. Submit Deposit (መረጃውን መዝግቦ የቴሌግራም አዝራር ማሳየት)
+    // 1. Submit Deposit (በቀጥታ ወደ አድሚን ፓነል ዳታቤዝ ይልካል)
     function submitDeposit(e) {
       e.preventDefault();
       let name = document.getElementById('depName').value.trim();
@@ -470,14 +456,9 @@
         refCodeUsed: usedRefCode,
         reqStatus: "pending"
       }).then(() => {
-        let textMsg = encodeURIComponent(`ሰላም አድሚን CerdionQuiz!\n\n📌 አዲስ የዴፖዚት መረጃ፦\n• ስም፦ ${name}\n• መጠን፦ ${amount} ETB\n• ቀን፦ ${new Date().toLocaleDateString()}\n\nእንኳን የከፈልኩበትን ደረሰኝ አያይዤ ልኬልዎታለሁ፤ እባክዎ አካውንቴን ያረጋግጡልኝ!`);
-        
-        let tgDirectUrl = `https://t.me/${adminTelegramUsername}?text=${textMsg}`;
-        
-        document.getElementById('depTelegramLinkContainer').style.display = 'block';
-        document.getElementById('depTgAnchor').href = tgDirectUrl;
-
-        alert('መረጃዎ ተመዝግቧል! አሁን ከታች የመጣውን አረንጓዴ ቁልፍ በመጫን ለቴሌግራም አድሚን ይላኩ። ✅');
+        alert('መረጃዎ በስኬት ተመዝግቧል! አድሚኑ መረጃዎን አይቶ አካውንትዎን እስኪያነቃ ድረስ እባክዎ ትንሽ ይታገሱ። ✅');
+        document.getElementById('depName').value = '';
+        document.getElementById('depAmount').value = '';
       }).catch((err) => {
         alert('የመረጃ መላክ ስህተት አጋጥሟል!');
       });
@@ -501,13 +482,10 @@
         acc: acc,
         reqStatus: "pending"
       }).then(() => {
-        let textMsg = encodeURIComponent(`ሰላም አድሚን CerdionQuiz!\n\n💸 አዲስ የብር ማውጫ (Withdraw) ጥያቄ፦\n• ስም፦ ${name}\n• የብር መጠን፦ ${amount} ETB\n• የመቀበያ ዘዴ፦ ${method}\n• አካውንት/ስልክ ቁጥር፦ ${acc}`);
-        let tgDirectUrl = `https://t.me/${adminTelegramUsername}?text=${textMsg}`;
-
-        document.getElementById('withTelegramLinkContainer').style.display = 'block';
-        document.getElementById('withTgAnchor').href = tgDirectUrl;
-
-        alert('የወጪ ጥያቄዎ ተመዝግቧል! አሁን ከታች ያለውን አረንጓዴ ቁልፍ በመጫን ለአድሚን ይላኩ። ✅');
+        alert('የወጪ ጥያቄዎ በአድሚን ፓነል ተመዝግቧል! አድሚኑ አረጋግጦ ብሩን ይልክልዎታል። ✅');
+        document.getElementById('withName').value = '';
+        document.getElementById('withAmount').value = '';
+        document.getElementById('withAcc').value = '';
       });
     }
 
@@ -530,6 +508,7 @@
       renderAdminPanel();
     }
 
+    // አድሚን ፓነል ማሳያ
     function renderAdminPanel() {
       updateBadges();
       let container = document.getElementById('adminListContainer');
@@ -548,18 +527,39 @@
             <div><b>ስም:</b> ${req.name}</div>
             <div><b>መጠን:</b> ${req.amount} ETB | <b>ቀን:</b> ${req.date}</div>
             <div style="display: flex; gap: 6px; margin-top: 8px;">
-              <button class="btn btn-approve" onclick="approveDeposit('${req.id}')">Approve</button>
+              <button class="btn btn-approve" onclick="approveDeposit('${req.id}')">Approve (አጽድቅ)</button>
               <button class="btn-delete" onclick="deleteDepositPermanently('${req.id}')">🗑️ አጥፋ</button>
             </div>
           `;
           container.appendChild(card);
         });
 
+      } else if (currentAdminTab === 'with') {
+        if (withdrawRequests.length === 0) {
+          container.innerHTML = '<p style="font-size: 13px; color: #64748b; text-align: center; margin-top: 20px;">ምንም የወጪ ጥያቄ የለም።</p>';
+          return;
+        }
+
+        withdrawRequests.forEach((req) => {
+          let card = document.createElement('div');
+          card.className = 'user-card';
+          card.innerHTML = `
+            <div><b>ስም:</b> ${req.name}</div>
+            <div><b>መጠን:</b> ${req.amount} ETB | <b>ዘዴ:</b> ${req.method} (${req.acc})</div>
+            <div style="display: flex; gap: 6px; margin-top: 8px;">
+              <button class="btn btn-approve" onclick="approveWithdraw('${req.id}')">Approve (ክፈት/አጽድቅ)</button>
+              <button class="btn-delete" onclick="deleteWithdrawPermanently('${req.id}')">🗑️ አጥፋ</button>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+
       } else if (currentAdminTab === 'mem') {
-        container.innerHTML = `<h3 style="color: #38bdf8;">👥 አጠቃላይ አባላት: ${membersList.length}</h3>`;
+        container.innerHTML = `<h3 style="color: #38bdf8; text-align:center;">👥 አጠቃላይ የተረጋገጡ አባላት: ${membersList.length}</h3>`;
       }
     }
 
+    // አድሚን Approve ሲያደርግ ተጠቃሚው በቀጥታ ይፈቀድለታል
     function approveDeposit(id) {
       let req = depositRequests.find(r => r.id === id);
       if (req) {
@@ -572,13 +572,24 @@
           refCodeUsed: req.refCodeUsed || ''
         });
         db.ref('depositRequests/' + id).remove();
-        alert('ጥያቄው ጸድቋል! ✅');
+        alert('ጥያቄው ጸድቋል! የተጠቃሚው አካውንት ተከፍቷል። ✅');
       }
     }
 
     function deleteDepositPermanently(id) {
       if (confirm('ይህንን ጥያቄ ማጥፋት ይፈልጋሉ?')) {
         db.ref('depositRequests/' + id).remove();
+      }
+    }
+
+    function approveWithdraw(id) {
+      db.ref('withdrawRequests/' + id).remove();
+      alert('የወጪ ጥያቄው ጸድቋል! ✅');
+    }
+
+    function deleteWithdrawPermanently(id) {
+      if (confirm('ይህንን ጥያቄ ማጥፋት ይፈልጋሉ?')) {
+        db.ref('withdrawRequests/' + id).remove();
       }
     }
   </script>
