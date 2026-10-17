@@ -55,11 +55,6 @@
     .red-badge { background: #ef4444; color: white; border-radius: 50%; padding: 2px 5px; font-size: 10px; font-weight: bold; display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; }
 
     .user-card { background: #1e293b; border-radius: 12px; padding: 12px; margin-bottom: 12px; border: 1px solid #334155; display: flex; flex-direction: column; gap: 6px; }
-    .user-header { display: flex; align-items: center; gap: 12px; }
-    .user-avatar { width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, #38bdf8, #6366f1); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; color: #ffffff; border: 2px solid #38bdf8; }
-    .user-info { flex: 1; }
-    .user-name { font-size: 16px; font-weight: bold; color: #f8fafc; }
-    .badge-pending { background: #78350f; color: #fde047; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
     .notice-box { background: #3f3f46; border-left: 4px solid #f59e0b; padding: 10px; border-radius: 6px; margin: 10px 0; font-size: 12px; color: #fef08a; }
   </style>
 </head>
@@ -336,7 +331,7 @@
     let membersList = [];
     let withdrawRequests = [];
 
-    // Firebase Database Listeners
+    // Realtime Database Listeners
     db.ref('depositRequests').on('value', (snapshot) => {
       const data = snapshot.val();
       depositRequests = data ? Object.values(data) : [];
@@ -433,14 +428,14 @@
       }
     }
 
-    // 1. Submit Deposit (በቀጥታ ወደ አድሚን ፓነል ዳታቤዝ ይልካል)
+    // 1. Submit Deposit (በቀጥታ መረጃውን የሚመዘግብበት የተስተካከለ አሰራር)
     function submitDeposit(e) {
       e.preventDefault();
       let name = document.getElementById('depName').value.trim();
       let amount = parseFloat(document.getElementById('depAmount').value);
 
-      if (!name || amount % 20 !== 0) {
-        alert('እባክዎ መረጃውን በትክክል ይሙሉ (በ 20 እጥፍ ብቻ)!');
+      if (!name || isNaN(amount) || amount <= 0 || amount % 20 !== 0) {
+        alert('እባክዎ ሙሉ ስምዎን እና በ 20 እጥፍ የሆነ የብር መጠን በትክክል ይሙሉ!');
         return;
       }
 
@@ -456,11 +451,11 @@
         refCodeUsed: usedRefCode,
         reqStatus: "pending"
       }).then(() => {
-        alert('መረጃዎ በስኬት ተመዝግቧል! አድሚኑ መረጃዎን አይቶ አካውንትዎን እስኪያነቃ ድረስ እባክዎ ትንሽ ይታገሱ። ✅');
+        alert('✅ መረጃዎ በስኬት ተመዝግቧል! አድሚኑ እስኪያጸድቀው ይጠብቁ።');
         document.getElementById('depName').value = '';
         document.getElementById('depAmount').value = '';
-      }).catch((err) => {
-        alert('የመረጃ መላክ ስህተት አጋጥሟል!');
+      }).catch((error) => {
+        alert('❌ መዝገብ ላይ ስህተት ተፈጥሯል: ፋየርቤዝ Rules (Rules) መስተካከል አለባቸው! (በግልፅ .write: true መሆኑን ያረጋግጡ)');
       });
     }
 
@@ -472,6 +467,11 @@
       let method = document.getElementById('withMethod').value;
       let acc = document.getElementById('withAcc').value.trim();
 
+      if (!name || isNaN(amount) || !acc) {
+        alert('እባክዎ ሁሉንም መስኮች በትክክል ይሙሉ!');
+        return;
+      }
+
       let reqId = 'with_' + Date.now();
       db.ref('withdrawRequests/' + reqId).set({
         id: reqId,
@@ -482,10 +482,12 @@
         acc: acc,
         reqStatus: "pending"
       }).then(() => {
-        alert('የወጪ ጥያቄዎ በአድሚን ፓነል ተመዝግቧል! አድሚኑ አረጋግጦ ብሩን ይልክልዎታል። ✅');
+        alert('✅ የብር ማውጫ ጥያቄዎ ተመዝግቧል!');
         document.getElementById('withName').value = '';
         document.getElementById('withAmount').value = '';
         document.getElementById('withAcc').value = '';
+      }).catch((error) => {
+        alert('❌ የመዝገብ ስህተት ተፈጥሯል!');
       });
     }
 
@@ -508,7 +510,6 @@
       renderAdminPanel();
     }
 
-    // አድሚን ፓነል ማሳያ
     function renderAdminPanel() {
       updateBadges();
       let container = document.getElementById('adminListContainer');
@@ -547,7 +548,7 @@
             <div><b>ስም:</b> ${req.name}</div>
             <div><b>መጠን:</b> ${req.amount} ETB | <b>ዘዴ:</b> ${req.method} (${req.acc})</div>
             <div style="display: flex; gap: 6px; margin-top: 8px;">
-              <button class="btn btn-approve" onclick="approveWithdraw('${req.id}')">Approve (ክፈት/አጽድቅ)</button>
+              <button class="btn btn-approve" onclick="approveWithdraw('${req.id}')">Approve (አጽድቅ)</button>
               <button class="btn-delete" onclick="deleteWithdrawPermanently('${req.id}')">🗑️ አጥፋ</button>
             </div>
           `;
@@ -555,11 +556,13 @@
         });
 
       } else if (currentAdminTab === 'mem') {
-        container.innerHTML = `<h3 style="color: #38bdf8; text-align:center;">👥 አጠቃላይ የተረጋገጡ አባላት: ${membersList.length}</h3>`;
+        container.innerHTML = `<h3 style="color: #38bdf8; text-align:center;">👥 አጠቃላይ የተረጋገጡ አባላት: ${membersList.length}</h3>
+        <div style="margin-top:10px;">
+          ${membersList.map(m => `<div style="background:#1e293b; padding:8px; margin-top:5px; border-radius:6px;"><b>${m.name}</b> -${m.amount} ETB</div>`).join('')}
+        </div>`;
       }
     }
 
-    // አድሚን Approve ሲያደርግ ተጠቃሚው በቀጥታ ይፈቀድለታል
     function approveDeposit(id) {
       let req = depositRequests.find(r => r.id === id);
       if (req) {
