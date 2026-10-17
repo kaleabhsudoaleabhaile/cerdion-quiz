@@ -25,7 +25,8 @@
 
     .btn { width: 100%; padding: 12px; background: #6366f1; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 14px; text-align: center; text-decoration: none; display: block; }
     .btn:hover { background: #4f46e5; }
-    .btn-telegram { background: #0088cc; }
+    .btn-telegram { background: #0088cc; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
+    .btn-telegram:hover { background: #0077b5; }
     .btn-approve { background: #16a34a; margin-top: 5px; flex: 1; }
     .btn-delete { background: #64748b; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: bold; }
 
@@ -176,7 +177,7 @@
         </form>
 
         <div id="depTelegramLinkContainer" style="display: none; margin-top: 10px; text-align: center;">
-          <a id="depTgAnchor" href="https://t.me/CerdionQuiz_Admin" target="_blank" class="btn btn-telegram" style="background: #16a34a;">📲 ወደ @CerdionQuiz_Admin ሂድ</a>
+          <a id="depTgAnchor" href="#" target="_blank" class="btn btn-telegram" style="background: #16a34a; padding: 12px;">📲 ቴሌግራም ላይ ለአድሚን ላክ (@CerdionQuiz_Admin)</a>
         </div>
       </div>
 
@@ -202,8 +203,8 @@
           <button class="btn" style="background: #0284c7;" type="submit">ብር ማውጫ ጥያቄ መዝግብ</button>
         </form>
 
-        <div id="withTelegramLinkContainer" style="display: none; margin-top: 10px;">
-          <a id="withTgAnchor" href="https://t.me/CerdionQuiz_Admin" target="_blank" class="btn btn-telegram" style="background: #16a34a;">📲 ለአድሚን በቴሌግራም ላክ (@CerdionQuiz_Admin)</a>
+        <div id="withTelegramLinkContainer" style="display: none; margin-top: 10px; text-align: center;">
+          <a id="withTgAnchor" href="#" target="_blank" class="btn btn-telegram" style="background: #16a34a; padding: 12px;">📲 ቴሌግራም ላይ ለአድሚን ላክ (@CerdionQuiz_Admin)</a>
         </div>
       </div>
 
@@ -218,7 +219,7 @@
       </div>
 
       <div style="margin-top: 15px; text-align: center;">
-        <button onclick="resetAppAccount()" style="background: #dc2626; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 12px; cursor: pointer;">🗑️ አካውንት አጥፋና አዲስ ጀምር</button>
+        <button onclick="resetAppAccount()" style="background: #dc2626; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer;">🗑️ አካውንት አጥፋና አዲስ ጀምር</button>
       </div>
     </div>
 
@@ -437,7 +438,16 @@
       alert('የሪፈራል ሊንክዎ ኮፒ ተደርጓል! 📋');
     }
 
-    // 1. Submit Deposit (በቀጥታ ወደ CerdionQuiz_Admin ማዛወር)
+    // 🗑️ አካውንት ማጥፊያ ፋንክሽን
+    function resetAppAccount() {
+      if (confirm('እርግጠኛ ነዎት ይህንን አካውንት አጥፍተው አዲስ መጀመር ይፈልጋሉ?')) {
+        localStorage.clear();
+        alert('የቆየው አካውንት ተጠፍቷል! ገጹ አዲስ ሆኖ ይከፈታል።');
+        window.location.reload();
+      }
+    }
+
+    // 1. Submit Deposit (መረጃውን መዝግቦ የቴሌግራም አዝራር ማሳየት)
     function submitDeposit(e) {
       e.preventDefault();
       let name = document.getElementById('depName').value.trim();
@@ -467,8 +477,7 @@
         document.getElementById('depTelegramLinkContainer').style.display = 'block';
         document.getElementById('depTgAnchor').href = tgDirectUrl;
 
-        // በቀጥታ ወደ ቴሌግራም መክፈት
-        window.location.href = tgDirectUrl;
+        alert('መረጃዎ ተመዝግቧል! አሁን ከታች የመጣውን አረንጓዴ ቁልፍ በመጫን ለቴሌግራም አድሚን ይላኩ። ✅');
       }).catch((err) => {
         alert('የመረጃ መላክ ስህተት አጋጥሟል!');
       });
@@ -498,7 +507,7 @@
         document.getElementById('withTelegramLinkContainer').style.display = 'block';
         document.getElementById('withTgAnchor').href = tgDirectUrl;
 
-        window.location.href = tgDirectUrl;
+        alert('የወጪ ጥያቄዎ ተመዝግቧል! አሁን ከታች ያለውን አረንጓዴ ቁልፍ በመጫን ለአድሚን ይላኩ። ✅');
       });
     }
 
