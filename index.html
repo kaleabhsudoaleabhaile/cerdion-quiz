@@ -55,6 +55,8 @@
     .red-badge { background: #ef4444; color: white; border-radius: 50%; padding: 2px 5px; font-size: 10px; font-weight: bold; display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; }
 
     .user-card { background: #1e293b; border-radius: 12px; padding: 12px; margin-bottom: 12px; border: 1px solid #334155; display: flex; flex-direction: column; gap: 6px; }
+    .user-header { display: flex; align-items: center; gap: 12px; }
+    .user-avatar { width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, #38bdf8, #6366f1); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; color: #ffffff; border: 2px solid #38bdf8; }
     .notice-box { background: #3f3f46; border-left: 4px solid #f59e0b; padding: 10px; border-radius: 6px; margin: 10px 0; font-size: 12px; color: #fef08a; }
   </style>
 </head>
@@ -72,7 +74,7 @@
       <div class="card">
         <h3>CerdionQuiz</h3>
         <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">
-          5 ጥያቄዎችን በ 1 ደቂቃ ውስጥ በመመለስ 300 ብር ያሸንፉ! 4 ትክክለኛ መልስ ብርዎን ይመልሳል። የመግቢያ ሂሳብ 20 ETB።
+          10 ጥያቄዎችን በ 1 ደቂቃ ውስጥ በመመለስ 200 ብር ያሸንፉ! 8 እና ከዚያ በላይ ያገኙ ብራቸው ይመለሳል። የመግቢያ ሂሳብ 20 ETB።
         </p>
         <button class="btn" style="margin-top: 15px;" onclick="startQuiz()">Quiz ጀምር</button>
       </div>
@@ -82,7 +84,7 @@
     <div id="demoQuizPage" class="page">
       <div class="card">
         <h3>የመለማመጃ ኳይዝ (Demo Questions)</h3>
-        <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">ያለ ምንም ክፍያ በ 1 ደቂቃ ውስጥ መለማመድ ይችላሉ!</p>
+        <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">10 ጥያቄዎችን በ 1 ደቂቃ ውስጥ መለማመድ ይችላሉ!</p>
         <button class="btn" style="background: #d97706; margin-top: 15px;" onclick="startDemoQuiz()">የመለማመጃ ጥያቄ ጀምር</button>
       </div>
     </div>
@@ -291,6 +293,7 @@
     let realBalance = isApprovedUser ? (parseFloat(localStorage.getItem('ky_realBalance')) || 0.00) : 0.00;
     let wonBalance = isApprovedUser ? (parseFloat(localStorage.getItem('ky_wonBalance')) || 0.00) : 0.00;
     let inviteCount = parseInt(localStorage.getItem('ky_inviteCount')) || 0;
+    let demoBalance = 500.00;
     
     let userRefCode = localStorage.getItem('ky_refCode');
     if (!userRefCode) {
@@ -374,6 +377,27 @@
       }
     });
 
+    // 10 QUIZ QUESTIONS POOL
+    const questionPool = [
+      { q: "1. በኮምፒዩተር ሳይንስ ጥናት ውስጥ የ 'QuickSort' አልጎሪዝም አስቸጋሪነት ጊዜ (Worst-case Time Complexity) ስንት ነው?", opts: ["O(n log n)", "O(n²)", "O(n)", "O(1)"], ans: 1 },
+      { q: "2. በአይቲ አርክቴክቸር 'TCP/IP' ሞዴል ውስጥ የ 'Transport Layer' ዋና ፕሮቶኮል የትኛው ነው?", opts: ["HTTP", "UDP", "IP", "FTP"], ans: 1 },
+      { q: "3. በፍልስፍና ጥናት ውስጥ 'Cogito, ergo sum' (አስባለሁ፤ ስለዚህ አለሁ) በማለት የሚታወቀው የ17ኛው ክፍለ ዘመን ፈላስፋ ማን ነው?", opts: ["ኢማኑኤል ካንት", "ፍሬድሪክ ኒቼ", "ሬኔ ዴካርት", "ሶቅራጦስ"], ans: 2 },
+      { q: "4. የአፍሪካ ህብረት (African Union) ቀደም ሲል ይጠራበት በነበረው የ OAU ምትክ በይፋ የተመሠረተበት ዓመተ ምህረት (በፈረንጆች አቆጣጠር) እና ከተማ የትኛው ነው?", opts: ["2002 እ.ኤ.አ ደርበን (ደቡብ አፍሪካ)", "1963 እ.ኤ.አ አዲስ አበባ", "1991 እ.ኤ.አ ካይሮ", "2005 እ.ኤ.አ አቡጃ"], ans: 0 },
+      { q: "5. በኦፐሬቲንግ ሲስተም (OS) ጥናት ውስጥ 'Deadlock' የሚከሰተው መቼ ነው?", opts: ["ሲፒዩ ሲሞቅ", "ሁለት ፕሮሰሶች አንዱ የሌላውን ሀብት በመጠበቅ ሲታገዱ", "ራም ሲሞላ", "ሃርድ ድራይቭ ሲበላሽ"], ans: 1 },
+      { q: "6. በዳታቤዝ ጥናት (DBMS) ውስጥ 'ACID' ከሚሉት መርሆች 'I' የሚወክለው ምንድን ነው?", opts: ["Isolation", "Integrity", "Index", "Instance"], ans: 0 },
+      { q: "7. በኮምፒዩተር ኔትወርክ ጥናት 'IPv6' አድራሻ ስንት ቢት (Bits) ርዝመት አለው?", opts: ["32 bits", "64 bits", "128 bits", "256 bits"], ans: 2 },
+      { q: "8. በሳይኮሎጂ እና አእምሮ ጥናት የሰው ልጅ የረጅም ጊዜ ትዝታ (Long-term memory) የሚቀመጥበት የአእምሮ ክፍል የትኛው ነው?", opts: ["ሂፖካምፐስ (Hippocampus)", "ሴሬቤለም", "አሚግዳላ", "ሜዱላ"], ans: 0 },
+      { q: "9. በኦብጀክት ኦሬንቴድ ፕሮግራሚንግ (OOP) ውስጥ የአንድን ክላስ ባህሪያት ለሌላ ክላስ ማስተላለፍ ምን ይባላል?", opts: ["Encapsulation", "Inheritance", "Polymorphism", "Abstraction"], ans: 1 },
+      { q: "10. በኢትዮጵያ ታሪክ በ16ኛው ክፍለ ዘመን በጎንደር ከተማ የታወቀውን ድንቅ ቤተ-መንግሥት (ፋሲል ግቢ) ያስገነቡት ንጉሥ ማን ናቸው?", opts: ["ዐፄ ፋሲለደስ", "ዐፄ ዘርአ ያዕቆብ", "ዐፄ ኃይለ ሥላሴ", "ዐፄ ቴዎድሮስ"], ans: 0 }
+    ];
+
+    let currentQIndex = 0;
+    let correctAnswersCount = 0;
+    let timerInterval = null;
+    let timeLeft = 60;
+    let isQuizActive = false;
+    let activeQuizQuestions = [];
+
     function handleSettingsClick() {
       clickCount++;
       if (clickCount >= 5) {
@@ -391,8 +415,19 @@
     }
 
     function switchNavTab(pageId, el) {
+      if (isQuizActive && pageId !== 'quizPlayPage') {
+        triggerQuizLoss("ከጥያቄው ገጽ ስለወጡ ጨዋታውን ተሸንፈዋል!");
+        return;
+      }
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
       if(el) el.classList.add('active');
+
+      if (pageId === 'demoAccountPage') {
+        currentMode = 'demo';
+      } else if (pageId === 'realAccountPage') {
+        currentMode = 'real';
+        updateProfileDisplay();
+      }
       showPage(pageId);
     }
 
@@ -428,7 +463,119 @@
       }
     }
 
-    // 1. Submit Deposit (በቀጥታ መረጃውን የሚመዘግብበት የተስተካከለ አሰራር)
+    function startQuiz() {
+      if (!isApprovedUser) {
+        alert('አካውንትዎ ገና አልተረጋገጠም! እባክዎ አስቀድመው ዴፖዚት ያድርጉ እና የአድሚኑን ማረጋገጫ ይጠብቁ።');
+        switchNavTab('realAccountPage', document.getElementById('navRealAcc'));
+        showSubPage('depSubPage');
+        return;
+      }
+      if (currentMode === 'real' && realBalance < 20) {
+        alert('ለኳይዙ መግቢያ በቂ ሂሳብ (20 ETB) የለዎትም! ወደ ዴፖዚት ገጽ በመሄድ ብር ያስገቡ።');
+        switchNavTab('realAccountPage', document.getElementById('navRealAcc'));
+        showSubPage('depSubPage');
+        return;
+      }
+      if (currentMode === 'real') {
+        realBalance -= 20;
+        document.getElementById('userBalance').innerText = realBalance.toFixed(2) + ' ETB';
+        localStorage.setItem('ky_realBalance', realBalance);
+      }
+      beginQuizSession();
+    }
+
+    function startDemoQuiz() {
+      beginQuizSession();
+    }
+
+    function beginQuizSession() {
+      currentQIndex = 0;
+      correctAnswersCount = 0;
+      timeLeft = 60;
+      isQuizActive = true;
+      activeQuizQuestions = [...questionPool];
+
+      showPage('quizPlayPage');
+      startTimer();
+      loadQuestion(currentQIndex);
+    }
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        let min = Math.floor(timeLeft / 60);
+        let sec = timeLeft % 60;
+        document.getElementById('timerDisplay').innerText = `ቀሪ ሰዓት: ${min < 10 ? '0' : ''}${min}:${sec < 10 ? '0' : ''}${sec}`;
+
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          triggerQuizLoss("ጊዜው አልቋል! ጨዋታውን ተሸንፈዋል!");
+        }
+      }, 1000);
+    }
+
+    function triggerQuizLoss(msg) {
+      if (!isQuizActive) return;
+      isQuizActive = false;
+      clearInterval(timerInterval);
+      alert(msg);
+      showPage('homePage');
+    }
+
+    // 🎯 QUIZ SCORING RULES
+    function loadQuestion(idx) {
+      if (idx >= activeQuizQuestions.length) {
+        clearInterval(timerInterval);
+        isQuizActive = false;
+
+        if (correctAnswersCount === 10) {
+          alert("እንኳን ደስ አለዎት! 10ቱንም ጥያቄዎች በትክክል መልሰዋል 🎉 200 ብር አሸንፈዋል!");
+          if (currentMode === 'real') {
+            wonBalance += 200;
+            realBalance += 200;
+          } else {
+            demoBalance += 200;
+            document.getElementById('demoBalanceDisplay').innerText = demoBalance.toFixed(2) + ' ETB';
+          }
+        } else if (correctAnswersCount >= 8) {
+          alert(`ጥሩ ሙከራ! ${correctAnswersCount}/10 መልሰዋል 🎉 የመግቢያ ብርዎ (20 ETB) ተመልሶልዎታል!`);
+          if (currentMode === 'real') {
+            realBalance += 20;
+          }
+        } else {
+          alert(`ጨዋታውን ጨርሰዋል! 10 ጥያቄዎች ውስጥ ${correctAnswersCount} ብቻ ትክክል መልሰዋል።`);
+        }
+
+        if (currentMode === 'real') {
+          document.getElementById('wonAmount').innerText = wonBalance.toFixed(2) + ' ETB';
+          document.getElementById('userBalance').innerText = realBalance.toFixed(2) + ' ETB';
+          localStorage.setItem('ky_realBalance', realBalance);
+          localStorage.setItem('ky_wonBalance', wonBalance);
+        }
+        showPage('homePage');
+        return;
+      }
+
+      let q = activeQuizQuestions[idx];
+      document.getElementById('qText').innerText = q.q;
+      let cont = document.getElementById('optionsContainer');
+      cont.innerHTML = '';
+      q.opts.forEach((opt, i) => {
+        let div = document.createElement('div');
+        div.className = 'quiz-option';
+        div.innerText = opt;
+        div.onclick = () => {
+          if (i === q.ans) {
+            correctAnswersCount++;
+          }
+          currentQIndex++;
+          loadQuestion(currentQIndex);
+        };
+        cont.appendChild(div);
+      });
+    }
+
     function submitDeposit(e) {
       e.preventDefault();
       let name = document.getElementById('depName').value.trim();
@@ -455,11 +602,10 @@
         document.getElementById('depName').value = '';
         document.getElementById('depAmount').value = '';
       }).catch((error) => {
-        alert('❌ መዝገብ ላይ ስህተት ተፈጥሯል: ፋየርቤዝ Rules (Rules) መስተካከል አለባቸው! (በግልፅ .write: true መሆኑን ያረጋግጡ)');
+        alert('❌ የመዝገብ ስህተት ተፈጥሯል!');
       });
     }
 
-    // 2. Submit Withdraw
     function submitWithdraw(e) {
       e.preventDefault();
       let name = document.getElementById('withName').value.trim();
@@ -486,8 +632,6 @@
         document.getElementById('withName').value = '';
         document.getElementById('withAmount').value = '';
         document.getElementById('withAcc').value = '';
-      }).catch((error) => {
-        alert('❌ የመዝገብ ስህተት ተፈጥሯል!');
       });
     }
 
@@ -510,6 +654,7 @@
       renderAdminPanel();
     }
 
+    // 👥 ADMIN PANEL MEMBER CONTROL
     function renderAdminPanel() {
       updateBadges();
       let container = document.getElementById('adminListContainer');
@@ -556,10 +701,26 @@
         });
 
       } else if (currentAdminTab === 'mem') {
-        container.innerHTML = `<h3 style="color: #38bdf8; text-align:center;">👥 አጠቃላይ የተረጋገጡ አባላት: ${membersList.length}</h3>
-        <div style="margin-top:10px;">
-          ${membersList.map(m => `<div style="background:#1e293b; padding:8px; margin-top:5px; border-radius:6px;"><b>${m.name}</b> -${m.amount} ETB</div>`).join('')}
-        </div>`;
+        let card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <h3 style="color: #38bdf8; text-align: center; margin-bottom: 12px;">👥 አጠቃላይ የተረጋገጡ አባላት: ${membersList.length}</h3>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            ${membersList.length === 0 ? '<p style="font-size: 12px; color: #64748b; text-align: center;">ምንም አባል የለም።</p>' : membersList.map((m) => {
+              let refCount = membersList.filter(sub => sub.refCodeUsed === m.refCode).length;
+              return `
+              <div style="background: #0f172a; padding: 10px; border-radius: 8px; border: 1px solid #334155; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div style="font-weight: bold; font-size: 15px; color: #f8fafc;">${m.name} (-${m.amount} ETB)</div>
+                  <div style="font-size: 11px; color: #38bdf8; margin-top: 2px;">የጋበዟቸው አባላት: <b>${refCount} ሰው</b></div>
+                  <div style="font-size: 10px; color: #64748b;">ቀን: ${m.date}</div>
+                </div>
+                <button onclick="removeMember('${m.id}')" style="background: #dc2626; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">🗑️ አስወጣ</button>
+              </div>
+            `}).join('')}
+          </div>
+        `;
+        container.appendChild(card);
       }
     }
 
@@ -593,6 +754,13 @@
     function deleteWithdrawPermanently(id) {
       if (confirm('ይህንን ጥያቄ ማጥፋት ይፈልጋሉ?')) {
         db.ref('withdrawRequests/' + id).remove();
+      }
+    }
+
+    function removeMember(id) {
+      if (confirm('እርግጠኛ ነዎት ይህንን አባል ከአባል ዝርዝር ማገድ/ማስወጣት ይፈልጋሉ?')) {
+        db.ref('membersList/' + id).remove();
+        alert('አባሉ ከአባል ዝርዝር ተወግደዋል!');
       }
     }
   </script>
