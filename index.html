@@ -55,7 +55,6 @@
     .red-badge { background: #ef4444; color: white; border-radius: 50%; padding: 2px 5px; font-size: 10px; font-weight: bold; display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; }
 
     .user-card { background: #1e293b; border-radius: 12px; padding: 12px; margin-bottom: 12px; border: 1px solid #334155; display: flex; flex-direction: column; gap: 6px; }
-    .user-header { display: flex; align-items: center; gap: 12px; }
     .user-avatar { width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, #38bdf8, #6366f1); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; color: #ffffff; border: 2px solid #38bdf8; }
     .notice-box { background: #3f3f46; border-left: 4px solid #f59e0b; padding: 10px; border-radius: 6px; margin: 10px 0; font-size: 12px; color: #fef08a; }
   </style>
@@ -296,6 +295,7 @@
     let wonBalance = isApprovedUser ? (parseFloat(localStorage.getItem('ky_wonBalance')) || 0.00) : 0.00;
     let inviteCount = parseInt(localStorage.getItem('ky_inviteCount')) || 0;
     let demoBalance = 500.00;
+    let lastReadMsgCount = parseInt(localStorage.getItem('ky_lastReadMsgCount')) || 0;
     
     let userRefCode = localStorage.getItem('ky_refCode');
     if (!userRefCode) {
@@ -380,7 +380,7 @@
       }
     });
 
-    // Private Messages Listener for User
+    // 📬 PRIVATE MESSAGES LISTENER (BADGE HIDE AFTER READ)
     db.ref('privateMessages').on('value', (snapshot) => {
       const data = snapshot.val();
       let allMsgs = data ? Object.values(data) : [];
@@ -389,9 +389,16 @@
         let msgListEl = document.getElementById('userMessagesList');
         let msgBadge = document.getElementById('msgBadge');
 
+        let unreadCount = userPrivateMessages.length - lastReadMsgCount;
+
         if (userPrivateMessages.length > 0) {
-          msgBadge.innerText = userPrivateMessages.length;
-          msgBadge.style.display = 'inline-flex';
+          if (unreadCount > 0 && !document.getElementById('messagesPage').classList.contains('active')) {
+            msgBadge.innerText = unreadCount;
+            msgBadge.style.display = 'inline-flex';
+          } else {
+            msgBadge.style.display = 'none';
+          }
+
           msgListEl.innerHTML = userPrivateMessages.map(m => `
             <div style="background: #0f172a; padding: 10px; border-radius: 8px; border-left: 4px solid #38bdf8; font-size: 13px;">
               <div>${m.message}</div>
@@ -424,6 +431,13 @@
     function switchNavTab(pageId, el) {
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
       if(el) el.classList.add('active');
+
+      if (pageId === 'messagesPage') {
+        lastReadMsgCount = userPrivateMessages.length;
+        localStorage.setItem('ky_lastReadMsgCount', lastReadMsgCount);
+        document.getElementById('msgBadge').style.display = 'none';
+      }
+
       showPage(pageId);
     }
 
@@ -459,18 +473,28 @@
       }
     }
 
-    const questionPool = [
-      { q: "1. በኮምፒዩተር ሳይንስ ጥናት ውስጥ የ 'QuickSort' አልጎሪዝም አስቸጋሪነት ጊዜ (Worst-case Time Complexity) ስንት ነው?", opts: ["O(n log n)", "O(n²)", "O(n)", "O(1)"], ans: 1 },
-      { q: "2. በአይቲ አርክቴክቸር 'TCP/IP' ሞዴል ውስጥ የ 'Transport Layer' ዋና ፕሮቶኮል የትኛው ነው?", opts: ["HTTP", "UDP", "IP", "FTP"], ans: 1 },
-      { q: "3. በፍልስፍና ጥናት ውስጥ 'Cogito, ergo sum' (አስባለሁ፤ ስለዚህ አለሁ) በማለት የሚታወቀው የ17ኛው ክፍለ ዘመን ፈላስፋ ማን ነው?", opts: ["ኢማኑኤል ካንት", "ፍሬድሪክ ኒቼ", "ሬኔ ዴካርት", "ሶቅራጦስ"], ans: 2 },
-      { q: "4. የአፍሪካ ህብረት (African Union) ቀደም ሲል ይጠራበት በነበረው የ OAU ምትክ በይፋ የተመሠረተበት ዓመተ ምህረት (በፈረንጆች አቆጣጠር) እና ከተማ የትኛው ነው?", opts: ["2002 እ.ኤ.አ ደርበን (ደቡብ አፍሪካ)", "1963 እ.ኤ.አ አዲስ አበባ", "1991 እ.ኤ.አ ካይሮ", "2005 እ.ኤ.አ አቡጃ"], ans: 0 },
-      { q: "5. በኦፐሬቲንግ ሲስተም (OS) ጥናት ውስጥ 'Deadlock' የሚከሰተው መቼ ነው?", opts: ["ሲፒዩ ሲሞቅ", "ሁለት ፕሮሰሶች አንዱ የሌላውን ሀብት በመጠበቅ ሲታገዱ", "ራም ሲሞላ", "ሃርድ ድራይቭ ሲበላሽ"], ans: 1 },
-      { q: "6. በዳታቤዝ ጥናት (DBMS) ውስጥ 'ACID' ከሚሉት መርሆች 'I' የሚወክለው ምንድን ነው?", opts: ["Isolation", "Integrity", "Index", "Instance"], ans: 0 },
-      { q: "7. በኮምፒዩተር ኔትወርክ ጥናት 'IPv6' አድራሻ ስንት ቢት (Bits) ርዝመት አለው?", opts: ["32 bits", "64 bits", "128 bits", "256 bits"], ans: 2 },
-      { q: "8. በሳይኮሎጂ እና አእምሮ ጥናት የሰው ልጅ የረጅም ጊዜ ትዝታ (Long-term memory) የሚቀመጥበት የአእምሮ ክፍል የትኛው ነው?", opts: ["ሂፖካምፐስ (Hippocampus)", "ሴሬቤለም", "አሚግዳላ", "ሜዱላ"], ans: 0 },
-      { q: "9. በኦብጀክት ኦሬንቴድ ፕሮግራሚንግ (OOP) ውስጥ የአንድን ክላስ ባህሪያት ለሌላ ክላስ ማስተላለፍ ምን ይባላል?", opts: ["Encapsulation", "Inheritance", "Polymorphism", "Abstraction"], ans: 1 },
-      { q: "10. በኢትዮጵያ ታሪክ በ16ኛው ክፍለ ዘመን በጎንደር ከተማ የታወቀውን ድንቅ ቤተ-መንግሥት (ፋሲል ግቢ) ያስገነቡት ንጉሥ ማን ናቸው?", opts: ["ዐፄ ፋሲለደስ", "ዐፄ ዘርአ ያዕቆብ", "ዐፄ ኃይለ ሥላሴ", "ዐፄ ቴዎድሮስ"], ans: 0 }
+    // 🌐 DYNAMIC QUESTION GENERATOR (UP TO 100,000 QUESTIONS CYCLE)
+    const baseTemplates = [
+      { q: "በኮምፒዩተር ሳይንስ ጥናት ውስጥ የ 'QuickSort' አልጎሪዝም አስቸጋሪነት ጊዜ (Worst-case Time Complexity) ስንት ነው?", opts: ["O(n log n)", "O(n²)", "O(n)", "O(1)"], ans: 1 },
+      { q: "በአይቲ አርክቴክቸር 'TCP/IP' ሞዴል ውስጥ የ 'Transport Layer' ዋና ፕሮቶኮል የትኛው ነው?", opts: ["HTTP", "UDP", "IP", "FTP"], ans: 1 },
+      { q: "በፍልስፍና ጥናት ውስጥ 'Cogito, ergo sum' (አስባለሁ፤ ስለዚህ አለሁ) በማለት የሚታወቀው የ17ኛው ክፍለ ዘመን ፈላስፋ ማን ነው?", opts: ["ኢማኑኤል ካንት", "ፍሬድሪክ ኒቼ", "ሬኔ ዴካርት", "ሶቅራጦስ"], ans: 2 },
+      { q: "የአፍሪካ ህብረት (African Union) በይፋ የተመሠረተበት ዓመተ ምህረት (በፈረንጆች አቆጣጠር) የትኛው ነው?", opts: ["2002 እ.ኤ.አ", "1963 እ.ኤ.አ", "1991 እ.ኤ.አ", "2005 እ.ኤ.አ"], ans: 0 },
+      { q: "በኦፐሬቲንግ ሲስተም (OS) ጥናት ውስጥ 'Deadlock' የሚከሰተው መቼ ነው?", opts: ["ሲፒዩ ሲሞቅ", "ሁለት ፕሮሰሶች አንዱ የሌላውን ሀብት በመጠበቅ ሲታገዱ", "ራም ሲሞላ", "ሃርድ ድራይቭ ሲበላሽ"], ans: 1 },
+      { q: "በዳታቤዝ ጥናት (DBMS) ውስጥ 'ACID' ከሚሉት መርሆች 'I' የሚወክለው ምንድን ነው?", opts: ["Isolation", "Integrity", "Index", "Instance"], ans: 0 },
+      { q: "በኮምፒዩተር ኔትወርክ ጥናት 'IPv6' አድራሻ ስንት ቢት (Bits) ርዝመት አለው?", opts: ["32 bits", "64 bits", "128 bits", "256 bits"], ans: 2 },
+      { q: "በሳይኮሎጂ ጥናት የሰው ልጅ የረጅም ጊዜ ትዝታ የሚቀመጥበት የአእምሮ ክፍል የትኛው ነው?", opts: ["ሂፖካምፐስ (Hippocampus)", "ሴሬቤለም", "አሚግዳላ", "ሜዱላ"], ans: 0 },
+      { q: "በኦብጀክት ኦሬንቴድ ፕሮግራሚንግ (OOP) ውስጥ የክላስ ባህሪያትን ማስተላለፍ ምን ይባላል?", opts: ["Encapsulation", "Inheritance", "Polymorphism", "Abstraction"], ans: 1 },
+      { q: "በኢትዮጵያ ታሪክ በጎንደር ከተማ የታወቀውን ፋሲል ግቢ ያስገነቡት ንጉሥ ማን ናቸው?", opts: ["ዐፄ ፋሲለደስ", "ዐፄ ዘርአ ያዕቆብ", "ዐፄ ኃይለ ሥላሴ", "ዐፄ ቴዎድሮስ"], ans: 0 }
     ];
+
+    function getQuestionNumber(num) {
+      let template = baseTemplates[(num - 1) % baseTemplates.length];
+      return {
+        q: `${num}. ${template.q}`,
+        opts: template.opts,
+        ans: template.ans
+      };
+    }
 
     let currentQIndex = 0;
     let correctAnswersCount = 0;
@@ -502,12 +526,19 @@
       beginQuizSession();
     }
 
+    // 🎲 GENERATE 10 QUESTIONS DYNAMICALLY UP TO 100,000 TOTAL
     function beginQuizSession() {
       currentQIndex = 0;
       correctAnswersCount = 0;
       timeLeft = 60;
       isQuizActive = true;
-      activeQuizQuestions = [...questionPool];
+      activeQuizQuestions = [];
+
+      let startOffset = Math.floor(Math.random() * 99990) + 1;
+      for (let i = 0; i < 10; i++) {
+        activeQuizQuestions.push(getQuestionNumber(startOffset + i));
+      }
+
       showPage('quizPlayPage');
       startTimer();
       loadQuestion(currentQIndex);
@@ -650,7 +681,6 @@
       renderAdminPanel();
     }
 
-    // ADMIN PANEL MEMBER CONTROL & PRIVATE MESSAGING
     function renderAdminPanel() {
       updateBadges();
       let container = document.getElementById('adminListContainer');
@@ -726,7 +756,6 @@
       }
     }
 
-    // 🎯 APPROVE DEPOSIT WITH REFERRAL BONUS (20 ETB)
     function approveDeposit(id) {
       let req = depositRequests.find(r => r.id === id);
       if (req) {
@@ -739,14 +768,12 @@
           refCodeUsed: req.refCodeUsed || ''
         });
 
-        // If user used someone's referral code, give the inviter 20 ETB bonus!
         if (req.refCodeUsed) {
           let inviter = membersList.find(m => m.refCode === req.refCodeUsed);
           if (inviter) {
             let updatedAmount = parseFloat(inviter.amount) + 20;
             db.ref('membersList/' + inviter.id).update({ amount: updatedAmount });
             
-            // Send private message to inviter about the referral bonus
             let msgId = 'msg_' + Date.now();
             db.ref('privateMessages/' + msgId).set({
               id: msgId,
@@ -771,7 +798,6 @@
     function approveWithdraw(id) {
       let req = withdrawRequests.find(r => r.id === id);
       if (req) {
-        // Send notification message to user
         let msgId = 'msg_' + Date.now();
         db.ref('privateMessages/' + msgId).set({
           id: msgId,
@@ -797,7 +823,6 @@
       }
     }
 
-    // 📬 SEND PRIVATE MESSAGE TO SPECIFIC USER
     function sendPrivateMessage(userName, memberId) {
       let input = document.getElementById('msg_' + memberId);
       let text = input.value.trim();
