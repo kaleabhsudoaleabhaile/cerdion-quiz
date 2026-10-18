@@ -92,9 +92,11 @@
     <!-- MESSAGES PAGE -->
     <div id="messagesPage" class="page">
       <div class="card">
-        <h3>የድርጅቱ ህጎች እና ማሳወቂያዎች</h3>
+        <h3>የግል መልእክቶች እና ማሳወቂያዎች</h3>
         <p style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">ከአድሚን የተላኩ መልእክቶች፦</p>
-        <div id="userMessagesList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+        <div id="userMessagesList" style="display: flex; flex-direction: column; gap: 8px;">
+          <p style="font-size: 12px; color: #64748b; text-align: center;">ምንም አዲስ መልእክት የለም።</p>
+        </div>
       </div>
     </div>
 
@@ -198,7 +200,7 @@
       <!-- REFERRAL SUB-PAGE -->
       <div id="refSubPage" class="card" style="display: none;">
         <h3>Invite & My Referral Link</h3>
-        <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">በእርስዎ ሊንክ ሰዎችን በመጋበዝ ቦነስ ያግኙ!</p>
+        <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">ሰዎችን በመጋበዝ እያንዳንዱ ሰው ሲመዘገብ <b>20 ETB ቦነስ</b> ያግኙ!</p>
         <br>
         <label>የእርስዎ የጋበዛ ሊንክ (Referral Link)</label>
         <input type="text" id="userReferralLink" readonly>
@@ -333,6 +335,7 @@
     let depositRequests = [];
     let membersList = [];
     let withdrawRequests = [];
+    let userPrivateMessages = [];
 
     // Realtime Database Listeners
     db.ref('depositRequests').on('value', (snapshot) => {
@@ -377,26 +380,30 @@
       }
     });
 
-    // 10 QUIZ QUESTIONS POOL
-    const questionPool = [
-      { q: "1. በኮምፒዩተር ሳይንስ ጥናት ውስጥ የ 'QuickSort' አልጎሪዝም አስቸጋሪነት ጊዜ (Worst-case Time Complexity) ስንት ነው?", opts: ["O(n log n)", "O(n²)", "O(n)", "O(1)"], ans: 1 },
-      { q: "2. በአይቲ አርክቴክቸር 'TCP/IP' ሞዴል ውስጥ የ 'Transport Layer' ዋና ፕሮቶኮል የትኛው ነው?", opts: ["HTTP", "UDP", "IP", "FTP"], ans: 1 },
-      { q: "3. በፍልስፍና ጥናት ውስጥ 'Cogito, ergo sum' (አስባለሁ፤ ስለዚህ አለሁ) በማለት የሚታወቀው የ17ኛው ክፍለ ዘመን ፈላስፋ ማን ነው?", opts: ["ኢማኑኤል ካንት", "ፍሬድሪክ ኒቼ", "ሬኔ ዴካርት", "ሶቅራጦስ"], ans: 2 },
-      { q: "4. የአፍሪካ ህብረት (African Union) ቀደም ሲል ይጠራበት በነበረው የ OAU ምትክ በይፋ የተመሠረተበት ዓመተ ምህረት (በፈረንጆች አቆጣጠር) እና ከተማ የትኛው ነው?", opts: ["2002 እ.ኤ.አ ደርበን (ደቡብ አፍሪካ)", "1963 እ.ኤ.አ አዲስ አበባ", "1991 እ.ኤ.አ ካይሮ", "2005 እ.ኤ.አ አቡጃ"], ans: 0 },
-      { q: "5. በኦፐሬቲንግ ሲስተም (OS) ጥናት ውስጥ 'Deadlock' የሚከሰተው መቼ ነው?", opts: ["ሲፒዩ ሲሞቅ", "ሁለት ፕሮሰሶች አንዱ የሌላውን ሀብት በመጠበቅ ሲታገዱ", "ራም ሲሞላ", "ሃርድ ድራይቭ ሲበላሽ"], ans: 1 },
-      { q: "6. በዳታቤዝ ጥናት (DBMS) ውስጥ 'ACID' ከሚሉት መርሆች 'I' የሚወክለው ምንድን ነው?", opts: ["Isolation", "Integrity", "Index", "Instance"], ans: 0 },
-      { q: "7. በኮምፒዩተር ኔትወርክ ጥናት 'IPv6' አድራሻ ስንት ቢት (Bits) ርዝመት አለው?", opts: ["32 bits", "64 bits", "128 bits", "256 bits"], ans: 2 },
-      { q: "8. በሳይኮሎጂ እና አእምሮ ጥናት የሰው ልጅ የረጅም ጊዜ ትዝታ (Long-term memory) የሚቀመጥበት የአእምሮ ክፍል የትኛው ነው?", opts: ["ሂፖካምፐስ (Hippocampus)", "ሴሬቤለም", "አሚግዳላ", "ሜዱላ"], ans: 0 },
-      { q: "9. በኦብጀክት ኦሬንቴድ ፕሮግራሚንግ (OOP) ውስጥ የአንድን ክላስ ባህሪያት ለሌላ ክላስ ማስተላለፍ ምን ይባላል?", opts: ["Encapsulation", "Inheritance", "Polymorphism", "Abstraction"], ans: 1 },
-      { q: "10. በኢትዮጵያ ታሪክ በ16ኛው ክፍለ ዘመን በጎንደር ከተማ የታወቀውን ድንቅ ቤተ-መንግሥት (ፋሲል ግቢ) ያስገነቡት ንጉሥ ማን ናቸው?", opts: ["ዐፄ ፋሲለደስ", "ዐፄ ዘርአ ያዕቆብ", "ዐፄ ኃይለ ሥላሴ", "ዐፄ ቴዎድሮስ"], ans: 0 }
-    ];
+    // Private Messages Listener for User
+    db.ref('privateMessages').on('value', (snapshot) => {
+      const data = snapshot.val();
+      let allMsgs = data ? Object.values(data) : [];
+      if (registeredName) {
+        userPrivateMessages = allMsgs.filter(m => m.userName === registeredName);
+        let msgListEl = document.getElementById('userMessagesList');
+        let msgBadge = document.getElementById('msgBadge');
 
-    let currentQIndex = 0;
-    let correctAnswersCount = 0;
-    let timerInterval = null;
-    let timeLeft = 60;
-    let isQuizActive = false;
-    let activeQuizQuestions = [];
+        if (userPrivateMessages.length > 0) {
+          msgBadge.innerText = userPrivateMessages.length;
+          msgBadge.style.display = 'inline-flex';
+          msgListEl.innerHTML = userPrivateMessages.map(m => `
+            <div style="background: #0f172a; padding: 10px; border-radius: 8px; border-left: 4px solid #38bdf8; font-size: 13px;">
+              <div>${m.message}</div>
+              <div style="font-size: 10px; color: #64748b; margin-top: 4px;">ቀን: ${m.date}</div>
+            </div>
+          `).join('');
+        } else {
+          msgBadge.style.display = 'none';
+          msgListEl.innerHTML = '<p style="font-size: 12px; color: #64748b; text-align: center;">ምንም አዲስ መልእክት የለም።</p>';
+        }
+      }
+    });
 
     function handleSettingsClick() {
       clickCount++;
@@ -415,19 +422,8 @@
     }
 
     function switchNavTab(pageId, el) {
-      if (isQuizActive && pageId !== 'quizPlayPage') {
-        triggerQuizLoss("ከጥያቄው ገጽ ስለወጡ ጨዋታውን ተሸንፈዋል!");
-        return;
-      }
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
       if(el) el.classList.add('active');
-
-      if (pageId === 'demoAccountPage') {
-        currentMode = 'demo';
-      } else if (pageId === 'realAccountPage') {
-        currentMode = 'real';
-        updateProfileDisplay();
-      }
       showPage(pageId);
     }
 
@@ -463,24 +459,42 @@
       }
     }
 
+    const questionPool = [
+      { q: "1. በኮምፒዩተር ሳይንስ ጥናት ውስጥ የ 'QuickSort' አልጎሪዝም አስቸጋሪነት ጊዜ (Worst-case Time Complexity) ስንት ነው?", opts: ["O(n log n)", "O(n²)", "O(n)", "O(1)"], ans: 1 },
+      { q: "2. በአይቲ አርክቴክቸር 'TCP/IP' ሞዴል ውስጥ የ 'Transport Layer' ዋና ፕሮቶኮል የትኛው ነው?", opts: ["HTTP", "UDP", "IP", "FTP"], ans: 1 },
+      { q: "3. በፍልስፍና ጥናት ውስጥ 'Cogito, ergo sum' (አስባለሁ፤ ስለዚህ አለሁ) በማለት የሚታወቀው የ17ኛው ክፍለ ዘመን ፈላስፋ ማን ነው?", opts: ["ኢማኑኤል ካንት", "ፍሬድሪክ ኒቼ", "ሬኔ ዴካርት", "ሶቅራጦስ"], ans: 2 },
+      { q: "4. የአፍሪካ ህብረት (African Union) ቀደም ሲል ይጠራበት በነበረው የ OAU ምትክ በይፋ የተመሠረተበት ዓመተ ምህረት (በፈረንጆች አቆጣጠር) እና ከተማ የትኛው ነው?", opts: ["2002 እ.ኤ.አ ደርበን (ደቡብ አፍሪካ)", "1963 እ.ኤ.አ አዲስ አበባ", "1991 እ.ኤ.አ ካይሮ", "2005 እ.ኤ.አ አቡጃ"], ans: 0 },
+      { q: "5. በኦፐሬቲንግ ሲስተም (OS) ጥናት ውስጥ 'Deadlock' የሚከሰተው መቼ ነው?", opts: ["ሲፒዩ ሲሞቅ", "ሁለት ፕሮሰሶች አንዱ የሌላውን ሀብት በመጠበቅ ሲታገዱ", "ራም ሲሞላ", "ሃርድ ድራይቭ ሲበላሽ"], ans: 1 },
+      { q: "6. በዳታቤዝ ጥናት (DBMS) ውስጥ 'ACID' ከሚሉት መርሆች 'I' የሚወክለው ምንድን ነው?", opts: ["Isolation", "Integrity", "Index", "Instance"], ans: 0 },
+      { q: "7. በኮምፒዩተር ኔትወርክ ጥናት 'IPv6' አድራሻ ስንት ቢት (Bits) ርዝመት አለው?", opts: ["32 bits", "64 bits", "128 bits", "256 bits"], ans: 2 },
+      { q: "8. በሳይኮሎጂ እና አእምሮ ጥናት የሰው ልጅ የረጅም ጊዜ ትዝታ (Long-term memory) የሚቀመጥበት የአእምሮ ክፍል የትኛው ነው?", opts: ["ሂፖካምፐስ (Hippocampus)", "ሴሬቤለም", "አሚግዳላ", "ሜዱላ"], ans: 0 },
+      { q: "9. በኦብጀክት ኦሬንቴድ ፕሮግራሚንግ (OOP) ውስጥ የአንድን ክላስ ባህሪያት ለሌላ ክላስ ማስተላለፍ ምን ይባላል?", opts: ["Encapsulation", "Inheritance", "Polymorphism", "Abstraction"], ans: 1 },
+      { q: "10. በኢትዮጵያ ታሪክ በ16ኛው ክፍለ ዘመን በጎንደር ከተማ የታወቀውን ድንቅ ቤተ-መንግሥት (ፋሲል ግቢ) ያስገነቡት ንጉሥ ማን ናቸው?", opts: ["ዐፄ ፋሲለደስ", "ዐፄ ዘርአ ያዕቆብ", "ዐፄ ኃይለ ሥላሴ", "ዐፄ ቴዎድሮስ"], ans: 0 }
+    ];
+
+    let currentQIndex = 0;
+    let correctAnswersCount = 0;
+    let timerInterval = null;
+    let timeLeft = 60;
+    let isQuizActive = false;
+    let activeQuizQuestions = [];
+
     function startQuiz() {
       if (!isApprovedUser) {
-        alert('አካውንትዎ ገና አልተረጋገጠም! እባክዎ አስቀድመው ዴፖዚት ያድርጉ እና የአድሚኑን ማረጋገጫ ይጠብቁ።');
+        alert('አካውንትዎ ገና አልተረጋገጠም!');
         switchNavTab('realAccountPage', document.getElementById('navRealAcc'));
         showSubPage('depSubPage');
         return;
       }
-      if (currentMode === 'real' && realBalance < 20) {
-        alert('ለኳይዙ መግቢያ በቂ ሂሳብ (20 ETB) የለዎትም! ወደ ዴፖዚት ገጽ በመሄድ ብር ያስገቡ።');
+      if (realBalance < 20) {
+        alert('ለኳይዙ መግቢያ በቂ ሂሳብ (20 ETB) የለዎትም!');
         switchNavTab('realAccountPage', document.getElementById('navRealAcc'));
         showSubPage('depSubPage');
         return;
       }
-      if (currentMode === 'real') {
-        realBalance -= 20;
-        document.getElementById('userBalance').innerText = realBalance.toFixed(2) + ' ETB';
-        localStorage.setItem('ky_realBalance', realBalance);
-      }
+      realBalance -= 20;
+      document.getElementById('userBalance').innerText = realBalance.toFixed(2) + ' ETB';
+      localStorage.setItem('ky_realBalance', realBalance);
       beginQuizSession();
     }
 
@@ -494,7 +508,6 @@
       timeLeft = 60;
       isQuizActive = true;
       activeQuizQuestions = [...questionPool];
-
       showPage('quizPlayPage');
       startTimer();
       loadQuestion(currentQIndex);
@@ -507,7 +520,6 @@
         let min = Math.floor(timeLeft / 60);
         let sec = timeLeft % 60;
         document.getElementById('timerDisplay').innerText = `ቀሪ ሰዓት: ${min < 10 ? '0' : ''}${min}:${sec < 10 ? '0' : ''}${sec}`;
-
         if (timeLeft <= 0) {
           clearInterval(timerInterval);
           triggerQuizLoss("ጊዜው አልቋል! ጨዋታውን ተሸንፈዋል!");
@@ -523,7 +535,6 @@
       showPage('homePage');
     }
 
-    // 🎯 QUIZ SCORING RULES
     function loadQuestion(idx) {
       if (idx >= activeQuizQuestions.length) {
         clearInterval(timerInterval);
@@ -531,28 +542,19 @@
 
         if (correctAnswersCount === 10) {
           alert("እንኳን ደስ አለዎት! 10ቱንም ጥያቄዎች በትክክል መልሰዋል 🎉 200 ብር አሸንፈዋል!");
-          if (currentMode === 'real') {
-            wonBalance += 200;
-            realBalance += 200;
-          } else {
-            demoBalance += 200;
-            document.getElementById('demoBalanceDisplay').innerText = demoBalance.toFixed(2) + ' ETB';
-          }
+          wonBalance += 200;
+          realBalance += 200;
         } else if (correctAnswersCount >= 8) {
           alert(`ጥሩ ሙከራ! ${correctAnswersCount}/10 መልሰዋል 🎉 የመግቢያ ብርዎ (20 ETB) ተመልሶልዎታል!`);
-          if (currentMode === 'real') {
-            realBalance += 20;
-          }
+          realBalance += 20;
         } else {
           alert(`ጨዋታውን ጨርሰዋል! 10 ጥያቄዎች ውስጥ ${correctAnswersCount} ብቻ ትክክል መልሰዋል።`);
         }
 
-        if (currentMode === 'real') {
-          document.getElementById('wonAmount').innerText = wonBalance.toFixed(2) + ' ETB';
-          document.getElementById('userBalance').innerText = realBalance.toFixed(2) + ' ETB';
-          localStorage.setItem('ky_realBalance', realBalance);
-          localStorage.setItem('ky_wonBalance', wonBalance);
-        }
+        document.getElementById('wonAmount').innerText = wonBalance.toFixed(2) + ' ETB';
+        document.getElementById('userBalance').innerText = realBalance.toFixed(2) + ' ETB';
+        localStorage.setItem('ky_realBalance', realBalance);
+        localStorage.setItem('ky_wonBalance', wonBalance);
         showPage('homePage');
         return;
       }
@@ -566,9 +568,7 @@
         div.className = 'quiz-option';
         div.innerText = opt;
         div.onclick = () => {
-          if (i === q.ans) {
-            correctAnswersCount++;
-          }
+          if (i === q.ans) correctAnswersCount++;
           currentQIndex++;
           loadQuestion(currentQIndex);
         };
@@ -601,8 +601,6 @@
         alert('✅ መረጃዎ በስኬት ተመዝግቧል! አድሚኑ እስኪያጸድቀው ይጠብቁ።');
         document.getElementById('depName').value = '';
         document.getElementById('depAmount').value = '';
-      }).catch((error) => {
-        alert('❌ የመዝገብ ስህተት ተፈጥሯል!');
       });
     }
 
@@ -638,10 +636,8 @@
     function updateBadges() {
       let pendingDeps = depositRequests.filter(r => r.reqStatus === 'pending');
       let pendingWiths = withdrawRequests.filter(r => r.reqStatus === 'pending');
-
       document.getElementById('depCountBadge').innerText = pendingDeps.length;
       document.getElementById('depCountBadge').style.display = pendingDeps.length > 0 ? 'inline-flex' : 'none';
-
       document.getElementById('withCountBadge').innerText = pendingWiths.length;
       document.getElementById('withCountBadge').style.display = pendingWiths.length > 0 ? 'inline-flex' : 'none';
     }
@@ -654,7 +650,7 @@
       renderAdminPanel();
     }
 
-    // 👥 ADMIN PANEL MEMBER CONTROL
+    // ADMIN PANEL MEMBER CONTROL & PRIVATE MESSAGING
     function renderAdminPanel() {
       updateBadges();
       let container = document.getElementById('adminListContainer');
@@ -705,17 +701,23 @@
         card.className = 'card';
         card.innerHTML = `
           <h3 style="color: #38bdf8; text-align: center; margin-bottom: 12px;">👥 አጠቃላይ የተረጋገጡ አባላት: ${membersList.length}</h3>
-          <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; flex-direction: column; gap: 10px;">
             ${membersList.length === 0 ? '<p style="font-size: 12px; color: #64748b; text-align: center;">ምንም አባል የለም።</p>' : membersList.map((m) => {
               let refCount = membersList.filter(sub => sub.refCodeUsed === m.refCode).length;
               return `
-              <div style="background: #0f172a; padding: 10px; border-radius: 8px; border: 1px solid #334155; display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                  <div style="font-weight: bold; font-size: 15px; color: #f8fafc;">${m.name} (-${m.amount} ETB)</div>
-                  <div style="font-size: 11px; color: #38bdf8; margin-top: 2px;">የጋበዟቸው አባላት: <b>${refCount} ሰው</b></div>
-                  <div style="font-size: 10px; color: #64748b;">ቀን: ${m.date}</div>
+              <div style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #334155;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <div style="font-weight: bold; font-size: 15px; color: #f8fafc;">${m.name} (-${m.amount} ETB)</div>
+                    <div style="font-size: 11px; color: #38bdf8; margin-top: 2px;">የጋበዟቸው: <b>${refCount} ሰው</b></div>
+                    <div style="font-size: 10px; color: #64748b;">ቀን: ${m.date}</div>
+                  </div>
+                  <button onclick="removeMember('${m.id}')" style="background: #dc2626; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">🗑️ አስወጣ</button>
                 </div>
-                <button onclick="removeMember('${m.id}')" style="background: #dc2626; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">🗑️ አስወጣ</button>
+                <div style="margin-top: 8px; display: flex; gap: 6px;">
+                  <input type="text" id="msg_${m.id}" placeholder="ለዚህ ተጠቃሚ የግል መልእክት ጻፍ..." style="margin: 0; font-size: 12px; padding: 6px;">
+                  <button onclick="sendPrivateMessage('${m.name}', '${m.id}')" style="background: #0284c7; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; white-space: nowrap;">📬 ላክ</button>
+                </div>
               </div>
             `}).join('')}
           </div>
@@ -724,6 +726,7 @@
       }
     }
 
+    // 🎯 APPROVE DEPOSIT WITH REFERRAL BONUS (20 ETB)
     function approveDeposit(id) {
       let req = depositRequests.find(r => r.id === id);
       if (req) {
@@ -735,6 +738,25 @@
           refCode: req.refCode,
           refCodeUsed: req.refCodeUsed || ''
         });
+
+        // If user used someone's referral code, give the inviter 20 ETB bonus!
+        if (req.refCodeUsed) {
+          let inviter = membersList.find(m => m.refCode === req.refCodeUsed);
+          if (inviter) {
+            let updatedAmount = parseFloat(inviter.amount) + 20;
+            db.ref('membersList/' + inviter.id).update({ amount: updatedAmount });
+            
+            // Send private message to inviter about the referral bonus
+            let msgId = 'msg_' + Date.now();
+            db.ref('privateMessages/' + msgId).set({
+              id: msgId,
+              userName: inviter.name,
+              message: `🎉 እንኳን ደስ አለዎት! '${req.name}' የተባለ ሰው በሊንክዎ በመግባቱ 20 ETB የሪፈራል ቦነስ አግኝተዋል!`,
+              date: new Date().toLocaleDateString()
+            });
+          }
+        }
+
         db.ref('depositRequests/' + id).remove();
         alert('ጥያቄው ጸድቋል! የተጠቃሚው አካውንት ተከፍቷል። ✅');
       }
@@ -747,8 +769,19 @@
     }
 
     function approveWithdraw(id) {
+      let req = withdrawRequests.find(r => r.id === id);
+      if (req) {
+        // Send notification message to user
+        let msgId = 'msg_' + Date.now();
+        db.ref('privateMessages/' + msgId).set({
+          id: msgId,
+          userName: req.name,
+          message: `✅ የ ${req.amount} ETB የብር ማውጫ (Withdraw) ጥያቄዎ ጸድቆ ተልኳል!`,
+          date: new Date().toLocaleDateString()
+        });
+      }
       db.ref('withdrawRequests/' + id).remove();
-      alert('የወጪ ጥያቄው ጸድቋል! ✅');
+      alert('የወጪ ጥያቄው ጸድቋል እና ለተጠቃሚው ማሳወቂያ ተልኳል! ✅');
     }
 
     function deleteWithdrawPermanently(id) {
@@ -762,6 +795,27 @@
         db.ref('membersList/' + id).remove();
         alert('አባሉ ከአባል ዝርዝር ተወግደዋል!');
       }
+    }
+
+    // 📬 SEND PRIVATE MESSAGE TO SPECIFIC USER
+    function sendPrivateMessage(userName, memberId) {
+      let input = document.getElementById('msg_' + memberId);
+      let text = input.value.trim();
+      if (!text) {
+        alert('እባክዎ የመልእክት ሐሳብ ይጻፉ!');
+        return;
+      }
+
+      let msgId = 'msg_' + Date.now();
+      db.ref('privateMessages/' + msgId).set({
+        id: msgId,
+        userName: userName,
+        message: text,
+        date: new Date().toLocaleDateString()
+      }).then(() => {
+        alert(`መልእክቱ ለ ${userName} ተልኳል! ✅`);
+        input.value = '';
+      });
     }
   </script>
 </body>
