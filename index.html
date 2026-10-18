@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="am">
 <head>
@@ -71,7 +72,7 @@
     <!-- HOME PAGE -->
     <div id="homePage" class="page active">
       <div class="card">
-        <h3>CerdionQuiz</h3>
+        <h3>CerdionQuiz (100,000+ ጥያቄዎች)</h3>
         <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">
           10 ጥያቄዎችን በ 1 ደቂቃ ውስጥ በመመለስ 200 ብር ያሸንፉ! 8 እና ከዚያ በላይ ያገኙ ብራቸው ይመለሳል። የመግቢያ ሂሳብ 20 ETB።
         </p>
@@ -108,7 +109,7 @@
       <div class="card">
         <h3>የመለማመጃ ኳይዝ</h3>
         <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">ያለ ክፍያ በ 1 ደቂቃ ውስጥ መለማመድ ይችላሉ!</p>
-        <button class="btn" style="background: #d97706; margin-top: 10px;" onclick="switchNavTab('demoQuizPage', document.getElementById('navDemo'))">Demo ኳይዝ ጀምር</button>
+        <button class="btn" style="background: #d97706; margin-top: 10px;" onclick="switchNavTab('demoQuizPage', document.getElementById('navDemo'))">Demo ኳዝ ጀምር</button>
       </div>
     </div>
 
@@ -153,9 +154,10 @@
       <!-- DEPOSIT SUB-PAGE -->
       <div id="depSubPage" class="card" style="display: none;">
         <h3>Deposit (ብር ማስገቢያ)</h3>
-        <p style="font-size: 12px; color: #94a3b8; margin-top: 5px;">
-          • Telebirr: 0985625604<br>
-          • ስም: Kaleab Haile W/abrha
+        <p style="font-size: 12px; color: #38bdf8; margin-top: 5px; line-height: 1.6;">
+          📲 <b>Telebirr:</b> 0985625604<br>
+          🏦 <b>CBE Bank:</b> 1000657786342<br>
+          👤 <b>ስም:</b> Kaleab Haile W/abrha
         </p>
 
         <div class="notice-box">
@@ -166,10 +168,22 @@
           <label>ሙሉ ስምዎ</label>
           <input type="text" id="depName" placeholder="ሙሉ ስም ያስገቡ" required>
 
+          <label>የክፍያ ዘዴ</label>
+          <select id="depMethod">
+            <option>Telebirr</option>
+            <option>CBE Bank</option>
+          </select>
+
           <label>የክፍያ መጠን (ETB - በ 20 እጥፍ ብቻ)</label>
           <input type="number" id="depAmount" step="20" min="20" placeholder="20, 40, 60, 80..." required>
 
-          <button class="btn" type="submit" style="background: #16a34a;">✅ መረጃ መዝግብ</button>
+          <label>Transaction ID ወይም Screenshot (አንዱን ብቻ መሙላት በቂ ነው)</label>
+          <input type="text" id="depTxId" placeholder="Transaction ID (አማራጭ)">
+          
+          <label style="font-size: 11px; color: #94a3b8;">ወይም የክፍያ ስክሪንሾት ፋይል ይምረጡ</label>
+          <input type="file" id="depScreenshot" accept="image/*" style="padding: 6px; background: #0f172a; border: 1px solid #334155;">
+
+          <button class="btn" type="submit" style="background: #16a34a; margin-top: 10px;">✅ መረጃ መዝግብ</button>
         </form>
       </div>
 
@@ -190,7 +204,7 @@
           </select>
 
           <label>የስልክ / አካውንት ቁጥር</label>
-          <input type="text" id="withAcc" placeholder="09..." required>
+          <input type="text" id="withAcc" placeholder="09... / 1000..." required>
 
           <button class="btn" style="background: #0284c7;" type="submit">✅ ብር ማውጫ ጥያቄ መዝግብ</button>
         </form>
@@ -380,7 +394,6 @@
       }
     });
 
-    // 📬 PRIVATE MESSAGES LISTENER (BADGE HIDE AFTER READ)
     db.ref('privateMessages').on('value', (snapshot) => {
       const data = snapshot.val();
       let allMsgs = data ? Object.values(data) : [];
@@ -473,7 +486,6 @@
       }
     }
 
-    // 🌐 DYNAMIC QUESTION GENERATOR (UP TO 100,000 QUESTIONS CYCLE)
     const baseTemplates = [
       { q: "በኮምፒዩተር ሳይንስ ጥናት ውስጥ የ 'QuickSort' አልጎሪዝም አስቸጋሪነት ጊዜ (Worst-case Time Complexity) ስንት ነው?", opts: ["O(n log n)", "O(n²)", "O(n)", "O(1)"], ans: 1 },
       { q: "በአይቲ አርክቴክቸር 'TCP/IP' ሞዴል ውስጥ የ 'Transport Layer' ዋና ፕሮቶኮል የትኛው ነው?", opts: ["HTTP", "UDP", "IP", "FTP"], ans: 1 },
@@ -526,7 +538,6 @@
       beginQuizSession();
     }
 
-    // 🎲 GENERATE 10 QUESTIONS DYNAMICALLY UP TO 100,000 TOTAL
     function beginQuizSession() {
       currentQIndex = 0;
       correctAnswersCount = 0;
@@ -607,32 +618,58 @@
       });
     }
 
+    // 🎯 SUBMIT DEPOSIT (TX ID OR SCREENSHOT - OPTIONAL EITHER)
     function submitDeposit(e) {
       e.preventDefault();
       let name = document.getElementById('depName').value.trim();
+      let method = document.getElementById('depMethod').value;
       let amount = parseFloat(document.getElementById('depAmount').value);
+      let txId = document.getElementById('depTxId').value.trim();
+      let fileInput = document.getElementById('depScreenshot');
 
       if (!name || isNaN(amount) || amount <= 0 || amount % 20 !== 0) {
-        alert('እባክዎ ሙሉ ስምዎን እና በ 20 እጥፍ የሆነ የብር መጠን በትክክል ይሙሉ!');
+        alert('እባክዎ ሙሉ ስምዎን እና የብር መጠን በትክክል ይሙሉ!');
+        return;
+      }
+
+      if (!txId && (!fileInput.files || !fileInput.files[0])) {
+        alert('እባክዎ Transaction ID ያስገቡ ወይም የክፍያ ስክሪንሾት ይምረጡ (ከአንዱ አንዱ ግዴታ ነው)!');
         return;
       }
 
       registeredName = name;
       let reqId = 'dep_' + Date.now();
 
-      db.ref('depositRequests/' + reqId).set({
-        id: reqId,
-        name: name,
-        date: new Date().toLocaleDateString(),
-        amount: amount,
-        refCode: userRefCode,
-        refCodeUsed: usedRefCode,
-        reqStatus: "pending"
-      }).then(() => {
-        alert('✅ መረጃዎ በስኬት ተመዝግቧል! አድሚኑ እስኪያጸድቀው ይጠብቁ።');
-        document.getElementById('depName').value = '';
-        document.getElementById('depAmount').value = '';
-      });
+      const saveData = (imgBase64) => {
+        db.ref('depositRequests/' + reqId).set({
+          id: reqId,
+          name: name,
+          method: method,
+          date: new Date().toLocaleDateString(),
+          amount: amount,
+          txId: txId || 'ስክሪንሾት ብቻ',
+          screenshot: imgBase64 || '',
+          refCode: userRefCode,
+          refCodeUsed: usedRefCode,
+          reqStatus: "pending"
+        }).then(() => {
+          alert('✅ መረጃዎ በስኬት ተመዝግቧል! አድሚኑ እስኪያጸድቀው ይጠብቁ።');
+          document.getElementById('depName').value = '';
+          document.getElementById('depAmount').value = '';
+          document.getElementById('depTxId').value = '';
+          document.getElementById('depScreenshot').value = '';
+        });
+      };
+
+      if (fileInput.files && fileInput.files[0]) {
+        let reader = new FileReader();
+        reader.onload = function(e) {
+          saveData(e.target.result);
+        };
+        reader.readAsDataURL(fileInput.files[0]);
+      } else {
+        saveData('');
+      }
     }
 
     function submitWithdraw(e) {
@@ -697,7 +734,10 @@
           card.className = 'user-card';
           card.innerHTML = `
             <div><b>ስም:</b> ${req.name}</div>
-            <div><b>መጠን:</b> ${req.amount} ETB | <b>ቀን:</b> ${req.date}</div>
+            <div><b>መጠን:</b> ${req.amount} ETB | <b>ዘዴ:</b> ${req.method || 'Telebirr'}</div>
+            <div><b>Tx ID:</b> <span style="color: #f59e0b; font-weight: bold;">${req.txId || 'የለም'}</span></div>
+            <div><b>ቀን:</b> ${req.date}</div>
+            ${req.screenshot ? `<div style="margin-top: 5px;"><a href="${req.screenshot}" target="_blank"><img src="${req.screenshot}" style="max-width: 100%; max-height: 150px; border-radius: 6px; border: 1px solid #38bdf8;" /></a></div>` : ''}
             <div style="display: flex; gap: 6px; margin-top: 8px;">
               <button class="btn btn-approve" onclick="approveDeposit('${req.id}')">Approve (አጽድቅ)</button>
               <button class="btn-delete" onclick="deleteDepositPermanently('${req.id}')">🗑️ አጥፋ</button>
