@@ -1,921 +1,910 @@
-<!DOCTYPE html>
-<html lang="am">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CerdionQuiz (K Y)</title>
+<!DOCTYPE html>  <html lang="am">  
+<head>  
+  <meta charset="UTF-8">  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+  <title>CerdionQuiz (K Y)</title>    <!-- Firebase SDKs -->    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>    <style>  
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }  
+    body { background-color: #0f172a; color: #f8fafc; padding-bottom: 90px; }  
+    header { background: linear-gradient(135deg, #1e1b4b, #312e81); padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #6366f1; }  
+    .logo { font-size: 22px; font-weight: bold; color: #38bdf8; }  
+    .logo span { background: #6366f1; color: white; padding: 2px 8px; border-radius: 6px; font-size: 15px; margin-left: 5px; }  
+    .settings-icon { font-size: 20px; cursor: pointer; user-select: none; padding: 5px; }  
   
-  <!-- Supabase JS Client SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <style>
-    * { 
-      box-sizing: border-box; 
-      margin: 0; 
-      padding: 0; 
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      -webkit-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
-    }
-
-    body { background-color: #0f172a; color: #f8fafc; padding-bottom: 90px; }
-    
-    .blur-shield { transition: filter 0.3s ease; }
-    body.blurred .blur-shield { filter: blur(15px); }
-
-    header { background: linear-gradient(135deg, #1e1b4b, #312e81); padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #6366f1; }
-    .logo { font-size: 22px; font-weight: bold; color: #38bdf8; }
-    .logo span { background: #6366f1; color: white; padding: 2px 8px; border-radius: 6px; font-size: 15px; margin-left: 5px; }
-    .settings-icon { font-size: 20px; cursor: pointer; user-select: none; padding: 5px; }
-
-    .container { padding: 15px; max-width: 500px; margin: 0 auto; }
-    .card { background: #1e293b; border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid #334155; }
-
-    .balance-title { font-size: 14px; color: #94a3b8; }
-    .balance-amount { font-size: 28px; font-weight: bold; color: #4ade80; margin: 5px 0; }
-
-    .btn { width: 100%; padding: 12px; background: #6366f1; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 14px; text-align: center; text-decoration: none; display: block; }
-    .btn:hover { background: #4f46e5; }
-    .btn-approve { background: #16a34a; margin-top: 5px; flex: 1; }
-    .btn-delete { background: #dc2626; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: bold; }
-
-    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-    .stat-box { background: #0f172a; padding: 10px; border-radius: 8px; text-align: center; }
-    .stat-val { font-size: 18px; font-weight: bold; color: #38bdf8; }
-    .stat-lbl { font-size: 12px; color: #94a3b8; }
-
-    input, select, textarea { width: 100%; padding: 10px; margin-top: 6px; margin-bottom: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px; }
-    label { font-size: 13px; color: #cbd5e1; }
-
-    .nav { position: fixed; bottom: 0; left: 0; right: 0; background: #1e293b; display: flex; justify-content: space-around; padding: 10px 5px; border-top: 1px solid #334155; z-index: 100; }
-    .nav-item { color: #94a3b8; text-decoration: none; font-size: 11px; text-align: center; cursor: pointer; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; position: relative; }
-    .nav-item.active { color: #38bdf8; font-weight: bold; }
-
-    .nav-badge { position: absolute; top: 2px; right: 22%; background: #ef4444; color: white; border-radius: 50%; padding: 1px 5px; font-size: 9px; font-weight: bold; display: inline-flex; align-items: center; justify-content: center; min-width: 16px; height: 16px; }
-
-    .page { display: none; }
-    .page.active { display: block; }
-
-    .quiz-option { background: #0f172a; border: 1px solid #334155; padding: 12px; border-radius: 8px; margin-top: 8px; cursor: pointer; font-size: 14px; }
-    .timer-box { font-size: 16px; font-weight: bold; color: #f59e0b; margin-bottom: 10px; text-align: right; }
-
-    .admin-tabs { display: flex; gap: 6px; margin-bottom: 15px; flex-wrap: wrap; }
-    .admin-tab-btn { flex: 1; min-width: 110px; padding: 8px 5px; background: #334155; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; font-size: 11px; position: relative; display: flex; align-items: center; justify-content: center; gap: 4px; text-align: center; }
-    .admin-tab-btn.active { background: #6366f1; }
-
-    .red-badge { background: #ef4444; color: white; border-radius: 50%; padding: 2px 5px; font-size: 10px; font-weight: bold; display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; }
-
-    .user-card { background: #1e293b; border-radius: 12px; padding: 12px; margin-bottom: 12px; border: 1px solid #334155; display: flex; flex-direction: column; gap: 6px; }
-    .user-avatar { width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, #38bdf8, #6366f1); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; color: #ffffff; border: 2px solid #38bdf8; }
-    .notice-box { background: #3f3f46; border-left: 4px solid #f59e0b; padding: 10px; border-radius: 6px; margin: 10px 0; font-size: 12px; color: #fef08a; }
-  </style>
-</head>
-<body class="blur-shield">
-
-  <header>
-    <div class="logo">CerdionQuiz <span>K Y</span></div>
-    <div class="settings-icon" onclick="handleSettingsClick()">⚙️</div>
-  </header>
-
-  <div class="container">
-
-    <!-- HOME PAGE -->
-    <div id="homePage" class="page active">
-      <div class="card">
-        <h3>CerdionQuiz (100,000+ ጥያቄዎች)</h3>
-        <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">
-          10 ጥያቄዎችን በ 1 ደቂቃ ውስጥ በመመለስ 200 ብር ያሸንፉ! 8 እና ከዚያ በላይ ያገኙ ብራቸው ይመለሳል። የመግቢያ ሂሳብ 20 ETB።
-        </p>
-        <button class="btn" style="margin-top: 15px;" onclick="startQuiz()">Quiz ጀምር</button>
-      </div>
-    </div>
-
-    <!-- MESSAGES PAGE -->
-    <div id="messagesPage" class="page">
-      <div class="card">
-        <h3>የግል መልእክቶች እና ማሳወቂያዎች</h3>
-        <p style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">ከአድሚን የተላኩ መልእክቶች፦</p>
-        <div id="userMessagesList" style="display: flex; flex-direction: column; gap: 8px;">
-          <p style="font-size: 12px; color: #64748b; text-align: center;">ምንም አዲስ መልእክት የለም።</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- REAL ACCOUNT PAGE -->
-    <div id="realAccountPage" class="page">
-      <div class="card" style="background: linear-gradient(135deg, #1e1b4b, #1e293b); border: 1px solid #6366f1;">
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <div class="user-avatar" id="userPPAvatar">?</div>
-          <div style="flex: 1;">
-            <div style="font-size: 11px; color: #94a3b8;">የተጠቃሚ ስም (Profile)</div>
-            <div id="displayProfileName" style="font-size: 18px; font-weight: bold; color: #38bdf8; margin-top: 2px;">ያልተረጋገጠ (Pending)</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="balance-title">የአካውንት ቀሪ ሂሳብ</div>
-        <div class="balance-amount" id="userBalance">0.00 ETB</div>
-
-        <div class="stats-grid">
-          <div class="stat-box">
-            <div class="stat-val" id="wonAmount">0.00 ETB</div>
-            <div class="stat-lbl">Won (ያሸነፉት)</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-val" id="refCount">0</div>
-            <div class="stat-lbl">Invited (የጋበዟቸው)</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3>Deposit / Withdraw / Referral</h3>
-        <p style="font-size: 12px; color: #94a3b8; margin-top: 5px;">አገልግሎቶች</p>
-        <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;">
-          <button class="btn" style="font-size: 11px; padding: 8px; flex: 1;" onclick="showSubPage('depSubPage')">Deposit (ብር ማስገቢያ)</button>
-          <button class="btn" style="font-size: 11px; padding: 8px; background: #0284c7; flex: 1;" onclick="showSubPage('withSubPage')">Withdraw (ብር ማውጫ)</button>
-          <button class="btn" style="font-size: 11px; padding: 8px; background: #8b5cf6; flex: 1;" onclick="showSubPage('refSubPage')">Invite / Referral</button>
-        </div>
-      </div>
-
-      <!-- DEPOSIT SUB-PAGE -->
-      <div id="depSubPage" class="card" style="display: none;">
-        <h3>Deposit (ብር ማስገቢያ)</h3>
-        <p style="font-size: 12px; color: #38bdf8; margin-top: 5px; line-height: 1.6;">
-          📲 <b>Telebirr:</b> 0985625604 (Kaleab Haile)<br>
-          🏦 <b>CBE Bank:</b> 1000214664748 (Fantaye Kebede)
-        </p>
-
-        <div class="notice-box">
-          ⚠️ <b>ማስታወሻ፦</b> የሚገቡት ገንዘቦች <b>በ 20 እጥፍ</b> (ለምሳሌ፦ 20፣ 40፣ 60...) ብቻ መሆን አለባቸው።
-        </div>
-
-        <form style="margin-top: 10px;" onsubmit="submitDeposit(event)">
-          <label>ሙሉ ስምዎ</label>
-          <input type="text" id="depName" placeholder="ሙሉ ስም ያስገቡ" required>
-
-          <label>የክፍያ ዘዴ</label>
-          <select id="depMethod">
-            <option>Telebirr</option>
-            <option>CBE Bank</option>
-          </select>
-
-          <label>የክፍያ መጠን (ETB - በ 20 እጥፍ ብቻ)</label>
-          <input type="number" id="depAmount" step="20" min="20" placeholder="20, 40, 60, 80..." required>
-
-          <label>Transaction ID ወይም Screenshot (አንዱን ብቻ መሙላት በቂ ነው)</label>
-          <input type="text" id="depTxId" placeholder="Transaction ID (አማራጭ)">
-          
-          <label style="font-size: 11px; color: #94a3b8;">ወይም የክፍያ ስክሪንሾት ፋይል ይምረጡ</label>
-          <input type="file" id="depScreenshot" accept="image/*" style="padding: 6px; background: #0f172a; border: 1px solid #334155;">
-
-          <button class="btn" type="submit" style="background: #16a34a; margin-top: 10px;">✅ መረጃ መዝግብ</button>
-        </form>
-      </div>
-
-      <!-- WITHDRAW SUB-PAGE -->
-      <div id="withSubPage" class="card" style="display: none;">
-        <h3>Withdraw (ብር ማውጫ)</h3>
-        <form onsubmit="submitWithdraw(event)">
-          <label>ስምዎ</label>
-          <input type="text" id="withName" placeholder="ሙሉ ስም ያስገቡ" required>
-
-          <label>የሚያወጡት ብር መጠን</label>
-          <input type="number" id="withAmount" placeholder="50" min="50" required>
-
-          <label>የመቀበያ ዘዴ</label>
-          <select id="withMethod">
-            <option>Telebirr</option>
-            <option>CBE Bank</option>
-          </select>
-
-          <label>የስልክ / አካውንት ቁጥር</label>
-          <input type="text" id="withAcc" placeholder="09... / 1000..." required>
-
-          <button class="btn" style="background: #0284c7;" type="submit">✅ ብር ማውጫ ጥያቄ መዝግብ</button>
-        </form>
-      </div>
-
-      <!-- REFERRAL SUB-PAGE -->
-      <div id="refSubPage" class="card" style="display: none;">
-        <h3>Invite & My Referral Link</h3>
-        <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">ሰዎችን በመጋበዝ እያንዳንዱ ሰው ሲመዘገብ <b>20 ETB ቦነስ</b> ያግኙ!</p>
-        <br>
-        <label>የእርስዎ የጋበዛ ሊንክ (Referral Link)</label>
-        <input type="text" id="userReferralLink" readonly>
-        <button class="btn" style="background: #8b5cf6;" onclick="copyReferralLink()">📋 የሪፈራል ሊንክ ኮፒ አድርግ</button>
-      </div>
-
-      <div style="margin-top: 15px; text-align: center;">
-        <button onclick="resetAppAccount()" style="background: #dc2626; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer;">🗑️ አካውንት አጥፋና አዲስ ጀምር</button>
-      </div>
-    </div>
-
-    <!-- ADMIN PANEL PAGE -->
-    <div id="adminPanelPage" class="page">
-      <div style="margin-bottom: 15px;">
-        <h3 style="color: #ef4444;">⚙️ Admin Control Panel (Supabase Live)</h3>
-      </div>
-
-      <div class="admin-tabs">
-        <button class="admin-tab-btn active" id="tabDepBtn" onclick="switchAdminTab('dep')">
-          1. መመዝገቢያ <span class="red-badge" id="depCountBadge" style="display:none;">0</span>
-        </button>
-        <button class="admin-tab-btn" id="tabWithBtn" onclick="switchAdminTab('with')">
-          2. የወጪ ጥያቄ <span class="red-badge" id="withCountBadge" style="display:none;">0</span>
-        </button>
-        <button class="admin-tab-btn" id="tabMemBtn" onclick="switchAdminTab('mem')">
-          3. የአባል ብዛት
-        </button>
-      </div>
-
-      <div id="adminListContainer">
-        <p style="font-size: 13px; color: #64748b; text-align: center; margin-top: 20px;">መረጃዎችን በመጫን ላይ...</p>
-      </div>
-    </div>
-
-    <!-- QUIZ PLAY INTERFACE -->
-    <div id="quizPlayPage" class="page">
-      <div class="card">
-        <div class="timer-box" id="timerDisplay">ቀሪ ሰዓት: 01:00</div>
-        <h3 id="qCategory">CerdionQuiz ጥያቄዎች (ከዳታቤዝ)</h3>
-        <p id="qText" style="font-size: 16px; margin: 15px 0; color: #f8fafc;">ጥያቄ በመጫን ላይ...</p>
-        <div id="optionsContainer"></div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- BOTTOM NAVIGATION BAR -->
-  <div class="nav">
-    <div class="nav-item active" id="navQuiz" onclick="switchNavTab('homePage', this)">
-      <span>❓</span>
-      <span>ጥያቄ</span>
-    </div>
-    <div class="nav-item" id="navMsg" onclick="switchNavTab('messagesPage', this)">
-      <span>📬</span>
-      <span>መልእክት</span>
-      <span class="nav-badge" id="msgBadge" style="display:none;">0</span>
-    </div>
-    <div class="nav-item" id="navRealAcc" onclick="switchNavTab('realAccountPage', this)">
-      <span>🟢</span>
-      <span>አካውንቴ</span>
-    </div>
-  </div>
-
-  <script>
-    const SUPABASE_URL = 'https://gvojjzhbojlovsnchxzt.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_7ImWQhMf95w6NL_-T9uQGg_JBimeeIZ';
-
-    let _supabase = null;
-    try {
-      if (typeof supabase !== 'undefined') {
-        const { createClient } = supabase;
-        _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      }
-    } catch (e) {
-      console.error("Supabase init error:", e);
-    }
-
-    // --- SECURITY & ANTI-CHEAT ---
-    document.addEventListener('contextmenu', e => e.preventDefault());
-    document.addEventListener('copy', (e) => {
-      e.preventDefault();
-      alert('⚠️ ከዚህ ዌብሳይት ጥያቄዎችን ኮፒ ማድረግ የተከለከለ ነው!');
-    });
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) {
-        document.body.classList.add('blurred');
-      } else {
-        document.body.classList.remove('blurred');
-      }
-    });
-    window.addEventListener('blur', () => { document.body.classList.add('blurred'); });
-    window.addEventListener('focus', () => { document.body.classList.remove('blurred'); });
-
-    let clickCount = 0;
-    let isApprovedUser = localStorage.getItem('ky_isApproved') === 'true';
-    let registeredName = localStorage.getItem('ky_registeredName') || '';
-
-    let realBalance = isApprovedUser ? (parseFloat(localStorage.getItem('ky_realBalance')) || 0.00) : 0.00;
-    let wonBalance = isApprovedUser ? (parseFloat(localStorage.getItem('ky_wonBalance')) || 0.00) : 0.00;
-    let inviteCount = parseInt(localStorage.getItem('ky_inviteCount')) || 0;
-    let lastReadMsgCount = parseInt(localStorage.getItem('ky_lastReadMsgCount')) || 0;
-    
-    let userRefCode = localStorage.getItem('ky_refCode');
-    if (!userRefCode) {
-      userRefCode = 'KY-' + Math.floor(1000 + Math.random() * 9000);
-      localStorage.setItem('ky_refCode', userRefCode);
-    }
-
-    try {
-      const currentUrl = window.location.origin + window.location.pathname;
-      const fullRefLink = currentUrl + '?ref=' + userRefCode;
-      const refInput = document.getElementById('userReferralLink');
-      if (refInput) refInput.value = fullRefLink;
-    } catch (e) {}
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const usedRefCode = urlParams.get('ref') || '';
-
-    function updateProfileDisplay() {
-      try {
-        let displayNameEl = document.getElementById('displayProfileName');
-        let ppAvatarEl = document.getElementById('userPPAvatar');
-
-        if (isApprovedUser && registeredName) {
-          if (displayNameEl) displayNameEl.innerText = registeredName;
-          if (ppAvatarEl) ppAvatarEl.innerText = registeredName.charAt(0).toUpperCase();
-        } else {
-          if (displayNameEl) displayNameEl.innerText = "ያልተረጋገጠ (Pending)";
-          if (ppAvatarEl) ppAvatarEl.innerText = "?";
-          realBalance = 0.00;
-          wonBalance = 0.00;
-        }
-
-        let ub = document.getElementById('userBalance');
-        let wa = document.getElementById('wonAmount');
-        let rc = document.getElementById('refCount');
-        if (ub) ub.innerText = realBalance.toFixed(2) + ' ETB';
-        if (wa) wa.innerText = wonBalance.toFixed(2) + ' ETB';
-        if (rc) rc.innerText = inviteCount;
-      } catch (e) {}
-    }
-
-    updateProfileDisplay();
-
-    let currentAdminTab = 'dep';
-    let depositRequests = [];
-    let membersList = [];
-    let withdrawRequests = [];
-    let userPrivateMessages = [];
-
-    async function fetchSupabaseData() {
-      if (!_supabase) return;
-      try {
-        let { data: depData } = await _supabase.from('depositRequests').select('*');
-        depositRequests = depData || [];
-
-        let { data: withData } = await _supabase.from('withdrawRequests').select('*');
-        withdrawRequests = withData || [];
-
-        let { data: memData } = await _supabase.from('membersList').select('*');
-        membersList = memData || [];
-
-        let currentMember = membersList.find(m => m.refCode === userRefCode || (registeredName && m.name === registeredName));
-        if (currentMember) {
-          isApprovedUser = true;
-          registeredName = currentMember.name;
-          realBalance = parseFloat(currentMember.amount) || 0.00;
-          localStorage.setItem('ky_isApproved', 'true');
-          localStorage.setItem('ky_registeredName', registeredName);
-          localStorage.setItem('ky_realBalance', realBalance);
-          updateProfileDisplay();
-        }
-
-        let myInvitedList = membersList.filter(m => m.refCodeUsed === userRefCode);
-        inviteCount = myInvitedList.length;
-        let rc = document.getElementById('refCount');
-        if (rc) rc.innerText = inviteCount;
-
-        let { data: msgData } = await _supabase.from('privateMessages').select('*');
-        let allMsgs = msgData || [];
-        if (registeredName) {
-          userPrivateMessages = allMsgs.filter(m => m.userName === registeredName);
-          let msgListEl = document.getElementById('userMessagesList');
-          let msgBadge = document.getElementById('msgBadge');
-          let unreadCount = userPrivateMessages.length - lastReadMsgCount;
-
-          if (userPrivateMessages.length > 0) {
-            if (unreadCount > 0 && !document.getElementById('messagesPage').classList.contains('active')) {
-              if (msgBadge) {
-                msgBadge.innerText = unreadCount;
-                msgBadge.style.display = 'inline-flex';
-              }
-            } else {
-              if (msgBadge) msgBadge.style.display = 'none';
-            }
-
-            if (msgListEl) {
-              msgListEl.innerHTML = userPrivateMessages.map(m => `
-                <div style="background: #0f172a; padding: 10px; border-radius: 8px; border-left: 4px solid #38bdf8; font-size: 13px;">
-                  <div>${m.message}</div>
-                  <div style="font-size: 10px; color: #64748b; margin-top: 4px;">ቀን: ${m.date}</div>
-                </div>
-              `).join('');
-            }
-          } else {
-            if (msgBadge) msgBadge.style.display = 'none';
-            if (msgListEl) msgListEl.innerHTML = '<p style="font-size: 12px; color: #64748b; text-align: center;">ምንም አዲስ መልእክት የለም።</p>';
-          }
-        }
-
-        updateBadges();
-        let adminPage = document.getElementById('adminPanelPage');
-        if(adminPage && adminPage.classList.contains('active')) {
-          renderAdminPanel();
-        }
-      } catch (err) {
-        console.error("Error fetching data: ", err);
-      }
-    }
-
-    fetchSupabaseData();
-    setInterval(fetchSupabaseData, 5000);
-
-    function handleSettingsClick() {
-      clickCount++;
-      if (clickCount >= 5) {
-        clickCount = 0;
-        let pass = prompt("የአድሚን የይለፍ ቃል ያስገቡ:");
-        if (pass === "182418") {
-          alert("ወደ አድሚን ፓነል ገብተዋል!");
-          showPage('adminPanelPage');
-          currentAdminTab = 'dep';
-          switchAdminTab('dep');
-        } else if (pass !== null) {
-          alert("የተሳሳተ የይለፍ ቃል!");
-        }
-      }
-    }
-
-    function switchNavTab(pageId, el) {
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      if(el) el.classList.add('active');
-
-      if (pageId === 'messagesPage') {
-        lastReadMsgCount = userPrivateMessages.length;
-        localStorage.setItem('ky_lastReadMsgCount', lastReadMsgCount);
-        let mb = document.getElementById('msgBadge');
-        if (mb) mb.style.display = 'none';
-      }
-
-      showPage(pageId);
-    }
-
-    function showSubPage(id) {
-      const ids = ['depSubPage', 'withSubPage', 'refSubPage'];
-      ids.forEach(s => {
-        let el = document.getElementById(s);
-        if (el) {
-          if (s === id) {
-            el.style.display = (el.style.display === 'block') ? 'none' : 'block';
-          } else {
-            el.style.display = 'none';
-          }
-        }
-      });
-    }
-
-    function showPage(pageId) {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      let target = document.getElementById(pageId);
-      if (target) target.classList.add('active');
-    }
-
-    function copyReferralLink() {
-      let input = document.getElementById('userReferralLink');
-      if (input) {
-        input.select();
-        document.execCommand("copy");
-        alert('የሪፈራል ሊንክዎ ኮፒ ተደርጓል! 📋');
-      }
-    }
-
-    function resetAppAccount() {
-      if (confirm('እርግጠኛ ነዎት ይህንን አካውንት አጥፍተው አዲስ መጀመር ይፈልጋሉ?')) {
-        localStorage.clear();
-        alert('የቆየው አካውንት ተጠፍቷል! ገጹ አዲስ ሆኖ ይከፈታል።');
-        window.location.reload();
-      }
-    }
-
-    let currentQIndex = 0;
-    let correctAnswersCount = 0;
-    let timerInterval = null;
-    let timeLeft = 60;
-    let isQuizActive = false;
-    let activeQuizQuestions = [];
-
-    function startQuiz() {
-      if (!isApprovedUser) {
-        alert('አካውንትዎ ገና አልተረጋገጠም!');
-        switchNavTab('realAccountPage', document.getElementById('navRealAcc'));
-        showSubPage('depSubPage');
-        return;
-      }
-      if (realBalance < 20) {
-        alert('ለኳይዙ መግቢያ በቂ ሂሳብ (20 ETB) የለዎትም!');
-        switchNavTab('realAccountPage', document.getElementById('navRealAcc'));
-        showSubPage('depSubPage');
-        return;
-      }
-      realBalance -= 20;
-      let ub = document.getElementById('userBalance');
-      if (ub) ub.innerText = realBalance.toFixed(2) + ' ETB';
-      localStorage.setItem('ky_realBalance', realBalance);
-      fetchQuestionsAndStart();
-    }
-
-    async function fetchQuestionsAndStart() {
-      if (!_supabase) {
-        alert("የ ዳታቤዝ ግንኙነት የለም።");
-        return;
-      }
-      try {
-        let { data: questions, error } = await _supabase.from('questions').select('*');
+    .container { padding: 15px; max-width: 500px; margin: 0 auto; }  
+    .card { background: #1e293b; border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid #334155; }  
+  
+    .balance-title { font-size: 14px; color: #94a3b8; }  
+    .balance-amount { font-size: 28px; font-weight: bold; color: #4ade80; margin: 5px 0; }  
+  
+    .btn { width: 100%; padding: 12px; background: #6366f1; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 14px; text-align: center; text-decoration: none; display: block; }  
+    .btn:hover { background: #4f46e5; }  
+    .btn-approve { background: #16a34a; margin-top: 5px; flex: 1; }  
+    .btn-delete { background: #dc2626; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: bold; }  
+  
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }  
+    .stat-box { background: #0f172a; padding: 10px; border-radius: 8px; text-align: center; }  
+    .stat-val { font-size: 18px; font-weight: bold; color: #38bdf8; }  
+    .stat-lbl { font-size: 12px; color: #94a3b8; }  
+  
+    input, select, textarea { width: 100%; padding: 10px; margin-top: 6px; margin-bottom: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px; }  
+    label { font-size: 13px; color: #cbd5e1; }  
+  
+    .nav { position: fixed; bottom: 0; left: 0; right: 0; background: #1e293b; display: flex; justify-content: space-around; padding: 10px 5px; border-top: 1px solid #334155; z-index: 100; }  
+    .nav-item { color: #94a3b8; text-decoration: none; font-size: 11px; text-align: center; cursor: pointer; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; position: relative; }  
+    .nav-item.active { color: #38bdf8; font-weight: bold; }  
+  
+    .nav-badge { position: absolute; top: 2px; right: 22%; background: #ef4444; color: white; border-radius: 50%; padding: 1px 5px; font-size: 9px; font-weight: bold; display: inline-flex; align-items: center; justify-content: center; min-width: 16px; height: 16px; }  
+  
+    .page { display: none; }  
+    .page.active { display: block; }  
+  
+    .quiz-option { background: #0f172a; border: 1px solid #334155; padding: 12px; border-radius: 8px; margin-top: 8px; cursor: pointer; font-size: 14px; }  
+    .timer-box { font-size: 16px; font-weight: bold; color: #f59e0b; margin-bottom: 10px; text-align: right; }  
+  
+    .admin-tabs { display: flex; gap: 6px; margin-bottom: 15px; flex-wrap: wrap; }  
+    .admin-tab-btn { flex: 1; min-width: 110px; padding: 8px 5px; background: #334155; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; font-size: 11px; position: relative; display: flex; align-items: center; justify-content: center; gap: 4px; text-align: center; }  
+    .admin-tab-btn.active { background: #6366f1; }  
+  
+    .red-badge { background: #ef4444; color: white; border-radius: 50%; padding: 2px 5px; font-size: 10px; font-weight: bold; display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; }  
+  
+    .user-card { background: #1e293b; border-radius: 12px; padding: 12px; margin-bottom: 12px; border: 1px solid #334155; display: flex; flex-direction: column; gap: 6px; }  
+    .user-avatar { width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, #38bdf8, #6366f1); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; color: #ffffff; border: 2px solid #38bdf8; }  
+    .notice-box { background: #3f3f46; border-left: 4px solid #f59e0b; padding: 10px; border-radius: 6px; margin: 10px 0; font-size: 12px; color: #fef08a; }  
+  </style>  </head>  
+<body>    <header>  
+    <div class="logo">CerdionQuiz <span>K Y</span></div>  
+    <div class="settings-icon" onclick="handleSettingsClick()">⚙️</div>  
+  </header>    <div class="container">  <!-- HOME PAGE -->  
+<div id="homePage" class="page active">  
+  <div class="card">  
+    <h3>CerdionQuiz (100,000+ ጥያቄዎች)</h3>  
+    <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">  
+      10 ጥያቄዎችን በ 1 ደቂቃ ውስጥ በመመለስ 200 ብር ያሸንፉ! 8 እና ከዚያ በላይ ያገኙ ብራቸው ይመለሳል። የመግቢያ ሂሳብ 20 ETB።  
+    </p>  
+    <button class="btn" style="margin-top: 15px;" onclick="startQuiz()">Quiz ጀምር</button>  
+  </div>  
+</div>  
+
+<!-- DEMO QUIZ -->  
+<div id="demoQuizPage" class="page">  
+  <div class="card">  
+    <h3>የመለማመጃ ኳይዝ (Demo Questions)</h3>  
+    <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">10 ጥያቄዎችን በ 1 ደቂቃ ውስጥ መለማመድ ይችላሉ!</p>  
+    <button class="btn" style="background: #d97706; margin-top: 15px;" onclick="startDemoQuiz()">የመለማመጃ ጥያቄ ጀምር</button>  
+  </div>  
+</div>  
+
+<!-- MESSAGES PAGE -->  
+<div id="messagesPage" class="page">  
+  <div class="card">  
+    <h3>የግል መልእክቶች እና ማሳወቂያዎች</h3>  
+    <p style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">ከአድሚን የተላኩ መልእክቶች፦</p>  
+    <div id="userMessagesList" style="display: flex; flex-direction: column; gap: 8px;">  
+      <p style="font-size: 12px; color: #64748b; text-align: center;">ምንም አዲስ መልእክት የለም።</p>  
+    </div>  
+  </div>  
+</div>  
+
+<!-- DEMO ACCOUNT PAGE -->  
+<div id="demoAccountPage" class="page">  
+  <div class="card">  
+    <div class="balance-title">የመለማመጃ (Demo) ቀሪ ሂሳብ</div>  
+    <div class="balance-amount" id="demoBalanceDisplay">500.00 ETB</div>  
+  </div>  
+  <div class="card">  
+    <h3>የመለማመጃ ኳይዝ</h3>  
+    <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">ያለ ክፍያ በ 1 ደቂቃ ውስጥ መለማመድ ይችላሉ!</p>  
+    <button class="btn" style="background: #d97706; margin-top: 10px;" onclick="switchNavTab('demoQuizPage', document.getElementById('navDemo'))">Demo ኳይዝ ጀምር</button>  
+  </div>  
+</div>  
+
+<!-- REAL ACCOUNT PAGE -->  
+<div id="realAccountPage" class="page">  
+  <div class="card" style="background: linear-gradient(135deg, #1e1b4b, #1e293b); border: 1px solid #6366f1;">  
+    <div style="display: flex; align-items: center; gap: 12px;">  
+      <div class="user-avatar" id="userPPAvatar">?</div>  
+      <div style="flex: 1;">  
+        <div style="font-size: 11px; color: #94a3b8;">የተጠቃሚ ስም (Profile)</div>  
+        <div id="displayProfileName" style="font-size: 18px; font-weight: bold; color: #38bdf8; margin-top: 2px;">ያልተረጋገጠ (Pending)</div>  
+      </div>  
+    </div>  
+  </div>  
+
+  <div class="card">  
+    <div class="balance-title">የእውነተኛ አካውንት ቀሪ ሂሳብ</div>  
+    <div class="balance-amount" id="userBalance">0.00 ETB</div>  
+
+    <div class="stats-grid">  
+      <div class="stat-box">  
+        <div class="stat-val" id="wonAmount">0.00 ETB</div>  
+        <div class="stat-lbl">Won (ያሸነፉት)</div>  
+      </div>  
+      <div class="stat-box">  
+        <div class="stat-val" id="refCount">0</div>  
+        <div class="stat-lbl">Invited (የጋበዟቸው)</div>  
+      </div>  
+    </div>  
+  </div>  
+
+  <div class="card">  
+    <h3>Deposit / Withdraw / Referral</h3>  
+    <p style="font-size: 12px; color: #94a3b8; margin-top: 5px;">የእውነተኛ አካውንት አገልግሎቶች</p>  
+    <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;">  
+      <button class="btn" style="font-size: 11px; padding: 8px; flex: 1;" onclick="showSubPage('depSubPage')">Deposit (ብር ማስገቢያ)</button>  
+      <button class="btn" style="font-size: 11px; padding: 8px; background: #0284c7; flex: 1;" onclick="showSubPage('withSubPage')">Withdraw (ብር ማውጫ)</button>  
+      <button class="btn" style="font-size: 11px; padding: 8px; background: #8b5cf6; flex: 1;" onclick="showSubPage('refSubPage')">Invite / Referral</button>  
+    </div>  
+  </div>  
+
+  <!-- DEPOSIT SUB-PAGE -->  
+  <div id="depSubPage" class="card" style="display: none;">  
+    <h3>Deposit (ብር ማስገቢያ)</h3>  
+    <p style="font-size: 12px; color: #38bdf8; margin-top: 5px; line-height: 1.6;">  
+      📲 <b>Telebirr:</b> 0985625604 (Kaleab Haile)<br>  
+      🏦 <b>CBE Bank:</b> 1000214664748 (Fantaye Kebede)  
+    </p>  
+
+    <div class="notice-box">  
+      ⚠️ <b>ማስታወሻ፦</b> የሚገቡት ገንዘቦች <b>በ 20 እጥፍ</b> (ለምሳሌ፦ 20፣ 40፣ 60...) ብቻ መሆን አለባቸው።  
+    </div>  
+
+    <form style="margin-top: 10px;" onsubmit="submitDeposit(event)">  
+      <label>ሙሉ ስምዎ</label>  
+      <input type="text" id="depName" placeholder="ሙሉ ስም ያስገቡ" required>  
+
+      <label>የክፍያ ዘዴ</label>  
+      <select id="depMethod">  
+        <option>Telebirr</option>  
+        <option>CBE Bank</option>  
+      </select>  
+
+      <label>የክፍያ መጠን (ETB - በ 20 እጥፍ ብቻ)</label>  
+      <input type="number" id="depAmount" step="20" min="20" placeholder="20, 40, 60, 80..." required>  
+
+      <label>Transaction ID ወይም Screenshot (አንዱን ብቻ መሙላት በቂ ነው)</label>  
+      <input type="text" id="depTxId" placeholder="Transaction ID (አማራጭ)">  
         
-        if (error || !questions || questions.length === 0) {
-          alert("ከዳታቤዝ ጥያቄዎችን ማምጣት አልተቻለም ወይም ጥያቄ የለም።");
-          return;
-        }
+      <label style="font-size: 11px; color: #94a3b8;">ወይም የክፍያ ስክሪንሾት ፋይል ይምረጡ</label>  
+      <input type="file" id="depScreenshot" accept="image/*" style="padding: 6px; background: #0f172a; border: 1px solid #334155;">  
 
-        let shuffled = questions.sort(() => 0.5 - Math.random());
-        activeQuizQuestions = shuffled.slice(0, 10).map((q, idx) => ({
-          q: `${idx + 1}. ${q.question}`,
-          opts: q.options,
-          ans: q.correct_answer
-        }));
+      <button class="btn" type="submit" style="background: #16a34a; margin-top: 10px;">✅ መረጃ መዝግብ</button>  
+    </form>  
+  </div>  
 
-        currentQIndex = 0;
-        correctAnswersCount = 0;
-        timeLeft = 60;
-        isQuizActive = true;
+  <!-- WITHDRAW SUB-PAGE -->  
+  <div id="withSubPage" class="card" style="display: none;">  
+    <h3>Withdraw (ብር ማውጫ)</h3>  
+    <form onsubmit="submitWithdraw(event)">  
+      <label>ስምዎ</label>  
+      <input type="text" id="withName" placeholder="ሙሉ ስም ያስገቡ" required>  
 
-        showPage('quizPlayPage');
-        startTimer();
-        loadQuestion(currentQIndex);
-      } catch (err) {
-        console.error("Quiz fetch error:", err);
-        alert("የኔትወርክ ስህተት አጋጥሟል!");
-      }
-    }
+      <label>የሚያወጡት ብር መጠን</label>  
+      <input type="number" id="withAmount" placeholder="50" min="50" required>  
 
-    function startTimer() {
-      clearInterval(timerInterval);
-      timerInterval = setInterval(() => {
-        timeLeft--;
-        let min = Math.floor(timeLeft / 60);
-        let sec = timeLeft % 60;
-        let td = document.getElementById('timerDisplay');
-        if (td) td.innerText = `ቀሪ ሰዓት: ${min < 10 ? '0' : ''}${min}:${sec < 10 ? '0' : ''}${sec}`;
-        if (timeLeft <= 0) {
-          clearInterval(timerInterval);
-          triggerQuizLoss("ጊዜው አልቋል! ጨዋታውን ተሸንፈዋል!");
-        }
-      }, 1000);
-    }
+      <label>የመቀበያ ዘዴ</label>  
+      <select id="withMethod">  
+        <option>Telebirr</option>  
+        <option>CBE Bank</option>  
+      </select>  
 
-    function triggerQuizLoss(msg) {
-      if (!isQuizActive) return;
-      isQuizActive = false;
-      clearInterval(timerInterval);
-      alert(msg);
-      showPage('homePage');
-    }
+      <label>የስልክ / አካውንት ቁጥር</label>  
+      <input type="text" id="withAcc" placeholder="09... / 1000..." required>  
 
-    function loadQuestion(idx) {
-      if (idx >= activeQuizQuestions.length) {
-        clearInterval(timerInterval);
-        isQuizActive = false;
+      <button class="btn" style="background: #0284c7;" type="submit">✅ ብር ማውጫ ጥያቄ መዝግብ</button>  
+    </form>  
+  </div>  
 
-        if (correctAnswersCount === 10) {
-          alert("እንኳን ደስ አለዎት! 10ቱንም ጥያቄዎች በትክክል መልሰዋል 🎉 200 ብር አሸንፈዋል!");
-          wonBalance += 200;
-          realBalance += 200;
-        } else if (correctAnswersCount >= 8) {
-          alert(`ጥሩ ሙከራ! ${correctAnswersCount}/10 መልሰዋል 🎉 የመግቢያ ብርዎ (20 ETB) ተመልሶልዎታል!`);
-          realBalance += 20;
-        } else {
-          alert(`ጨዋታውን ጨርሰዋል! ጥያቄዎች ውስጥ ${correctAnswersCount} ብቻ ትክክል መልሰዋል።`);
-        }
+  <!-- REFERRAL SUB-PAGE -->  
+  <div id="refSubPage" class="card" style="display: none;">  
+    <h3>Invite & My Referral Link</h3>  
+    <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">ሰዎችን በመጋበዝ እያንዳንዱ ሰው ሲመዘገብ <b>20 ETB ቦነስ</b> ያግኙ!</p>  
+    <br>  
+    <label>የእርስዎ የጋበዛ ሊንክ (Referral Link)</label>  
+    <input type="text" id="userReferralLink" readonly>  
+    <button class="btn" style="background: #8b5cf6;" onclick="copyReferralLink()">📋 የሪፈራል ሊንክ ኮፒ አድርግ</button>  
+  </div>  
 
-        let wa = document.getElementById('wonAmount');
-        let ub = document.getElementById('userBalance');
-        if (wa) wa.innerText = wonBalance.toFixed(2) + ' ETB';
-        if (ub) ub.innerText = realBalance.toFixed(2) + ' ETB';
+  <div style="margin-top: 15px; text-align: center;">  
+    <button onclick="resetAppAccount()" style="background: #dc2626; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer;">🗑️ አካውንት አጥፋና አዲስ ጀምር</button>  
+  </div>  
+</div>  
 
-        localStorage.setItem('ky_realBalance', realBalance);
-        localStorage.setItem('ky_wonBalance', wonBalance);
-        showPage('homePage');
-        return;
-      }
+<!-- ADMIN PANEL PAGE -->  
+<div id="adminPanelPage" class="page">  
+  <div style="margin-bottom: 15px;">  
+    <h3 style="color: #ef4444;">⚙️ Admin Control Panel (Live)</h3>  
+  </div>  
 
-      let q = activeQuizQuestions[idx];
-      let qt = document.getElementById('qText');
-      if (qt) qt.innerText = q.q;
+  <div class="admin-tabs">  
+    <button class="admin-tab-btn active" id="tabDepBtn" onclick="switchAdminTab('dep')">  
+      1. መመዝገቢያ <span class="red-badge" id="depCountBadge" style="display:none;">0</span>  
+    </button>  
+    <button class="admin-tab-btn" id="tabWithBtn" onclick="switchAdminTab('with')">  
+      2. የወጪ ጥያቄ <span class="red-badge" id="withCountBadge" style="display:none;">0</span>  
+    </button>  
+    <button class="admin-tab-btn" id="tabMemBtn" onclick="switchAdminTab('mem')">  
+      3. የአባል ብዛት  
+    </button>  
+  </div>  
 
-      let cont = document.getElementById('optionsContainer');
-      if (cont) {
-        cont.innerHTML = '';
-        q.opts.forEach((opt, i) => {
-          let div = document.createElement('div');
-          div.className = 'quiz-option';
-          div.innerText = opt;
-          div.onclick = () => {
-            if (i === q.ans) correctAnswersCount++;
-            currentQIndex++;
-            loadQuestion(currentQIndex);
-          };
-          cont.appendChild(div);
-        });
-      }
-    }
+  <div id="adminListContainer">  
+    <p style="font-size: 13px; color: #64748b; text-align: center; margin-top: 20px;">መረጃዎችን በመጫን ላይ...</p>  
+  </div>  
+</div>  
 
-    async function submitDeposit(e) {
-      e.preventDefault();
-      if (!_supabase) return;
-      let name = document.getElementById('depName').value.trim();
-      let method = document.getElementById('depMethod').value;
-      let amount = parseFloat(document.getElementById('depAmount').value);
-      let txId = document.getElementById('depTxId').value.trim();
-      let fileInput = document.getElementById('depScreenshot');
+<!-- QUIZ PLAY INTERFACE -->  
+<div id="quizPlayPage" class="page">  
+  <div class="card">  
+    <div class="timer-box" id="timerDisplay">ቀሪ ሰዓት: 01:00</div>  
+    <h3 id="qCategory">CerdionQuiz ጥያቄዎች</h3>  
+    <p id="qText" style="font-size: 16px; margin: 15px 0; color: #f8fafc;">ጥያቄ እዚህ ይመጣል...</p>  
+    <div id="optionsContainer"></div>  
+  </div>  
+</div>
 
-      if (!name || isNaN(amount) || amount <= 0 || amount % 20 !== 0) {
-        alert('እባክዎ ሙሉ ስምዎን እና የብር መጠን በትክክል ይሙሉ!');
-        return;
-      }
-
-      if (!txId && (!fileInput.files || !fileInput.files[0])) {
-        alert('እባክዎ Transaction ID ያስገቡ ወይም የክፍያ ስክሪንሾት ይምረጡ!');
-        return;
-      }
-
-      registeredName = name;
-      let reqId = 'dep_' + Date.now();
-
-      const saveData = async (imgBase64) => {
-        await _supabase.from('depositRequests').insert([{
-          id: reqId,
-          name: name,
-          method: method,
-          date: new Date().toLocaleDateString(),
-          amount: amount,
-          txId: txId || 'ስክሪንሾት ብቻ',
-          screenshot: imgBase64 || '',
-          refCode: userRefCode,
-          refCodeUsed: usedRefCode || '',
-          reqStatus: "pending"
-        }]);
-
-        alert('✅ መረጃዎ በስኬት ተመዝግቧል! አድሚኑ እስኪያጸድቀው ይጠብቁ።');
-        document.getElementById('depName').value = '';
-        document.getElementById('depAmount').value = '';
-        document.getElementById('depTxId').value = '';
-        document.getElementById('depScreenshot').value = '';
-        fetchSupabaseData();
-      };
-
-      if (fileInput.files && fileInput.files[0]) {
-        let reader = new FileReader();
-        reader.onload = async function(e) {
-          await saveData(e.target.result);
-        };
-        reader.readAsDataURL(fileInput.files[0]);
-      } else {
-        await saveData('');
-      }
-    }
-
-    async function submitWithdraw(e) {
-      e.preventDefault();
-      if (!_supabase) return;
-      let name = document.getElementById('withName').value.trim();
-      let amount = parseFloat(document.getElementById('withAmount').value);
-      let method = document.getElementById('withMethod').value;
-      let acc = document.getElementById('withAcc').value.trim();
-
-      if (!name || isNaN(amount) || !acc) {
-        alert('እባክዎ ሁሉንም መስኮች በትክክል ይሙሉ!');
-        return;
-      }
-
-      let reqId = 'with_' + Date.now();
-      await _supabase.from('withdrawRequests').insert([{
-        id: reqId,
-        name: name,
-        date: new Date().toLocaleDateString(),
-        amount: amount,
-        method: method,
-        acc: acc,
-        reqStatus: "pending"
-      }]);
-
-      alert('✅ የብር ማውጫ ጥያቄዎ ተመዝግቧል!');
-      document.getElementById('withName').value = '';
-      document.getElementById('withAmount').value = '';
-      document.getElementById('withAcc').value = '';
-      fetchSupabaseData();
-    }
-
-    function updateBadges() {
-      let pendingDeps = depositRequests.filter(r => r.reqStatus === 'pending');
-      let pendingWiths = withdrawRequests.filter(r => r.reqStatus === 'pending');
-      let dcb = document.getElementById('depCountBadge');
-      let wcb = document.getElementById('withCountBadge');
-      if (dcb) {
-        dcb.innerText = pendingDeps.length;
-        dcb.style.display = pendingDeps.length > 0 ? 'inline-flex' : 'none';
-      }
-      if (wcb) {
-        wcb.innerText = pendingWiths.length;
-        wcb.style.display = pendingWiths.length > 0 ? 'inline-flex' : 'none';
-      }
-    }
-
-    function switchAdminTab(tab) {
-      currentAdminTab = tab;
-      let tdb = document.getElementById('tabDepBtn');
-      let twb = document.getElementById('tabWithBtn');
-      let tmb = document.getElementById('tabMemBtn');
-      if (tdb) tdb.className = 'admin-tab-btn ' + (tab === 'dep' ? 'active' : '');
-      if (twb) twb.className = 'admin-tab-btn ' + (tab === 'with' ? 'active' : '');
-      if (tmb) tmb.className = 'admin-tab-btn ' + (tab === 'mem' ? 'active' : '');
-      renderAdminPanel();
-    }
-
-    function renderAdminPanel() {
-      updateBadges();
-      let container = document.getElementById('adminListContainer');
-      if (!container) return;
-      container.innerHTML = '';
-
-      if (currentAdminTab === 'dep') {
-        let pendingDeps = depositRequests.filter(r => r.reqStatus === 'pending');
-        if (pendingDeps.length === 0) {
-          container.innerHTML = '<p style="font-size: 13px; color: #64748b; text-align: center; margin-top: 20px;">ምንም የመመዝገቢያ ጥያቄ የለም።</p>';
-          return;
-        }
-
-        pendingDeps.forEach((req) => {
-          let card = document.createElement('div');
-          card.className = 'user-card';
-          card.innerHTML = `
-            <div><b>ስም:</b> ${req.name}</div>
-            <div><b>መጠን:</b> ${req.amount} ETB | <b>ዘዴ:</b> ${req.method || 'Telebirr'}</div>
-            <div><b>Tx ID:</b> <span style="color: #f59e0b; font-weight: bold;">${req.txId || 'የለም'}</span></div>
-            <div><b>ቀን:</b> ${req.date}</div>
-            ${req.screenshot ? `<div style="margin-top: 5px;"><a href="${req.screenshot}" target="_blank"><img src="${req.screenshot}" style="max-width: 100%; max-height: 150px; border-radius: 6px; border: 1px solid #38bdf8;" /></a></div>` : ''}
-            <div style="display: flex; gap: 6px; margin-top: 8px;">
-              <button class="btn btn-approve" onclick="approveDeposit('${req.id}')">Approve (አጽድቅ)</button>
-              <button class="btn-delete" onclick="deleteDepositPermanently('${req.id}')">🗑️ አጥፋ</button>
-            </div>
-          `;
-          container.appendChild(card);
-        });
-
-      } else if (currentAdminTab === 'with') {
-        let pendingWiths = withdrawRequests.filter(r => r.reqStatus === 'pending');
-        if (pendingWiths.length === 0) {
-          container.innerHTML = '<p style="font-size: 13px; color: #64748b; text-align: center; margin-top: 20px;">ምንም የወጪ ጥያቄ የለም።</p>';
-          return;
-        }
-
-        pendingWiths.forEach((req) => {
-          let card = document.createElement('div');
-          card.className = 'user-card';
-          card.innerHTML = `
-            <div><b>ስም:</b> ${req.name}</div>
-            <div><b>መጠን:</b> ${req.amount} ETB | <b>ዘዴ:</b> ${req.method} (${req.acc})</div>
-            <div style="display: flex; gap: 6px; margin-top: 8px;">
-              <button class="btn btn-approve" onclick="approveWithdraw('${req.id}')">Approve (አጽድቅ)</button>
-              <button class="btn-delete" onclick="deleteWithdrawPermanently('${req.id}')">🗑️ አጥፋ</button>
-            </div>
-          `;
-          container.appendChild(card);
-        });
-
-      } else if (currentAdminTab === 'mem') {
-        let card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `
-          <h3 style="color: #38bdf8; text-align: center; margin-bottom: 12px;">👥 አጠቃላይ የተረጋገጡ አባላት: ${membersList.length}</h3>
-          <div style="display: flex; flex-direction: column; gap: 10px;">
-            ${membersList.length === 0 ? '<p style="font-size: 12px; color: #64748b; text-align: center;">ምንም አባል የለም።</p>' : membersList.map((m) => {
-              let refCount = membersList.filter(sub => sub.refCodeUsed === m.refCode).length;
-              return `
-              <div style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #334155;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                  <div>
-                    <div style="font-weight: bold; font-size: 15px; color: #f8fafc;">${m.name} (-${m.amount} ETB)</div>
-                    <div style="font-size: 11px; color: #38bdf8; margin-top: 2px;">የጋበዟቸው: <b>${refCount} ሰው</b></div>
-                    <div style="font-size: 10px; color: #64748b;">ቀን: ${m.date}</div>
-                  </div>
-                  <button onclick="removeMember('${m.id}')" style="background: #dc2626; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">🗑️ አስወጣ</button>
-                </div>
-                <div style="margin-top: 8px; display: flex; gap: 6px;">
-                  <input type="text" id="msg_${m.id}" placeholder="ለዚህ ተጠቃሚ የግል መልእክት ጻፍ..." style="margin: 0; font-size: 12px; padding: 6px;">
-                  <button onclick="sendPrivateMessage('${m.name}', '${m.id}')" style="background: #0284c7; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; white-space: nowrap;">📬 ላክ</button>
-                </div>
-              </div>
-            `}).join('')}
-          </div>
-        `;
-        container.appendChild(card);
-      }
-    }
-
-    async function approveDeposit(id) {
-      if (!_supabase) return;
-      let req = depositRequests.find(r => r.id === id);
-      if (req) {
-        await _supabase.from('membersList').upsert([{
-          id: req.id,
-          name: req.name,
-          date: req.date,
-          amount: req.amount,
-          refCode: req.refCode,
-          refCodeUsed: req.refCodeUsed || ''
-        }]);
-
-        if (req.refCodeUsed) {
-          let inviter = membersList.find(m => m.refCode === req.refCodeUsed);
-          if (inviter) {
-            let updatedAmount = parseFloat(inviter.amount) + 20;
-            await _supabase.from('membersList').update({ amount: updatedAmount }).eq('id', inviter.id);
-            
-            let msgId = 'msg_' + Date.now();
-            await _supabase.from('privateMessages').insert([{
-              id: msgId,
-              userName: inviter.name,
-              message: `🎉 እንኳን ደስ አለዎት! '${req.name}' የተባለ ሰው በሊንክዎ በመግባቱ 20 ETB የሪፈራል ቦነስ አግኝተዋል!`,
-              date: new Date().toLocaleDateString()
-            }]);
-          }
-        }
-
-        await _supabase.from('depositRequests').delete().eq('id', id);
-        alert('ጥያቄው ጸድቋል! የተጠቃሚው አካውንት ተከፍቷል። ✅');
-        fetchSupabaseData();
-      }
-    }
-
-    async function deleteDepositPermanently(id) {
-      if (!_supabase) return;
-      if (confirm('ይህንን ጥያቄ ማጥፋት ይፈልጋሉ?')) {
-        await _supabase.from('depositRequests').delete().eq('id', id);
-        fetchSupabaseData();
-      }
-    }
-
-    async function approveWithdraw(id) {
-      if (!_supabase) return;
-      let req = withdrawRequests.find(r => r.id === id);
-      if (req) {
-        let msgId = 'msg_' + Date.now();
-        await _supabase.from('privateMessages').insert([{
-          id: msgId,
-          userName: req.name,
-          message: `✅ የ ${req.amount} ETB የብር ማውጫ (Withdraw) ጥያቄዎ ጸድቆ ተልኳል!`,
-          date: new Date().toLocaleDateString()
-        ]);
-      }
-      await _supabase.from('withdrawRequests').delete().eq('id', id);
-      alert('የወጪ ጥያቄው ጸድቋል እና ለተጠቃሚው ማሳወቂያ ተልኳል! ✅');
-      fetchSupabaseData();
-    }
-
-    async function deleteWithdrawPermanently(id) {
-      if (!_supabase) return;
-      if (confirm('ይህንን ጥያቄ ማጥፋት ይፈልጋሉ?')) {
-        await _supabase.from('withdrawRequests').delete().eq('id', id);
-        fetchSupabaseData();
-      }
-    }
-
-    async function removeMember(id) {
-      if (!_supabase) return;
-      if (confirm('እርግጠኛ ነዎት ይህንን አባል ከአባል ዝርዝር ማገድ/ማስወጣት ይፈልጋሉ?')) {
-        await _supabase.from('membersList').delete().eq('id', id);
-        alert('አባሉ ከአባል ዝርዝር ተወግደዋል!');
-        fetchSupabaseData();
-      }
-    }
-
-    async function sendPrivateMessage(userName, memberId) {
-      if (!_supabase) return;
-      let input = document.getElementById('msg_' + memberId);
-      if (!input) return;
-      let text = input.value.trim();
-      if (!text) {
-        alert('እባክዎ የመልእክት ሐሳብ ይጻፉ!');
-        return;
-      }
-
-      let msgId = 'msg_' + Date.now();
-      await _supabase.from('privateMessages').insert([{
-        id: msgId,
-        userName: userName,
-        message: text,
-        date: new Date().toLocaleDateString()
-      }]);
-
-      alert(`መልእክቱ ለ ${userName} ተልኳል! ✅`);
-      input.value = '';
-      fetchSupabaseData();
-    }
-  </script>
-</body>
-</html>
+  </div>    <!-- BOTTOM NAVIGATION BAR -->    <div class="nav">  
+    <div class="nav-item active" id="navQuiz" onclick="switchNavTab('homePage', this)">  
+      <span>❓</span>  
+      <span>ጥያቄ</span>  
+    </div>  
+    <div class="nav-item" id="navDemo" onclick="switchNavTab('demoQuizPage', this)">  
+      <span>🎮</span>  
+      <span>ዴሞ ጥያቄ</span>  
+    </div>  
+    <div class="nav-item" id="navMsg" onclick="switchNavTab('messagesPage', this)">  
+      <span>📬</span>  
+      <span>መልእክት</span>  
+      <span class="nav-badge" id="msgBadge" style="display:none;">0</span>  
+    </div>  
+    <div class="nav-item" id="navDemoAcc" onclick="switchNavTab('demoAccountPage', this)">  
+      <span>🟡</span>  
+      <span>የዴሞ አካውንት</span>  
+    </div>  
+    <div class="nav-item" id="navRealAcc" onclick="switchNavTab('realAccountPage', this)">  
+      <span>🟢</span>  
+      <span>የኔ አካውንት</span>  
+    </div>  
+  </div>    <script>  
+    const firebaseConfig = {  
+      apiKey: "AIzaSyCFBuMejhBpPeC6KDe...",  
+      authDomain: "cerdionquiz.firebaseapp.com",  
+      databaseURL: "https://cerdionquiz-default-rtdb.firebaseio.com",  
+      projectId: "cerdionquiz",  
+      storageBucket: "cerdionquiz.appspot.com",  
+      messagingSenderId: "11951685719",  
+      appId: "1:11951685719:web:4333366...",  
+      measurementId: "G-4VVZT67XEC"  
+    };  
+  
+    firebase.initializeApp(firebaseConfig);  
+    const db = firebase.database();  
+  
+    let clickCount = 0;  
+    let currentMode = 'real';  
+    let isApprovedUser = localStorage.getItem('ky_isApproved') === 'true';  
+    let registeredName = localStorage.getItem('ky_registeredName') || '';  
+  
+    let realBalance = isApprovedUser ? (parseFloat(localStorage.getItem('ky_realBalance')) || 0.00) : 0.00;  
+    let wonBalance = isApprovedUser ? (parseFloat(localStorage.getItem('ky_wonBalance')) || 0.00) : 0.00;  
+    let inviteCount = parseInt(localStorage.getItem('ky_inviteCount')) || 0;  
+    let demoBalance = 500.00;  
+    let lastReadMsgCount = parseInt(localStorage.getItem('ky_lastReadMsgCount')) || 0;  
+      
+    let userRefCode = localStorage.getItem('ky_refCode');  
+    if (!userRefCode) {  
+      userRefCode = 'KY-' + Math.floor(1000 + Math.random() * 9000);  
+      localStorage.setItem('ky_refCode', userRefCode);  
+    }  
+  
+    const currentUrl = window.location.origin + window.location.pathname;  
+    const fullRefLink = currentUrl + '?ref=' + userRefCode;  
+    document.getElementById('userReferralLink').value = fullRefLink;  
+  
+    const urlParams = new URLSearchParams(window.location.search);  
+    const usedRefCode = urlParams.get('ref') || '';  
+  
+    function updateProfileDisplay() {  
+      let displayNameEl = document.getElementById('displayProfileName');  
+      let ppAvatarEl = document.getElementById('userPPAvatar');  
+  
+      if (isApprovedUser && registeredName) {  
+        displayNameEl.innerText = registeredName;  
+        ppAvatarEl.innerText = registeredName.charAt(0).toUpperCase();  
+      } else {  
+        displayNameEl.innerText = "ያልተረጋገጠ (Pending)";  
+        ppAvatarEl.innerText = "?";  
+        realBalance = 0.00;  
+        wonBalance = 0.00;  
+      }  
+  
+      document.getElementById('userBalance').innerText = realBalance.toFixed(2) + ' ETB';  
+      document.getElementById('wonAmount').innerText = wonBalance.toFixed(2) + ' ETB';  
+      document.getElementById('refCount').innerText = inviteCount;  
+    }  
+  
+    updateProfileDisplay();  
+  
+    let currentAdminTab = 'dep';  
+    let depositRequests = [];  
+    let membersList = [];  
+    let withdrawRequests = [];  
+    let userPrivateMessages = [];  
+  
+    // Realtime Database Listeners  
+    db.ref('depositRequests').on('value', (snapshot) => {  
+      const data = snapshot.val();  
+      depositRequests = data ? Object.values(data) : [];  
+      updateBadges();  
+      if(document.getElementById('adminPanelPage').classList.contains('active') && currentAdminTab === 'dep') {  
+        renderAdminPanel();  
+      }  
+    });  
+  
+    db.ref('withdrawRequests').on('value', (snapshot) => {  
+      const data = snapshot.val();  
+      withdrawRequests = data ? Object.values(data) : [];  
+      updateBadges();  
+      if(document.getElementById('adminPanelPage').classList.contains('active') && currentAdminTab === 'with') {  
+        renderAdminPanel();  
+      }  
+    });  
+  
+    db.ref('membersList').on('value', (snapshot) => {  
+      const data = snapshot.val();  
+      membersList = data ? Object.values(data) : [];  
+  
+      let currentMember = membersList.find(m => m.refCode === userRefCode || (registeredName && m.name === registeredName));  
+      if (currentMember) {  
+        isApprovedUser = true;  
+        registeredName = currentMember.name;  
+        realBalance = parseFloat(currentMember.amount) || 0.00;  
+        localStorage.setItem('ky_isApproved', 'true');  
+        localStorage.setItem('ky_registeredName', registeredName);  
+        localStorage.setItem('ky_realBalance', realBalance);  
+        updateProfileDisplay();  
+      }  
+  
+      let myInvitedList = membersList.filter(m => m.refCodeUsed === userRefCode);  
+      inviteCount = myInvitedList.length;  
+      document.getElementById('refCount').innerText = inviteCount;  
+  
+      if(document.getElementById('adminPanelPage').classList.contains('active') && currentAdminTab === 'mem') {  
+        renderAdminPanel();  
+      }  
+    });  
+  
+    db.ref('privateMessages').on('value', (snapshot) => {  
+      const data = snapshot.val();  
+      let allMsgs = data ? Object.values(data) : [];  
+      if (registeredName) {  
+        userPrivateMessages = allMsgs.filter(m => m.userName === registeredName);  
+        let msgListEl = document.getElementById('userMessagesList');  
+        let msgBadge = document.getElementById('msgBadge');  
+  
+        let unreadCount = userPrivateMessages.length - lastReadMsgCount;  
+  
+        if (userPrivateMessages.length > 0) {  
+          if (unreadCount > 0 && !document.getElementById('messagesPage').classList.contains('active')) {  
+            msgBadge.innerText = unreadCount;  
+            msgBadge.style.display = 'inline-flex';  
+          } else {  
+            msgBadge.style.display = 'none';  
+          }  
+  
+          msgListEl.innerHTML = userPrivateMessages.map(m => `  
+            <div style="background: #0f172a; padding: 10px; border-radius: 8px; border-left: 4px solid #38bdf8; font-size: 13px;">  
+              <div>${m.message}</div>  
+              <div style="font-size: 10px; color: #64748b; margin-top: 4px;">ቀን: ${m.date}</div>  
+            </div>  
+          `).join('');  
+        } else {  
+          msgBadge.style.display = 'none';  
+          msgListEl.innerHTML = '<p style="font-size: 12px; color: #64748b; text-align: center;">ምንም አዲስ መልእክት የለም።</p>';  
+        }  
+      }  
+    });  
+  
+    function handleSettingsClick() {  
+      clickCount++;  
+      if (clickCount >= 5) {  
+        clickCount = 0;  
+        let pass = prompt("የአድሚን የይለፍ ቃል ያስገቡ:");  
+        if (pass === "182418") {  
+          alert("ወደ አድሚን ፓነል ገብተዋል!");  
+          showPage('adminPanelPage');  
+          currentAdminTab = 'dep';  
+          switchAdminTab('dep');  
+        } else if (pass !== null) {  
+          alert("የተሳሳተ የይለፍ ቃል!");  
+        }  
+      }  
+    }  
+  
+    function switchNavTab(pageId, el) {  
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));  
+      if(el) el.classList.add('active');  
+  
+      if (pageId === 'messagesPage') {  
+        lastReadMsgCount = userPrivateMessages.length;  
+        localStorage.setItem('ky_lastReadMsgCount', lastReadMsgCount);  
+        document.getElementById('msgBadge').style.display = 'none';  
+      }  
+  
+      showPage(pageId);  
+    }  
+  
+    function showSubPage(id) {  
+      const ids = ['depSubPage', 'withSubPage', 'refSubPage'];  
+      ids.forEach(s => {  
+        let el = document.getElementById(s);  
+        if (s === id) {  
+          el.style.display = (el.style.display === 'block') ? 'none' : 'block';  
+        } else {  
+          el.style.display = 'none';  
+        }  
+      });  
+    }  
+  
+    function showPage(pageId) {  
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));  
+      document.getElementById(pageId).classList.add('active');  
+    }  
+  
+    function copyReferralLink() {  
+      let input = document.getElementById('userReferralLink');  
+      input.select();  
+      document.execCommand("copy");  
+      alert('የሪፈራል ሊንክዎ ኮፒ ተደርጓል! 📋');  
+    }  
+  
+    function resetAppAccount() {  
+      if (confirm('እርግጠኛ ነዎት ይህንን አካውንት አጥፍተው አዲስ መጀመር ይፈልጋሉ?')) {  
+        localStorage.clear();  
+        alert('የቆየው አካውንት ተጠፍቷል! ገጹ አዲስ ሆኖ ይከፈታል።');  
+        window.location.reload();  
+      }  
+    }  
+  
+    // 🌟 HUGE MASTER POOL OF DIFFERENT DYNAMIC QUESTIONS  
+    const dynamicQuestionCategories = [  
+      {  
+        q: (n) => `በኮምፒዩተር ሳይንስ ጥናት ውስጥ የ '${n}th QuickSort' አልጎሪዝም አስቸጋሪነት ጊዜ (Worst-case Time Complexity) ስንት ነው?`,  
+        opts: ["O(n log n)", "O(n²)", "O(n)", "O(1)"],  
+        ans: 1  
+      },  
+      {  
+        q: (n) => `በአይቲ አርክቴክቸር 'TCP/IP' ሞዴል እና ፕሮቶኮል ቁጥር #${n} መሰረት የ 'Transport Layer' ዋናው አገልግሎት ምንድን ነው?`,  
+        opts: ["የውሂብ አስተማማኝ ማስተላለፍ (Reliable Delivery)", "የኬብል ግንኙነት", "የማያ ገጽ ማሳያ", "የሃርድዌር ማቀዝቀዣ"],  
+        ans: 0  
+      },  
+      {  
+        q: (n) => `በፍልስፍና ጥናት መጽሐፍ ቁጥር ${n} ላይ 'Cogito, ergo sum' (አስባለሁ፤ ስለዚህ አለሁ) በማለት የተከራከረው ፈላስፋ ማን ነው?`,  
+        opts: ["ኢማኑኤል ካንት", "ፍሬድሪክ ኒቼ", "ሬኔ ዴካርት", "ሶቅራጦስ"],  
+        ans: 2  
+      },  
+      {  
+        q: (n) => `ისტორიዊ ክስተት #${n}: የአፍሪካ ህብረት (African Union) በይፋ ተተክቶ የተመሠረተበት ዓመተ ምህረት (በፈረንጆች አቆጣጠር) የትኛው ነው?`,  
+        opts: ["2002 እ.ኤ.አ", "1963 እ.ኤ.አ", "1991 እ.ኤ.አ", "2005 እ.ኤ.አ"],  
+        ans: 0  
+      },  
+      {  
+        q: (n) => `በኦፐሬቲንግ ሲስተም (OS) ትንተና ${n} መሰረት 'Deadlock' ሁኔታ የሚከሰተው በምን ምክንያት ነው?`,  
+        opts: ["ሲፒዩ ሲሞቅ", "ሁለት ሂደቶች አንዱ የሌላውን ሀብት በመጠበቅ ሲታገዱ", "ራም ሲሞላ", "ሃርድ ድራይቭ ሲበላሽ"],  
+        ans: 1  
+      },  
+      {  
+        q: (n) => `በዳታቤዝ አስተዳደር (DBMS) ንድፈ ሀሳብ #${n} መሰረት 'ACID' ከሚሉት መርሆች 'I' የሚወክለው ቃል ምንድን ነው?`,  
+        opts: ["Isolation (ለጸጥታ/እጅ መስጠት)", "Integrity", "Index", "Instance"],  
+        ans: 0  
+      },  
+      {  
+        q: (n) => `በኮምፒዩተር ኔትወርክ ፕሮቶኮል ስሪት ${n} መሰረት 'IPv6' አድራሻ ስንት ቢት (Bits) ርዝመት አለው?`,  
+        opts: ["32 bits", "64 bits", "128 bits", "256 bits"],  
+        ans: 2  
+      },  
+      {  
+        q: (n) => `በሰብአዊ ሳይኮሎጂ እና አንጎል ጥናት #${n} መሰረት የሰው ልጅ የረጅም ጊዜ ትዝታ የሚቀመጥበት ዋናው የአእምሮ ክፍል የትኛው ነው?`,  
+        opts: ["ሂፖካምፐስ (Hippocampus)", "ሴሬቤለም", "አሚግዳላ", "ሜዱላ"],  
+        ans: 0  
+      },  
+      {  
+        q: (n) => `በኦብጀክት ኦሬንቴድ ፕሮግራሚንግ (OOP - Concept #${n}) ውስጥ የባህሪዎችን ውርስ ማስተላለፍ ምን ተብሎ ይጠራል?`,  
+        opts: ["Encapsulation", "Inheritance", "Polymorphism", "Abstraction"],  
+        ans: 1  
+      },  
+      {  
+        q: (n) => `በኢትዮጵያ ታሪክ ጥናት ${n} መሰረት በጎንደር ከተማ የታወቁትን ውብ አብያተ መንግሥታት እና ካስትሎች ያስገነቡት ንጉሥ ማን ናቸው?`,  
+        opts: ["ዐፄ ፋሲለደስ", "ዐፄ ዘርአ ያዕቆብ", "ዐፄ ኃይለ ሥላሴ", "ዐፄ ቴዎድሮስ"],  
+        ans: 0  
+      }  
+    ];  
+  
+    let currentQIndex = 0;  
+    let correctAnswersCount = 0;  
+    let timerInterval = null;  
+    let timeLeft = 60;  
+    let isQuizActive = false;  
+    let activeQuizQuestions = [];  
+  
+    function startQuiz() {  
+      if (!isApprovedUser) {  
+        alert('አካውንትዎ ገና አልተረጋገጠም!');  
+        switchNavTab('realAccountPage', document.getElementById('navRealAcc'));  
+        showSubPage('depSubPage');  
+        return;  
+      }  
+      if (realBalance < 20) {  
+        alert('ለኳይዙ መግቢያ በቂ ሂሳብ (20 ETB) የለዎትም!');  
+        switchNavTab('realAccountPage', document.getElementById('navRealAcc'));  
+        showSubPage('depSubPage');  
+        return;  
+      }  
+      realBalance -= 20;  
+      document.getElementById('userBalance').innerText = realBalance.toFixed(2) + ' ETB';  
+      localStorage.setItem('ky_realBalance', realBalance);  
+      beginQuizSession();  
+    }  
+  
+    function startDemoQuiz() {  
+      beginQuizSession();  
+    }  
+  
+    // 🎲 GENERATE 10 TRULY RANDOM & UNIQUE QUESTIONS EVERY TIME  
+    function beginQuizSession() {  
+      currentQIndex = 0;  
+      correctAnswersCount = 0;  
+      timeLeft = 60;  
+      isQuizActive = true;  
+      activeQuizQuestions = [];  
+  
+      let generatedBatch = [];  
+      let randomSeedOffset = Math.floor(Math.random() * 50000) + 1;  
+  
+      for (let i = 0; i < 10; i++) {  
+        let templateIndex = (randomSeedOffset + i) % dynamicQuestionCategories.length;  
+        let template = dynamicQuestionCategories[templateIndex];  
+        let uniqueNumber = randomSeedOffset + i;  
+  
+        generatedBatch.push({  
+          q: `${i + 1}. ${template.q(uniqueNumber)}`,  
+          opts: template.opts,  
+          ans: template.ans  
+        });  
+      }  
+  
+      // Shuffle options and questions securely  
+      activeQuizQuestions = generatedBatch.sort(() => Math.random() - 0.5);  
+  
+      showPage('quizPlayPage');  
+      startTimer();  
+      loadQuestion(currentQIndex);  
+    }  
+  
+    function startTimer() {  
+      clearInterval(timerInterval);  
+      timerInterval = setInterval(() => {  
+        timeLeft--;  
+        let min = Math.floor(timeLeft / 60);  
+        let sec = timeLeft % 60;  
+        document.getElementById('timerDisplay').innerText = `ቀሪ ሰዓት: ${min < 10 ? '0' : ''}${min}:${sec < 10 ? '0' : ''}${sec}`;  
+        if (timeLeft <= 0) {  
+          clearInterval(timerInterval);  
+          triggerQuizLoss("ጊዜው አልቋል! ጨዋታውን ተሸንፈዋል!");  
+        }  
+      }, 1000);  
+    }  
+  
+    function triggerQuizLoss(msg) {  
+      if (!isQuizActive) return;  
+      isQuizActive = false;  
+      clearInterval(timerInterval);  
+      alert(msg);  
+      showPage('homePage');  
+    }  
+  
+    function loadQuestion(idx) {  
+      if (idx >= activeQuizQuestions.length) {  
+        clearInterval(timerInterval);  
+        isQuizActive = false;  
+  
+        if (correctAnswersCount === 10) {  
+          alert("እንኳን ደስ አለዎት! 10ቱንም ጥያቄዎች በትክክል መልሰዋል 🎉 200 ብር አሸንፈዋል!");  
+          wonBalance += 200;  
+          realBalance += 200;  
+        } else if (correctAnswersCount >= 8) {  
+          alert(`ጥሩ ሙከራ! ${correctAnswersCount}/10 መልሰዋል 🎉 የመግቢያ ብርዎ (20 ETB) ተመልሶልዎታል!`);  
+          realBalance += 20;  
+        } else {  
+          alert(`ጨዋታውን ጨርሰዋል! 10 ጥያቄዎች ውስጥ ${correctAnswersCount} ብቻ ትክክል መልሰዋል።`);  
+        }  
+  
+        document.getElementById('wonAmount').innerText = wonBalance.toFixed(2) + ' ETB';  
+        document.getElementById('userBalance').innerText = realBalance.toFixed(2) + ' ETB';  
+        localStorage.setItem('ky_realBalance', realBalance);  
+        localStorage.setItem('ky_wonBalance', wonBalance);  
+        showPage('homePage');  
+        return;  
+      }  
+  
+      let q = activeQuizQuestions[idx];  
+      document.getElementById('qText').innerText = q.q;  
+      let cont = document.getElementById('optionsContainer');  
+      cont.innerHTML = '';  
+      q.opts.forEach((opt, i) => {  
+        let div = document.createElement('div');  
+        div.className = 'quiz-option';  
+        div.innerText = opt;  
+        div.onclick = () => {  
+          if (i === q.ans) correctAnswersCount++;  
+          currentQIndex++;  
+          loadQuestion(currentQIndex);  
+        };  
+        cont.appendChild(div);  
+      });  
+    }  
+  
+    function submitDeposit(e) {  
+      e.preventDefault();  
+      let name = document.getElementById('depName').value.trim();  
+      let method = document.getElementById('depMethod').value;  
+      let amount = parseFloat(document.getElementById('depAmount').value);  
+      let txId = document.getElementById('depTxId').value.trim();  
+      let fileInput = document.getElementById('depScreenshot');  
+  
+      if (!name || isNaN(amount) || amount <= 0 || amount % 20 !== 0) {  
+        alert('እባክዎ ሙሉ ስምዎን እና የብር መጠን በትክክል ይሙሉ!');  
+        return;  
+      }  
+  
+      if (!txId && (!fileInput.files || !fileInput.files[0])) {  
+        alert('እባክዎ Transaction ID ያስገቡ ወይም የክፍያ ስክሪንሾት ይምረጡ (ከአንዱ አንዱ ግዴታ ነው)!');  
+        return;  
+      }  
+  
+      registeredName = name;  
+      let reqId = 'dep_' + Date.now();  
+  
+      const saveData = (imgBase64) => {  
+        db.ref('depositRequests/' + reqId).set({  
+          id: reqId,  
+          name: name,  
+          method: method,  
+          date: new Date().toLocaleDateString(),  
+          amount: amount,  
+          txId: txId || 'ስክሪንሾት ብቻ',  
+          screenshot: imgBase64 || '',  
+          refCode: userRefCode,  
+          refCodeUsed: usedRefCode,  
+          reqStatus: "pending"  
+        }).then(() => {  
+          alert('✅ መረጃዎ በስኬት ተመዝግቧል! አድሚኑ እስኪያጸድቀው ይጠብቁ።');  
+          document.getElementById('depName').value = '';  
+          document.getElementById('depAmount').value = '';  
+          document.getElementById('depTxId').value = '';  
+          document.getElementById('depScreenshot').value = '';  
+        });  
+      };  
+  
+      if (fileInput.files && fileInput.files[0]) {  
+        let reader = new FileReader();  
+        reader.onload = function(e) {  
+          saveData(e.target.result);  
+        };  
+        reader.readAsDataURL(fileInput.files[0]);  
+      } else {  
+        saveData('');  
+      }  
+    }  
+  
+    function submitWithdraw(e) {  
+      e.preventDefault();  
+      let name = document.getElementById('withName').value.trim();  
+      let amount = parseFloat(document.getElementById('withAmount').value);  
+      let method = document.getElementById('withMethod').value;  
+      let acc = document.getElementById('withAcc').value.trim();  
+  
+      if (!name || isNaN(amount) || !acc) {  
+        alert('እባክዎ ሁሉንም መስኮች በትክክል ይሙሉ!');  
+        return;  
+      }  
+  
+      let reqId = 'with_' + Date.now();  
+      db.ref('withdrawRequests/' + reqId).set({  
+        id: reqId,  
+        name: name,  
+        date: new Date().toLocaleDateString(),  
+        amount: amount,  
+        method: method,  
+        acc: acc,  
+        reqStatus: "pending"  
+      }).then(() => {  
+        alert('✅ የብር ማውጫ ጥያቄዎ ተመዝግቧል!');  
+        document.getElementById('withName').value = '';  
+        document.getElementById('withAmount').value = '';  
+        document.getElementById('withAcc').value = '';  
+      });  
+    }  
+  
+    function updateBadges() {  
+      let pendingDeps = depositRequests.filter(r => r.reqStatus === 'pending');  
+      let pendingWiths = withdrawRequests.filter(r => r.reqStatus === 'pending');  
+      document.getElementById('depCountBadge').innerText = pendingDeps.length;  
+      document.getElementById('depCountBadge').style.display = pendingDeps.length > 0 ? 'inline-flex' : 'none';  
+      document.getElementById('withCountBadge').innerText = pendingWiths.length;  
+      document.getElementById('withCountBadge').style.display = pendingWiths.length > 0 ? 'inline-flex' : 'none';  
+    }  
+  
+    function switchAdminTab(tab) {  
+      currentAdminTab = tab;  
+      document.getElementById('tabDepBtn').className = 'admin-tab-btn ' + (tab === 'dep' ? 'active' : '');  
+      document.getElementById('tabWithBtn').className = 'admin-tab-btn ' + (tab === 'with' ? 'active' : '');  
+      document.getElementById('tabMemBtn').className = 'admin-tab-btn ' + (tab === 'mem' ? 'active' : '');  
+      renderAdminPanel();  
+    }  
+  
+    function renderAdminPanel() {  
+      updateBadges();  
+      let container = document.getElementById('adminListContainer');  
+      container.innerHTML = '';  
+  
+      if (currentAdminTab === 'dep') {  
+        if (depositRequests.length === 0) {  
+          container.innerHTML = '<p style="font-size: 13px; color: #64748b; text-align: center; margin-top: 20px;">ምንም የመመዝገቢያ ጥያቄ የለም።</p>';  
+          return;  
+        }  
+  
+        depositRequests.forEach((req) => {  
+          let card = document.createElement('div');  
+          card.className = 'user-card';  
+          card.innerHTML = `  
+            <div><b>ስም:</b> ${req.name}</div>  
+            <div><b>መጠን:</b> ${req.amount} ETB | <b>ዘዴ:</b> ${req.method || 'Telebirr'}</div>  
+            <div><b>Tx ID:</b> <span style="color: #f59e0b; font-weight: bold;">${req.txId || 'የለም'}</span></div>  
+            <div><b>ቀን:</b> ${req.date}</div>  
+            ${req.screenshot ? `<div style="margin-top: 5px;"><a href="${req.screenshot}" target="_blank"><img src="${req.screenshot}" style="max-width: 100%; max-height: 150px; border-radius: 6px; border: 1px solid #38bdf8;" /></a></div>` : ''}  
+            <div style="display: flex; gap: 6px; margin-top: 8px;">  
+              <button class="btn btn-approve" onclick="approveDeposit('${req.id}')">Approve (አጽድቅ)</button>  
+              <button class="btn-delete" onclick="deleteDepositPermanently('${req.id}')">🗑️ አጥፋ</button>  
+            </div>  
+          `;  
+          container.appendChild(card);  
+        });  
+  
+      } else if (currentAdminTab === 'with') {  
+        if (withdrawRequests.length === 0) {  
+          container.innerHTML = '<p style="font-size: 13px; color: #64748b; text-align: center; margin-top: 20px;">ምንም የወጪ ጥያቄ የለም።</p>';  
+          return;  
+        }  
+  
+        withdrawRequests.forEach((req) => {  
+          let card = document.createElement('div');  
+          card.className = 'user-card';  
+          card.innerHTML = `  
+            <div><b>ስም:</b> ${req.name}</div>  
+            <div><b>መጠን:</b> ${req.amount} ETB | <b>ዘዴ:</b> ${req.method} (${req.acc})</div>  
+            <div style="display: flex; gap: 6px; margin-top: 8px;">  
+              <button class="btn btn-approve" onclick="approveWithdraw('${req.id}')">Approve (አጽድቅ)</button>  
+              <button class="btn-delete" onclick="deleteWithdrawPermanently('${req.id}')">🗑️ አጥፋ</button>  
+            </div>  
+          `;  
+          container.appendChild(card);  
+        });  
+  
+      } else if (currentAdminTab === 'mem') {  
+        let card = document.createElement('div');  
+        card.className = 'card';  
+        card.innerHTML = `  
+          <h3 style="color: #38bdf8; text-align: center; margin-bottom: 12px;">👥 አጠቃላይ የተረጋገጡ አባላት: ${membersList.length}</h3>  
+          <div style="display: flex; flex-direction: column; gap: 10px;">  
+            ${membersList.length === 0 ? '<p style="font-size: 12px; color: #64748b; text-align: center;">ምንም አባል የለም።</p>' : membersList.map((m) => {  
+              let refCount = membersList.filter(sub => sub.refCodeUsed === m.refCode).length;  
+              return `  
+              <div style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #334155;">  
+                <div style="display: flex; justify-content: space-between; align-items: center;">  
+                  <div>  
+                    <div style="font-weight: bold; font-size: 15px; color: #f8fafc;">${m.name} (-${m.amount} ETB)</div>  
+                    <div style="font-size: 11px; color: #38bdf8; margin-top: 2px;">የጋበዟቸው: <b>${refCount} ሰው</b></div>  
+                    <div style="font-size: 10px; color: #64748b;">ቀን: ${m.date}</div>  
+                  </div>  
+                  <button onclick="removeMember('${m.id}')" style="background: #dc2626; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">🗑️ አስወጣ</button>  
+                </div>  
+                <div style="margin-top: 8px; display: flex; gap: 6px;">  
+                  <input type="text" id="msg_${m.id}" placeholder="ለዚህ ተጠቃሚ የግል መልእክት ጻፍ..." style="margin: 0; font-size: 12px; padding: 6px;">  
+                  <button onclick="sendPrivateMessage('${m.name}', '${m.id}')" style="background: #0284c7; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; white-space: nowrap;">📬 ላክ</button>  
+                </div>  
+              </div>  
+            `}).join('')}  
+          </div>  
+        `;  
+        container.appendChild(card);  
+      }  
+    }  
+  
+    function approveDeposit(id) {  
+      let req = depositRequests.find(r => r.id === id);  
+      if (req) {  
+        db.ref('membersList/' + req.id).set({  
+          id: req.id,  
+          name: req.name,  
+          date: req.date,  
+          amount: req.amount,  
+          refCode: req.refCode,  
+          refCodeUsed: req.refCodeUsed || ''  
+        });  
+  
+        if (req.refCodeUsed) {  
+          let inviter = membersList.find(m => m.refCode === req.refCodeUsed);  
+          if (inviter) {  
+            let updatedAmount = parseFloat(inviter.amount) + 20;  
+            db.ref('membersList/' + inviter.id).update({ amount: updatedAmount });  
+              
+            let msgId = 'msg_' + Date.now();  
+            db.ref('privateMessages/' + msgId).set({  
+              id: msgId,  
+              userName: inviter.name,  
+              message: `🎉 እንኳን ደስ አለዎት! '${req.name}' የተባለ ሰው በሊንክዎ በመግባቱ 20 ETB የሪፈራል ቦነስ አግኝተዋል!`,  
+              date: new Date().toLocaleDateString()  
+            });  
+          }  
+        }  
+  
+        db.ref('depositRequests/' + id).remove();  
+        alert('ጥያቄው ጸድቋል! የተጠቃሚው አካውንት ተከፍቷል። ✅');  
+      }  
+    }  
+  
+    function deleteDepositPermanently(id) {  
+      if (confirm('ይህንን ጥያቄ ማጥፋት ይፈልጋሉ?')) {  
+        db.ref('depositRequests/' + id).remove();  
+      }  
+    }  
+  
+    function approveWithdraw(id) {  
+      let req = withdrawRequests.find(r => r.id === id);  
+      if (req) {  
+        let msgId = 'msg_' + Date.now();  
+        db.ref('privateMessages/' + msgId).set({  
+          id: msgId,  
+          userName: req.name,  
+          message: `✅ የ ${req.amount} ETB የብር ማውጫ (Withdraw) ጥያቄዎ ጸድቆ ተልኳል!`,  
+          date: new Date().toLocaleDateString()  
+        });  
+      }  
+      db.ref('withdrawRequests/' + id).remove();  
+      alert('የወጪ ጥያቄው ጸድቋል እና ለተጠቃሚው ማሳወቂያ ተልኳል! ✅');  
+    }  
+  
+    function deleteWithdrawPermanently(id) {  
+      if (confirm('ይህንን ጥያቄ ማጥፋት ይፈልጋሉ?')) {  
+        db.ref('withdrawRequests/' + id).remove();  
+      }  
+    }  
+  
+    function removeMember(id) {  
+      if (confirm('እርግጠኛ ነዎት ይህንን አባል ከአባል ዝርዝር ማገድ/ማስወጣት ይፈልጋሉ?')) {  
+        db.ref('membersList/' + id).remove();  
+        alert('አባሉ ከአባል ዝርዝር ተወግደዋል!');  
+      }  
+    }  
+  
+    function sendPrivateMessage(userName, memberId) {  
+      let input = document.getElementById('msg_' + memberId);  
+      let text = input.value.trim();  
+      if (!text) {  
+        alert('እባክዎ የመልእክት ሐሳብ ይጻፉ!');  
+        return;  
+      }  
+  
+      let msgId = 'msg_' + Date.now();  
+      db.ref('privateMessages/' + msgId).set({  
+        id: msgId,  
+        userName: userName,  
+        message: text,  
+        date: new Date().toLocaleDateString()  
+      }).then(() => {  
+        alert(`መልእክቱ ለ ${userName} ተልኳል! ✅`);  
+        input.value = '';  
+      });  
+    }  
+  </script>  </body>  
+</html>  
