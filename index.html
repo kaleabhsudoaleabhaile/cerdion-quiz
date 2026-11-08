@@ -5,13 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CerdionQuiz (K Y)</title>
   
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <!-- Supabase JS Client SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    /* 1. ቴክስት ኮፒ ማድረግ እና መምረጥ እንዳይቻል መከላከል */
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      -webkit-user-select: none; /* Safari */
+      -ms-user-select: none;     /* IE 10 and IE 11 */
+      user-select: none;        /* Standard syntax */
+    }
+
     body { background-color: #0f172a; color: #f8fafc; padding-bottom: 90px; }
+    
+    /* 2. ስክሪን ሲቀየር ወይም ሲወጡ ብላር (Blur) እንዲያደርግ */
+    .blur-shield {
+      transition: filter 0.3s ease;
+    }
+    body.blurred .blur-shield {
+      filter: blur(15px);
+    }
+
     header { background: linear-gradient(135deg, #1e1b4b, #312e81); padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #6366f1; }
     .logo { font-size: 22px; font-weight: bold; color: #38bdf8; }
     .logo span { background: #6366f1; color: white; padding: 2px 8px; border-radius: 6px; font-size: 15px; margin-left: 5px; }
@@ -59,7 +77,7 @@
     .notice-box { background: #3f3f46; border-left: 4px solid #f59e0b; padding: 10px; border-radius: 6px; margin: 10px 0; font-size: 12px; color: #fef08a; }
   </style>
 </head>
-<body>
+<body class="blur-shield">
 
   <header>
     <div class="logo">CerdionQuiz <span>K Y</span></div>
@@ -79,15 +97,6 @@
       </div>
     </div>
 
-    <!-- DEMO QUIZ -->
-    <div id="demoQuizPage" class="page">
-      <div class="card">
-        <h3>የመለማመጃ ኳይዝ (Demo Questions)</h3>
-        <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">10 ጥያቄዎችን በ 1 ደቂቃ ውስጥ መለማመድ ይችላሉ!</p>
-        <button class="btn" style="background: #d97706; margin-top: 15px;" onclick="startDemoQuiz()">የመለማመጃ ጥያቄ ጀምር</button>
-      </div>
-    </div>
-
     <!-- MESSAGES PAGE -->
     <div id="messagesPage" class="page">
       <div class="card">
@@ -96,19 +105,6 @@
         <div id="userMessagesList" style="display: flex; flex-direction: column; gap: 8px;">
           <p style="font-size: 12px; color: #64748b; text-align: center;">ምንም አዲስ መልእክት የለም።</p>
         </div>
-      </div>
-    </div>
-
-    <!-- DEMO ACCOUNT PAGE -->
-    <div id="demoAccountPage" class="page">
-      <div class="card">
-        <div class="balance-title">የመለማመጃ (Demo) ቀሪ ሂሳብ</div>
-        <div class="balance-amount" id="demoBalanceDisplay">500.00 ETB</div>
-      </div>
-      <div class="card">
-        <h3>የመለማመጃ ኳይዝ</h3>
-        <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">ያለ ክፍያ በ 1 ደቂቃ ውስጥ መለማመድ ይችላሉ!</p>
-        <button class="btn" style="background: #d97706; margin-top: 10px;" onclick="switchNavTab('demoQuizPage', document.getElementById('navDemo'))">Demo ኳይዝ ጀምር</button>
       </div>
     </div>
 
@@ -125,7 +121,7 @@
       </div>
 
       <div class="card">
-        <div class="balance-title">የእውነተኛ አካውንት ቀሪ ሂሳብ</div>
+        <div class="balance-title">የአካውንት ቀሪ ሂሳብ</div>
         <div class="balance-amount" id="userBalance">0.00 ETB</div>
 
         <div class="stats-grid">
@@ -142,7 +138,7 @@
 
       <div class="card">
         <h3>Deposit / Withdraw / Referral</h3>
-        <p style="font-size: 12px; color: #94a3b8; margin-top: 5px;">የእውነተኛ አካውንት አገልግሎቶች</p>
+        <p style="font-size: 12px; color: #94a3b8; margin-top: 5px;">አገልግሎቶች</p>
         <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;">
           <button class="btn" style="font-size: 11px; padding: 8px; flex: 1;" onclick="showSubPage('depSubPage')">Deposit (ብር ማስገቢያ)</button>
           <button class="btn" style="font-size: 11px; padding: 8px; background: #0284c7; flex: 1;" onclick="showSubPage('withSubPage')">Withdraw (ብር ማውጫ)</button>
@@ -226,7 +222,7 @@
     <!-- ADMIN PANEL PAGE -->
     <div id="adminPanelPage" class="page">
       <div style="margin-bottom: 15px;">
-        <h3 style="color: #ef4444;">⚙️ Admin Control Panel (Live)</h3>
+        <h3 style="color: #ef4444;">⚙️ Admin Control Panel (Supabase Live)</h3>
       </div>
 
       <div class="admin-tabs">
@@ -250,63 +246,80 @@
     <div id="quizPlayPage" class="page">
       <div class="card">
         <div class="timer-box" id="timerDisplay">ቀሪ ሰዓት: 01:00</div>
-        <h3 id="qCategory">CerdionQuiz ጥያቄዎች</h3>
-        <p id="qText" style="font-size: 16px; margin: 15px 0; color: #f8fafc;">ጥያቄ እዚህ ይመጣል...</p>
+        <h3 id="qCategory">CerdionQuiz ጥያቄዎች (ከዳታቤዝ)</h3>
+        <p id="qText" style="font-size: 16px; margin: 15px 0; color: #f8fafc;">ጥያቄ በመጫን ላይ...</p>
         <div id="optionsContainer"></div>
       </div>
     </div>
 
   </div>
 
-  <!-- BOTTOM NAVIGATION BAR -->
+  <!-- BOTTOM NAVIGATION BAR (No Demo) -->
   <div class="nav">
     <div class="nav-item active" id="navQuiz" onclick="switchNavTab('homePage', this)">
       <span>❓</span>
       <span>ጥያቄ</span>
-    </div>
-    <div class="nav-item" id="navDemo" onclick="switchNavTab('demoQuizPage', this)">
-      <span>🎮</span>
-      <span>ዴሞ ጥያቄ</span>
     </div>
     <div class="nav-item" id="navMsg" onclick="switchNavTab('messagesPage', this)">
       <span>📬</span>
       <span>መልእክት</span>
       <span class="nav-badge" id="msgBadge" style="display:none;">0</span>
     </div>
-    <div class="nav-item" id="navDemoAcc" onclick="switchNavTab('demoAccountPage', this)">
-      <span>🟡</span>
-      <span>የዴሞ አካውንት</span>
-    </div>
     <div class="nav-item" id="navRealAcc" onclick="switchNavTab('realAccountPage', this)">
       <span>🟢</span>
-      <span>የኔ አካውንት</span>
+      <span>አካውንቴ</span>
     </div>
   </div>
 
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCFBuMejhBpPeC6KDe...",
-      authDomain: "cerdionquiz.firebaseapp.com",
-      databaseURL: "https://cerdionquiz-default-rtdb.firebaseio.com",
-      projectId: "cerdionquiz",
-      storageBucket: "cerdionquiz.appspot.com",
-      messagingSenderId: "11951685719",
-      appId: "1:11951685719:web:4333366...",
-      measurementId: "G-4VVZT67XEC"
-    };
+    // Supabase Configuration 
+    const SUPABASE_URL = 'https://nclwctjcdxtjftmgyrch.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_7ImWQhMf95w6NL_-T9uQGg_JBimeeIZ';
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    const { createClient } = supabase;
+    const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // --- SECURITY & ANTI-CHEAT (Copy prevention & Blur Shield) ---
+    document.addEventListener('contextmenu', e => e.preventDefault());
+
+    document.addEventListener('copy', (e) => {
+      e.preventDefault();
+      alert('⚠️ ከዚህ ዌብሳይት ጥያቄዎችን ኮፒ ማድረግ የተከለከለ ነው!');
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        document.body.classList.add('blurred');
+      } else {
+        document.body.classList.remove('blurred');
+      }
+    });
+
+    window.addEventListener('blur', () => {
+      document.body.classList.add('blurred');
+    });
+
+    window.addEventListener('focus', () => {
+      document.body.classList.remove('blurred');
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'PrintScreen' || (e.ctrlKey && e.key === 'p') || (e.ctrlKey && e.shiftKey && e.key === 'i')) {
+        e.preventDefault();
+        alert('⚠️ ስክሪንሾት ማንሳት የተከለከለ ነው!');
+        document.body.classList.add('blurred');
+        setTimeout(() => document.body.classList.remove('blurred'), 2000);
+      }
+    });
+    // -------------------------------------------------------------
 
     let clickCount = 0;
-    let currentMode = 'real';
     let isApprovedUser = localStorage.getItem('ky_isApproved') === 'true';
     let registeredName = localStorage.getItem('ky_registeredName') || '';
 
     let realBalance = isApprovedUser ? (parseFloat(localStorage.getItem('ky_realBalance')) || 0.00) : 0.00;
     let wonBalance = isApprovedUser ? (parseFloat(localStorage.getItem('ky_wonBalance')) || 0.00) : 0.00;
     let inviteCount = parseInt(localStorage.getItem('ky_inviteCount')) || 0;
-    let demoBalance = 500.00;
     let lastReadMsgCount = parseInt(localStorage.getItem('ky_lastReadMsgCount')) || 0;
     
     let userRefCode = localStorage.getItem('ky_refCode');
@@ -349,79 +362,72 @@
     let withdrawRequests = [];
     let userPrivateMessages = [];
 
-    // Realtime Database Listeners
-    db.ref('depositRequests').on('value', (snapshot) => {
-      const data = snapshot.val();
-      depositRequests = data ? Object.values(data) : [];
-      updateBadges();
-      if(document.getElementById('adminPanelPage').classList.contains('active') && currentAdminTab === 'dep') {
-        renderAdminPanel();
-      }
-    });
+    async function fetchSupabaseData() {
+      try {
+        let { data: depData } = await _supabase.from('depositRequests').select('*');
+        depositRequests = depData || [];
 
-    db.ref('withdrawRequests').on('value', (snapshot) => {
-      const data = snapshot.val();
-      withdrawRequests = data ? Object.values(data) : [];
-      updateBadges();
-      if(document.getElementById('adminPanelPage').classList.contains('active') && currentAdminTab === 'with') {
-        renderAdminPanel();
-      }
-    });
+        let { data: withData } = await _supabase.from('withdrawRequests').select('*');
+        withdrawRequests = withData || [];
 
-    db.ref('membersList').on('value', (snapshot) => {
-      const data = snapshot.val();
-      membersList = data ? Object.values(data) : [];
+        let { data: memData } = await _supabase.from('membersList').select('*');
+        membersList = memData || [];
 
-      let currentMember = membersList.find(m => m.refCode === userRefCode || (registeredName && m.name === registeredName));
-      if (currentMember) {
-        isApprovedUser = true;
-        registeredName = currentMember.name;
-        realBalance = parseFloat(currentMember.amount) || 0.00;
-        localStorage.setItem('ky_isApproved', 'true');
-        localStorage.setItem('ky_registeredName', registeredName);
-        localStorage.setItem('ky_realBalance', realBalance);
-        updateProfileDisplay();
-      }
+        let currentMember = membersList.find(m => m.refCode === userRefCode || (registeredName && m.name === registeredName));
+        if (currentMember) {
+          isApprovedUser = true;
+          registeredName = currentMember.name;
+          realBalance = parseFloat(currentMember.amount) || 0.00;
+          localStorage.setItem('ky_isApproved', 'true');
+          localStorage.setItem('ky_registeredName', registeredName);
+          localStorage.setItem('ky_realBalance', realBalance);
+          updateProfileDisplay();
+        }
 
-      let myInvitedList = membersList.filter(m => m.refCodeUsed === userRefCode);
-      inviteCount = myInvitedList.length;
-      document.getElementById('refCount').innerText = inviteCount;
+        let myInvitedList = membersList.filter(m => m.refCodeUsed === userRefCode);
+        inviteCount = myInvitedList.length;
+        document.getElementById('refCount').innerText = inviteCount;
 
-      if(document.getElementById('adminPanelPage').classList.contains('active') && currentAdminTab === 'mem') {
-        renderAdminPanel();
-      }
-    });
+        let { data: msgData } = await _supabase.from('privateMessages').select('*');
+        let allMsgs = msgData || [];
+        if (registeredName) {
+          userPrivateMessages = allMsgs.filter(m => m.userName === registeredName);
+          let msgListEl = document.getElementById('userMessagesList');
+          let msgBadge = document.getElementById('msgBadge');
 
-    db.ref('privateMessages').on('value', (snapshot) => {
-      const data = snapshot.val();
-      let allMsgs = data ? Object.values(data) : [];
-      if (registeredName) {
-        userPrivateMessages = allMsgs.filter(m => m.userName === registeredName);
-        let msgListEl = document.getElementById('userMessagesList');
-        let msgBadge = document.getElementById('msgBadge');
+          let unreadCount = userPrivateMessages.length - lastReadMsgCount;
 
-        let unreadCount = userPrivateMessages.length - lastReadMsgCount;
+          if (userPrivateMessages.length > 0) {
+            if (unreadCount > 0 && !document.getElementById('messagesPage').classList.contains('active')) {
+              msgBadge.innerText = unreadCount;
+              msgBadge.style.display = 'inline-flex';
+            } else {
+              msgBadge.style.display = 'none';
+            }
 
-        if (userPrivateMessages.length > 0) {
-          if (unreadCount > 0 && !document.getElementById('messagesPage').classList.contains('active')) {
-            msgBadge.innerText = unreadCount;
-            msgBadge.style.display = 'inline-flex';
+            msgListEl.innerHTML = userPrivateMessages.map(m => `
+              <div style="background: #0f172a; padding: 10px; border-radius: 8px; border-left: 4px solid #38bdf8; font-size: 13px;">
+                <div>${m.message}</div>
+                <div style="font-size: 10px; color: #64748b; margin-top: 4px;">ቀን: ${m.date}</div>
+              </div>
+            `).join('');
           } else {
             msgBadge.style.display = 'none';
+            msgListEl.innerHTML = '<p style="font-size: 12px; color: #64748b; text-align: center;">ምንም አዲስ መልእክት የለም።</p>';
           }
-
-          msgListEl.innerHTML = userPrivateMessages.map(m => `
-            <div style="background: #0f172a; padding: 10px; border-radius: 8px; border-left: 4px solid #38bdf8; font-size: 13px;">
-              <div>${m.message}</div>
-              <div style="font-size: 10px; color: #64748b; margin-top: 4px;">ቀን: ${m.date}</div>
-            </div>
-          `).join('');
-        } else {
-          msgBadge.style.display = 'none';
-          msgListEl.innerHTML = '<p style="font-size: 12px; color: #64748b; text-align: center;">ምንም አዲስ መልእክት የለም።</p>';
         }
+
+        updateBadges();
+        if(document.getElementById('adminPanelPage').classList.contains('active')) {
+          renderAdminPanel();
+        }
+      } catch (err) {
+        console.error("Error fetching data: ", err);
       }
-    });
+    }
+
+    fetchSupabaseData();
+    setInterval(fetchSupabaseData, 5000);
 
     function handleSettingsClick() {
       clickCount++;
@@ -484,60 +490,6 @@
       }
     }
 
-    // 🌟 HUGE MASTER POOL OF DIFFERENT DYNAMIC QUESTIONS
-    const dynamicQuestionCategories = [
-      {
-        q: (n) => `በኮምፒዩተር ሳይንስ ጥናት ውስጥ የ '${n}th QuickSort' አልጎሪዝም አስቸጋሪነት ጊዜ (Worst-case Time Complexity) ስንት ነው?`,
-        opts: ["O(n log n)", "O(n²)", "O(n)", "O(1)"],
-        ans: 1
-      },
-      {
-        q: (n) => `በአይቲ አርክቴክቸር 'TCP/IP' ሞዴል እና ፕሮቶኮል ቁጥር #${n} መሰረት የ 'Transport Layer' ዋናው አገልግሎት ምንድን ነው?`,
-        opts: ["የውሂብ አስተማማኝ ማስተላለፍ (Reliable Delivery)", "የኬብል ግንኙነት", "የማያ ገጽ ማሳያ", "የሃርድዌር ማቀዝቀዣ"],
-        ans: 0
-      },
-      {
-        q: (n) => `በፍልስፍና ጥናት መጽሐፍ ቁጥር ${n} ላይ 'Cogito, ergo sum' (አስባለሁ፤ ስለዚህ አለሁ) በማለት የተከራከረው ፈላስፋ ማን ነው?`,
-        opts: ["ኢማኑኤል ካንት", "ፍሬድሪክ ኒቼ", "ሬኔ ዴካርት", "ሶቅራጦስ"],
-        ans: 2
-      },
-      {
-        q: (n) => `ისტორიዊ ክስተት #${n}: የአፍሪካ ህብረት (African Union) በይፋ ተተክቶ የተመሠረተበት ዓመተ ምህረት (በፈረንጆች አቆጣጠር) የትኛው ነው?`,
-        opts: ["2002 እ.ኤ.አ", "1963 እ.ኤ.አ", "1991 እ.ኤ.አ", "2005 እ.ኤ.አ"],
-        ans: 0
-      },
-      {
-        q: (n) => `በኦፐሬቲንግ ሲስተም (OS) ትንተና ${n} መሰረት 'Deadlock' ሁኔታ የሚከሰተው በምን ምክንያት ነው?`,
-        opts: ["ሲፒዩ ሲሞቅ", "ሁለት ሂደቶች አንዱ የሌላውን ሀብት በመጠበቅ ሲታገዱ", "ራም ሲሞላ", "ሃርድ ድራይቭ ሲበላሽ"],
-        ans: 1
-      },
-      {
-        q: (n) => `በዳታቤዝ አስተዳደር (DBMS) ንድፈ ሀሳብ #${n} መሰረት 'ACID' ከሚሉት መርሆች 'I' የሚወክለው ቃል ምንድን ነው?`,
-        opts: ["Isolation (ለጸጥታ/እጅ መስጠት)", "Integrity", "Index", "Instance"],
-        ans: 0
-      },
-      {
-        q: (n) => `በኮምፒዩተር ኔትወርክ ፕሮቶኮል ስሪት ${n} መሰረት 'IPv6' አድራሻ ስንት ቢት (Bits) ርዝመት አለው?`,
-        opts: ["32 bits", "64 bits", "128 bits", "256 bits"],
-        ans: 2
-      },
-      {
-        q: (n) => `በሰብአዊ ሳይኮሎጂ እና አንጎል ጥናት #${n} መሰረት የሰው ልጅ የረጅም ጊዜ ትዝታ የሚቀመጥበት ዋናው የአእምሮ ክፍል የትኛው ነው?`,
-        opts: ["ሂፖካምፐስ (Hippocampus)", "ሴሬቤለም", "አሚግዳላ", "ሜዱላ"],
-        ans: 0
-      },
-      {
-        q: (n) => `በኦብጀክት ኦሬንቴድ ፕሮግራሚንግ (OOP - Concept #${n}) ውስጥ የባህሪዎችን ውርስ ማስተላለፍ ምን ተብሎ ይጠራል?`,
-        opts: ["Encapsulation", "Inheritance", "Polymorphism", "Abstraction"],
-        ans: 1
-      },
-      {
-        q: (n) => `በኢትዮጵያ ታሪክ ጥናት ${n} መሰረት በጎንደር ከተማ የታወቁትን ውብ አብያተ መንግሥታት እና ካስትሎች ያስገነቡት ንጉሥ ማን ናቸው?`,
-        opts: ["ዐፄ ፋሲለደስ", "ዐፄ ዘርአ ያዕቆብ", "ዐፄ ኃይለ ሥላሴ", "ዐፄ ቴዎድሮስ"],
-        ans: 0
-      }
-    ];
-
     let currentQIndex = 0;
     let correctAnswersCount = 0;
     let timerInterval = null;
@@ -561,42 +513,37 @@
       realBalance -= 20;
       document.getElementById('userBalance').innerText = realBalance.toFixed(2) + ' ETB';
       localStorage.setItem('ky_realBalance', realBalance);
-      beginQuizSession();
+      fetchQuestionsAndStart();
     }
 
-    function startDemoQuiz() {
-      beginQuizSession();
-    }
+    async function fetchQuestionsAndStart() {
+      try {
+        let { data: questions, error } = await _supabase.from('questions').select('*');
+        
+        if (error || !questions || questions.length === 0) {
+          alert("ከዳታቤዝ ጥያቄዎችን ማምጣት አልተቻለም ወይም ጥያቄ የለም።");
+          return;
+        }
 
-    // 🎲 GENERATE 10 TRULY RANDOM & UNIQUE QUESTIONS EVERY TIME
-    function beginQuizSession() {
-      currentQIndex = 0;
-      correctAnswersCount = 0;
-      timeLeft = 60;
-      isQuizActive = true;
-      activeQuizQuestions = [];
+        let shuffled = questions.sort(() => 0.5 - Math.random());
+        activeQuizQuestions = shuffled.slice(0, 10).map((q, idx) => ({
+          q: `${idx + 1}. ${q.question}`,
+          opts: q.options,
+          ans: q.correct_answer
+        }));
 
-      let generatedBatch = [];
-      let randomSeedOffset = Math.floor(Math.random() * 50000) + 1;
+        currentQIndex = 0;
+        correctAnswersCount = 0;
+        timeLeft = 60;
+        isQuizActive = true;
 
-      for (let i = 0; i < 10; i++) {
-        let templateIndex = (randomSeedOffset + i) % dynamicQuestionCategories.length;
-        let template = dynamicQuestionCategories[templateIndex];
-        let uniqueNumber = randomSeedOffset + i;
-
-        generatedBatch.push({
-          q: `${i + 1}. ${template.q(uniqueNumber)}`,
-          opts: template.opts,
-          ans: template.ans
-        });
+        showPage('quizPlayPage');
+        startTimer();
+        loadQuestion(currentQIndex);
+      } catch (err) {
+        console.error("Quiz fetch error:", err);
+        alert("የኔትወርክ ስህተት አጋጥሟል!");
       }
-
-      // Shuffle options and questions securely
-      activeQuizQuestions = generatedBatch.sort(() => Math.random() - 0.5);
-
-      showPage('quizPlayPage');
-      startTimer();
-      loadQuestion(currentQIndex);
     }
 
     function startTimer() {
@@ -634,7 +581,7 @@
           alert(`ጥሩ ሙከራ! ${correctAnswersCount}/10 መልሰዋል 🎉 የመግቢያ ብርዎ (20 ETB) ተመልሶልዎታል!`);
           realBalance += 20;
         } else {
-          alert(`ጨዋታውን ጨርሰዋል! 10 ጥያቄዎች ውስጥ ${correctAnswersCount} ብቻ ትክክል መልሰዋል።`);
+          alert(`ጨዋታውን ጨርሰዋል! ጥያቄዎች ውስጥ ${correctAnswersCount} ብቻ ትክክል መልሰዋል።`);
         }
 
         document.getElementById('wonAmount').innerText = wonBalance.toFixed(2) + ' ETB';
@@ -662,7 +609,7 @@
       });
     }
 
-    function submitDeposit(e) {
+    async function submitDeposit(e) {
       e.preventDefault();
       let name = document.getElementById('depName').value.trim();
       let method = document.getElementById('depMethod').value;
@@ -676,15 +623,15 @@
       }
 
       if (!txId && (!fileInput.files || !fileInput.files[0])) {
-        alert('እባክዎ Transaction ID ያስገቡ ወይም የክፍያ ስክሪንሾት ይምረጡ (ከአንዱ አንዱ ግዴታ ነው)!');
+        alert('እባክዎ Transaction ID ያስገቡ ወይም የክፍያ ስክሪንሾት ይምረጡ!');
         return;
       }
 
       registeredName = name;
       let reqId = 'dep_' + Date.now();
 
-      const saveData = (imgBase64) => {
-        db.ref('depositRequests/' + reqId).set({
+      const saveData = async (imgBase64) => {
+        await _supabase.from('depositRequests').insert([{
           id: reqId,
           name: name,
           method: method,
@@ -693,29 +640,30 @@
           txId: txId || 'ስክሪንሾት ብቻ',
           screenshot: imgBase64 || '',
           refCode: userRefCode,
-          refCodeUsed: usedRefCode,
+          refCodeUsed: usedRefCode || '',
           reqStatus: "pending"
-        }).then(() => {
-          alert('✅ መረጃዎ በስኬት ተመዝግቧል! አድሚኑ እስኪያጸድቀው ይጠብቁ።');
-          document.getElementById('depName').value = '';
-          document.getElementById('depAmount').value = '';
-          document.getElementById('depTxId').value = '';
-          document.getElementById('depScreenshot').value = '';
-        });
+        }]);
+
+        alert('✅ መረጃዎ በስኬት ተመዝግቧል! አድሚኑ እስኪያጸድቀው ይጠብቁ።');
+        document.getElementById('depName').value = '';
+        document.getElementById('depAmount').value = '';
+        document.getElementById('depTxId').value = '';
+        document.getElementById('depScreenshot').value = '';
+        fetchSupabaseData();
       };
 
       if (fileInput.files && fileInput.files[0]) {
         let reader = new FileReader();
-        reader.onload = function(e) {
-          saveData(e.target.result);
+        reader.onload = async function(e) {
+          await saveData(e.target.result);
         };
         reader.readAsDataURL(fileInput.files[0]);
       } else {
-        saveData('');
+        await saveData('');
       }
     }
 
-    function submitWithdraw(e) {
+    async function submitWithdraw(e) {
       e.preventDefault();
       let name = document.getElementById('withName').value.trim();
       let amount = parseFloat(document.getElementById('withAmount').value);
@@ -728,7 +676,7 @@
       }
 
       let reqId = 'with_' + Date.now();
-      db.ref('withdrawRequests/' + reqId).set({
+      await _supabase.from('withdrawRequests').insert([{
         id: reqId,
         name: name,
         date: new Date().toLocaleDateString(),
@@ -736,12 +684,13 @@
         method: method,
         acc: acc,
         reqStatus: "pending"
-      }).then(() => {
-        alert('✅ የብር ማውጫ ጥያቄዎ ተመዝግቧል!');
-        document.getElementById('withName').value = '';
-        document.getElementById('withAmount').value = '';
-        document.getElementById('withAcc').value = '';
-      });
+      }]);
+
+      alert('✅ የብር ማውጫ ጥያቄዎ ተመዝግቧል!');
+      document.getElementById('withName').value = '';
+      document.getElementById('withAmount').value = '';
+      document.getElementById('withAcc').value = '';
+      fetchSupabaseData();
     }
 
     function updateBadges() {
@@ -767,12 +716,13 @@
       container.innerHTML = '';
 
       if (currentAdminTab === 'dep') {
-        if (depositRequests.length === 0) {
+        let pendingDeps = depositRequests.filter(r => r.reqStatus === 'pending');
+        if (pendingDeps.length === 0) {
           container.innerHTML = '<p style="font-size: 13px; color: #64748b; text-align: center; margin-top: 20px;">ምንም የመመዝገቢያ ጥያቄ የለም።</p>';
           return;
         }
 
-        depositRequests.forEach((req) => {
+        pendingDeps.forEach((req) => {
           let card = document.createElement('div');
           card.className = 'user-card';
           card.innerHTML = `
@@ -790,12 +740,13 @@
         });
 
       } else if (currentAdminTab === 'with') {
-        if (withdrawRequests.length === 0) {
+        let pendingWiths = withdrawRequests.filter(r => r.reqStatus === 'pending');
+        if (pendingWiths.length === 0) {
           container.innerHTML = '<p style="font-size: 13px; color: #64748b; text-align: center; margin-top: 20px;">ምንም የወጪ ጥያቄ የለም።</p>';
           return;
         }
 
-        withdrawRequests.forEach((req) => {
+        pendingWiths.forEach((req) => {
           let card = document.createElement('div');
           card.className = 'user-card';
           card.innerHTML = `
@@ -839,74 +790,79 @@
       }
     }
 
-    function approveDeposit(id) {
+    async function approveDeposit(id) {
       let req = depositRequests.find(r => r.id === id);
       if (req) {
-        db.ref('membersList/' + req.id).set({
+        await _supabase.from('membersList').upsert([{
           id: req.id,
           name: req.name,
           date: req.date,
           amount: req.amount,
           refCode: req.refCode,
           refCodeUsed: req.refCodeUsed || ''
-        });
+        }]);
 
         if (req.refCodeUsed) {
           let inviter = membersList.find(m => m.refCode === req.refCodeUsed);
           if (inviter) {
             let updatedAmount = parseFloat(inviter.amount) + 20;
-            db.ref('membersList/' + inviter.id).update({ amount: updatedAmount });
+            await _supabase.from('membersList').update({ amount: updatedAmount }).eq('id', inviter.id);
             
             let msgId = 'msg_' + Date.now();
-            db.ref('privateMessages/' + msgId).set({
+            await _supabase.from('privateMessages').insert([{
               id: msgId,
               userName: inviter.name,
               message: `🎉 እንኳን ደስ አለዎት! '${req.name}' የተባለ ሰው በሊንክዎ በመግባቱ 20 ETB የሪፈራል ቦነስ አግኝተዋል!`,
               date: new Date().toLocaleDateString()
-            });
+            }]);
           }
         }
 
-        db.ref('depositRequests/' + id).remove();
+        await _supabase.from('depositRequests').delete().eq('id', id);
         alert('ጥያቄው ጸድቋል! የተጠቃሚው አካውንት ተከፍቷል። ✅');
+        fetchSupabaseData();
       }
     }
 
-    function deleteDepositPermanently(id) {
+    async function deleteDepositPermanently(id) {
       if (confirm('ይህንን ጥያቄ ማጥፋት ይፈልጋሉ?')) {
-        db.ref('depositRequests/' + id).remove();
+        await _supabase.from('depositRequests').delete().eq('id', id);
+        fetchSupabaseData();
       }
     }
 
-    function approveWithdraw(id) {
+    async function approveWithdraw(id) {
       let req = withdrawRequests.find(r => r.id === id);
       if (req) {
         let msgId = 'msg_' + Date.now();
-        db.ref('privateMessages/' + msgId).set({
+        await _supabase.from('privateMessages').insert([{
           id: msgId,
           userName: req.name,
           message: `✅ የ ${req.amount} ETB የብር ማውጫ (Withdraw) ጥያቄዎ ጸድቆ ተልኳል!`,
           date: new Date().toLocaleDateString()
-        });
+        ]);
       }
-      db.ref('withdrawRequests/' + id).remove();
+      await _supabase.from('withdrawRequests').delete().eq('id', id);
       alert('የወጪ ጥያቄው ጸድቋል እና ለተጠቃሚው ማሳወቂያ ተልኳል! ✅');
+      fetchSupabaseData();
     }
 
-    function deleteWithdrawPermanently(id) {
+    async function deleteWithdrawPermanently(id) {
       if (confirm('ይህንን ጥያቄ ማጥፋት ይፈልጋሉ?')) {
-        db.ref('withdrawRequests/' + id).remove();
+        await _supabase.from('withdrawRequests').delete().eq('id', id);
+        fetchSupabaseData();
       }
     }
 
-    function removeMember(id) {
+    async function removeMember(id) {
       if (confirm('እርግጠኛ ነዎት ይህንን አባል ከአባል ዝርዝር ማገድ/ማስወጣት ይፈልጋሉ?')) {
-        db.ref('membersList/' + id).remove();
+        await _supabase.from('membersList').delete().eq('id', id);
         alert('አባሉ ከአባል ዝርዝር ተወግደዋል!');
+        fetchSupabaseData();
       }
     }
 
-    function sendPrivateMessage(userName, memberId) {
+    async function sendPrivateMessage(userName, memberId) {
       let input = document.getElementById('msg_' + memberId);
       let text = input.value.trim();
       if (!text) {
@@ -915,15 +871,16 @@
       }
 
       let msgId = 'msg_' + Date.now();
-      db.ref('privateMessages/' + msgId).set({
+      await _supabase.from('privateMessages').insert([{
         id: msgId,
         userName: userName,
         message: text,
         date: new Date().toLocaleDateString()
-      }).then(() => {
-        alert(`መልእክቱ ለ ${userName} ተልኳል! ✅`);
-        input.value = '';
-      });
+      }]);
+
+      alert(`መልእክቱ ለ ${userName} ተልኳል! ✅`);
+      input.value = '';
+      fetchSupabaseData();
     }
   </script>
 </body>
