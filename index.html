@@ -266,13 +266,15 @@
   </div>
 
   <script>
-    const SUPABASE_URL = 'https://gvojjzhbojlovsnchxzt.supabase.co';[span_0](start_span)[span_0](end_span)
+    const SUPABASE_URL = 'https://gvojjzhbojlovsnchxzt.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_7ImWQhMf95w6NL_-T9uQGg_JBimeeIZ';
 
     let _supabase = null;
     try {
-      const { createClient } = supabase;
-      _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      if (typeof supabase !== 'undefined') {
+        const { createClient } = supabase;
+        _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      }
     } catch (e) {
       console.error("Supabase init error:", e);
     }
@@ -308,34 +310,38 @@
       localStorage.setItem('ky_refCode', userRefCode);
     }
 
-    const currentUrl = window.location.origin + window.location.pathname;
-    const fullRefLink = currentUrl + '?ref=' + userRefCode;
-    const refInput = document.getElementById('userReferralLink');
-    if (refInput) refInput.value = fullRefLink;
+    try {
+      const currentUrl = window.location.origin + window.location.pathname;
+      const fullRefLink = currentUrl + '?ref=' + userRefCode;
+      const refInput = document.getElementById('userReferralLink');
+      if (refInput) refInput.value = fullRefLink;
+    } catch (e) {}
 
     const urlParams = new URLSearchParams(window.location.search);
     const usedRefCode = urlParams.get('ref') || '';
 
     function updateProfileDisplay() {
-      let displayNameEl = document.getElementById('displayProfileName');
-      let ppAvatarEl = document.getElementById('userPPAvatar');
+      try {
+        let displayNameEl = document.getElementById('displayProfileName');
+        let ppAvatarEl = document.getElementById('userPPAvatar');
 
-      if (isApprovedUser && registeredName) {
-        if (displayNameEl) displayNameEl.innerText = registeredName;
-        if (ppAvatarEl) ppAvatarEl.innerText = registeredName.charAt(0).toUpperCase();
-      } else {
-        if (displayNameEl) displayNameEl.innerText = "ያልተረጋገጠ (Pending)";
-        if (ppAvatarEl) ppAvatarEl.innerText = "?";
-        realBalance = 0.00;
-        wonBalance = 0.00;
-      }
+        if (isApprovedUser && registeredName) {
+          if (displayNameEl) displayNameEl.innerText = registeredName;
+          if (ppAvatarEl) ppAvatarEl.innerText = registeredName.charAt(0).toUpperCase();
+        } else {
+          if (displayNameEl) displayNameEl.innerText = "ያልተረጋገጠ (Pending)";
+          if (ppAvatarEl) ppAvatarEl.innerText = "?";
+          realBalance = 0.00;
+          wonBalance = 0.00;
+        }
 
-      let ub = document.getElementById('userBalance');
-      let wa = document.getElementById('wonAmount');
-      let rc = document.getElementById('refCount');
-      if (ub) ub.innerText = realBalance.toFixed(2) + ' ETB';
-      if (wa) wa.innerText = wonBalance.toFixed(2) + ' ETB';
-      if (rc) rc.innerText = inviteCount;
+        let ub = document.getElementById('userBalance');
+        let wa = document.getElementById('wonAmount');
+        let rc = document.getElementById('refCount');
+        if (ub) ub.innerText = realBalance.toFixed(2) + ' ETB';
+        if (wa) wa.innerText = wonBalance.toFixed(2) + ' ETB';
+        if (rc) rc.innerText = inviteCount;
+      } catch (e) {}
     }
 
     updateProfileDisplay();
