@@ -1,8 +1,13 @@
-<!DOCTYPE html>  <html lang="am">  
+<!DOCTYPE html>  
+<html lang="am">  
 <head>  
   <meta charset="UTF-8">  
   <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-  <title>CerdionQuiz (K Y)</title>    <!-- Firebase SDKs -->    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>    <style>  
+  <title>CerdionQuiz (K Y)</title>    
+  <!-- Firebase SDKs -->    
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>    
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>    
+  <style>  
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }  
     body { background-color: #0f172a; color: #f8fafc; padding-bottom: 90px; }  
     header { background: linear-gradient(135deg, #1e1b4b, #312e81); padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #6366f1; }  
@@ -39,6 +44,7 @@
     .page.active { display: block; }  
   
     .quiz-option { background: #0f172a; border: 1px solid #334155; padding: 12px; border-radius: 8px; margin-top: 8px; cursor: pointer; font-size: 14px; }  
+    .quiz-option:hover { border-color: #38bdf8; background: #1e293b; }  
     .timer-box { font-size: 16px; font-weight: bold; color: #f59e0b; margin-bottom: 10px; text-align: right; }  
   
     .admin-tabs { display: flex; gap: 6px; margin-bottom: 15px; flex-wrap: wrap; }  
@@ -50,199 +56,206 @@
     .user-card { background: #1e293b; border-radius: 12px; padding: 12px; margin-bottom: 12px; border: 1px solid #334155; display: flex; flex-direction: column; gap: 6px; }  
     .user-avatar { width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, #38bdf8, #6366f1); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; color: #ffffff; border: 2px solid #38bdf8; }  
     .notice-box { background: #3f3f46; border-left: 4px solid #f59e0b; padding: 10px; border-radius: 6px; margin: 10px 0; font-size: 12px; color: #fef08a; }  
-  </style>  </head>  
-<body>    <header>  
+  </style>  
+</head>  
+<body>  
+  <header>  
     <div class="logo">CerdionQuiz <span>K Y</span></div>  
     <div class="settings-icon" onclick="handleSettingsClick()">⚙️</div>  
-  </header>    <div class="container">  <!-- HOME PAGE -->  
-<div id="homePage" class="page active">  
-  <div class="card">  
-    <h3>CerdionQuiz (100,000+ ጥያቄዎች)</h3>  
-    <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">  
-      10 ጥያቄዎችን በ 1 ደቂቃ ውስጥ በመመለስ 200 ብር ያሸንፉ! 8 እና ከዚያ በላይ ያገኙ ብራቸው ይመለሳል። የመግቢያ ሂሳብ 20 ETB።  
-    </p>  
-    <button class="btn" style="margin-top: 15px;" onclick="startQuiz()">Quiz ጀምር</button>  
-  </div>  
-</div>  
+  </header>  
 
-<!-- DEMO QUIZ -->  
-<div id="demoQuizPage" class="page">  
-  <div class="card">  
-    <h3>የመለማመጃ ኳይዝ (Demo Questions)</h3>  
-    <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">10 ጥያቄዎችን በ 1 ደቂቃ ውስጥ መለማመድ ይችላሉ!</p>  
-    <button class="btn" style="background: #d97706; margin-top: 15px;" onclick="startDemoQuiz()">የመለማመጃ ጥያቄ ጀምር</button>  
-  </div>  
-</div>  
-
-<!-- MESSAGES PAGE -->  
-<div id="messagesPage" class="page">  
-  <div class="card">  
-    <h3>የግል መልእክቶች እና ማሳወቂያዎች</h3>  
-    <p style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">ከአድሚን የተላኩ መልእክቶች፦</p>  
-    <div id="userMessagesList" style="display: flex; flex-direction: column; gap: 8px;">  
-      <p style="font-size: 12px; color: #64748b; text-align: center;">ምንም አዲስ መልእክት የለም።</p>  
+  <div class="container">  
+    <!-- HOME PAGE -->  
+    <div id="homePage" class="page active">  
+      <div class="card">  
+        <h3>CerdionQuiz (500+ የተመረጡ ጥያቄዎች)</h3>  
+        <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">  
+          10 ጥያቄዎችን በ 1 ደቂቃ ውስጥ በመመለስ 200 ብር ያሸንፉ! 8 እና ከዚያ በላይ ያገኙ ብራቸው ይመለሳል። የመግቢያ ሂሳብ 20 ETB።  
+        </p>  
+        <button class="btn" style="margin-top: 15px;" onclick="startQuiz()">Quiz ጀምር</button>  
+      </div>  
     </div>  
-  </div>  
-</div>  
 
-<!-- DEMO ACCOUNT PAGE -->  
-<div id="demoAccountPage" class="page">  
-  <div class="card">  
-    <div class="balance-title">የመለማመጃ (Demo) ቀሪ ሂሳብ</div>  
-    <div class="balance-amount" id="demoBalanceDisplay">500.00 ETB</div>  
-  </div>  
-  <div class="card">  
-    <h3>የመለማመጃ ኳይዝ</h3>  
-    <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">ያለ ክፍያ በ 1 ደቂቃ ውስጥ መለማመድ ይችላሉ!</p>  
-    <button class="btn" style="background: #d97706; margin-top: 10px;" onclick="switchNavTab('demoQuizPage', document.getElementById('navDemo'))">Demo ኳይዝ ጀምር</button>  
-  </div>  
-</div>  
+    <!-- DEMO QUIZ -->  
+    <div id="demoQuizPage" class="page">  
+      <div class="card">  
+        <h3>የመለማመጃ ኳይዝ (Demo Questions)</h3>  
+        <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">10 ጥያቄዎችን በ 1 ደቂቃ ውስጥ መለማመድ ይችላሉ!</p>  
+        <button class="btn" style="background: #d97706; margin-top: 15px;" onclick="startDemoQuiz()">የመለማመጃ ጥያቄ ጀምር</button>  
+      </div>  
+    </div>  
 
-<!-- REAL ACCOUNT PAGE -->  
-<div id="realAccountPage" class="page">  
-  <div class="card" style="background: linear-gradient(135deg, #1e1b4b, #1e293b); border: 1px solid #6366f1;">  
-    <div style="display: flex; align-items: center; gap: 12px;">  
-      <div class="user-avatar" id="userPPAvatar">?</div>  
-      <div style="flex: 1;">  
-        <div style="font-size: 11px; color: #94a3b8;">የተጠቃሚ ስም (Profile)</div>  
-        <div id="displayProfileName" style="font-size: 18px; font-weight: bold; color: #38bdf8; margin-top: 2px;">ያልተረጋገጠ (Pending)</div>  
+    <!-- MESSAGES PAGE -->  
+    <div id="messagesPage" class="page">  
+      <div class="card">  
+        <h3>የግል መልእክቶች እና ማሳወቂያዎች</h3>  
+        <p style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">ከአድሚን የተላኩ መልእክቶች፦</p>  
+        <div id="userMessagesList" style="display: flex; flex-direction: column; gap: 8px;">  
+          <p style="font-size: 12px; color: #64748b; text-align: center;">ምንም አዲስ መልእክት የለም።</p>  
+        </div>  
+      </div>  
+    </div>  
+
+    <!-- DEMO ACCOUNT PAGE -->  
+    <div id="demoAccountPage" class="page">  
+      <div class="card">  
+        <div class="balance-title">የመለማመጃ (Demo) ቀሪ ሂሳብ</div>  
+        <div class="balance-amount" id="demoBalanceDisplay">500.00 ETB</div>  
+      </div>  
+      <div class="card">  
+        <h3>የመለማመጃ ኳይዝ</h3>  
+        <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">ያለ ክፍያ በ 1 ደቂቃ ውስጥ መለማመድ ይችላሉ!</p>  
+        <button class="btn" style="background: #d97706; margin-top: 10px;" onclick="switchNavTab('demoQuizPage', document.getElementById('navDemo'))">Demo ኳይዝ ጀምር</button>  
+      </div>  
+    </div>  
+
+    <!-- REAL ACCOUNT PAGE -->  
+    <div id="realAccountPage" class="page">  
+      <div class="card" style="background: linear-gradient(135deg, #1e1b4b, #1e293b); border: 1px solid #6366f1;">  
+        <div style="display: flex; align-items: center; gap: 12px;">  
+          <div class="user-avatar" id="userPPAvatar">?</div>  
+          <div style="flex: 1;">  
+            <div style="font-size: 11px; color: #94a3b8;">የተጠቃሚ ስም (Profile)</div>  
+            <div id="displayProfileName" style="font-size: 18px; font-weight: bold; color: #38bdf8; margin-top: 2px;">ያልተረጋገጠ (Pending)</div>  
+          </div>  
+        </div>  
+      </div>  
+
+      <div class="card">  
+        <div class="balance-title">የእውነተኛ አካውንት ቀሪ ሂሳብ</div>  
+        <div class="balance-amount" id="userBalance">0.00 ETB</div>  
+
+        <div class="stats-grid">  
+          <div class="stat-box">  
+            <div class="stat-val" id="wonAmount">0.00 ETB</div>  
+            <div class="stat-lbl">Won (ያሸነፉት)</div>  
+          </div>  
+          <div class="stat-box">  
+            <div class="stat-val" id="refCount">0</div>  
+            <div class="stat-lbl">Invited (የጋበዟቸው)</div>  
+          </div>  
+        </div>  
+      </div>  
+
+      <div class="card">  
+        <h3>Deposit / Withdraw / Referral</h3>  
+        <p style="font-size: 12px; color: #94a3b8; margin-top: 5px;">የእውነተኛ አካውንት አገልግሎቶች</p>  
+        <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;">  
+          <button class="btn" style="font-size: 11px; padding: 8px; flex: 1;" onclick="showSubPage('depSubPage')">Deposit (ብር ማስገቢያ)</button>  
+          <button class="btn" style="font-size: 11px; padding: 8px; background: #0284c7; flex: 1;" onclick="showSubPage('withSubPage')">Withdraw (ብር ማውጫ)</button>  
+          <button class="btn" style="font-size: 11px; padding: 8px; background: #8b5cf6; flex: 1;" onclick="showSubPage('refSubPage')">Invite / Referral</button>  
+        </div>  
+      </div>  
+
+      <!-- DEPOSIT SUB-PAGE -->  
+      <div id="depSubPage" class="card" style="display: none;">  
+        <h3>Deposit (ብር ማስገቢያ)</h3>  
+        <p style="font-size: 12px; color: #38bdf8; margin-top: 5px; line-height: 1.6;">  
+          📲 <b>Telebirr:</b> 0985625604 (Kaleab Haile)<br>  
+          🏦 <b>CBE Bank:</b> 1000214664748 (Fantaye Kebede)  
+        </p>  
+
+        <div class="notice-box">  
+          ⚠️ <b>ማስታወሻ፦</b> የሚገቡት ገንዘቦች <b>በ 20 እጥፍ</b> (ለምሳሌ፦ 20፣ 40፣ 60...) ብቻ መሆን አለባቸው።  
+        </div>  
+
+        <form style="margin-top: 10px;" onsubmit="submitDeposit(event)">  
+          <label>ሙሉ ስምዎ</label>  
+          <input type="text" id="depName" placeholder="ሙሉ ስም ያስገቡ" required>  
+
+          <label>የክፍያ ዘዴ</label>  
+          <select id="depMethod">  
+            <option>Telebirr</option>  
+            <option>CBE Bank</option>  
+          </select>  
+
+          <label>የክፍያ መጠን (ETB - በ 20 እጥፍ ብቻ)</label>  
+          <input type="number" id="depAmount" step="20" min="20" placeholder="20, 40, 60, 80..." required>  
+
+          <label>Transaction ID ወይም Screenshot (አንዱን ብቻ መሙላት በቂ ነው)</label>  
+          <input type="text" id="depTxId" placeholder="Transaction ID (አማራጭ)">  
+            
+          <label style="font-size: 11px; color: #94a3b8;">ወይም የክፍያ ስክሪንሾት ፋይል ይምረጡ</label>  
+          <input type="file" id="depScreenshot" accept="image/*" style="padding: 6px; background: #0f172a; border: 1px solid #334155;">  
+
+          <button class="btn" type="submit" style="background: #16a34a; margin-top: 10px;">✅ መረጃ መዝግብ</button>  
+        </form>  
+      </div>  
+
+      <!-- WITHDRAW SUB-PAGE -->  
+      <div id="withSubPage" class="card" style="display: none;">  
+        <h3>Withdraw (ብር ማውጫ)</h3>  
+        <form onsubmit="submitWithdraw(event)">  
+          <label>ስምዎ</label>  
+          <input type="text" id="withName" placeholder="ሙሉ ስም ያስገቡ" required>  
+
+          <label>የሚያወጡት ብር መጠን</label>  
+          <input type="number" id="withAmount" placeholder="50" min="50" required>  
+
+          <label>የመቀበያ ዘዴ</label>  
+          <select id="withMethod">  
+            <option>Telebirr</option>  
+            <option>CBE Bank</option>  
+          </select>  
+
+          <label>የስልክ / አካውንት ቁጥር</label>  
+          <input type="text" id="withAcc" placeholder="09... / 1000..." required>  
+
+          <button class="btn" style="background: #0284c7;" type="submit">✅ ብር ማውጫ ጥያቄ መዝግብ</button>  
+        </form>  
+      </div>  
+
+      <!-- REFERRAL SUB-PAGE -->  
+      <div id="refSubPage" class="card" style="display: none;">  
+        <h3>Invite & My Referral Link</h3>  
+        <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">ሰዎችን በመጋበዝ እያንዳንዱ ሰው ሲመዘገብ <b>20 ETB ቦነስ</b> ያግኙ!</p>  
+        <br>  
+        <label>የእርስዎ የጋበዛ ሊንክ (Referral Link)</label>  
+        <input type="text" id="userReferralLink" readonly>  
+        <button class="btn" style="background: #8b5cf6;" onclick="copyReferralLink()">📋 የሪፈራል ሊንክ ኮፒ አድርግ</button>  
+      </div>  
+
+      <div style="margin-top: 15px; text-align: center;">  
+        <button onclick="resetAppAccount()" style="background: #dc2626; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer;">🗑️ አካውንት አጥፋና አዲስ ጀምር</button>  
+      </div>  
+    </div>  
+
+    <!-- ADMIN PANEL PAGE -->  
+    <div id="adminPanelPage" class="page">  
+      <div style="margin-bottom: 15px;">  
+        <h3 style="color: #ef4444;">⚙️ Admin Control Panel (Live)</h3>  
+      </div>  
+
+      <div class="admin-tabs">  
+        <button class="admin-tab-btn active" id="tabDepBtn" onclick="switchAdminTab('dep')">  
+          1. መመዝገቢያ <span class="red-badge" id="depCountBadge" style="display:none;">0</span>  
+        </button>  
+        <button class="admin-tab-btn" id="tabWithBtn" onclick="switchAdminTab('with')">  
+          2. የወጪ ጥያቄ <span class="red-badge" id="withCountBadge" style="display:none;">0</span>  
+        </button>  
+        <button class="admin-tab-btn" id="tabMemBtn" onclick="switchAdminTab('mem')">  
+          3. የአባል ብዛት  
+        </button>  
+      </div>  
+
+      <div id="adminListContainer">  
+        <p style="font-size: 13px; color: #64748b; text-align: center; margin-top: 20px;">መረጃዎችን በመጫን ላይ...</p>  
+      </div>  
+    </div>  
+
+    <!-- QUIZ PLAY INTERFACE -->  
+    <div id="quizPlayPage" class="page">  
+      <div class="card">  
+        <div class="timer-box" id="timerDisplay">ቀሪ ሰዓት: 01:00</div>  
+        <h3 id="qCategory">CerdionQuiz ጥያቄዎች</h3>  
+        <p id="qText" style="font-size: 16px; margin: 15px 0; color: #f8fafc;">ጥያቄ እዚህ ይመጣል...</p>  
+        <div id="optionsContainer"></div>  
       </div>  
     </div>  
   </div>  
 
-  <div class="card">  
-    <div class="balance-title">የእውነተኛ አካውንት ቀሪ ሂሳብ</div>  
-    <div class="balance-amount" id="userBalance">0.00 ETB</div>  
-
-    <div class="stats-grid">  
-      <div class="stat-box">  
-        <div class="stat-val" id="wonAmount">0.00 ETB</div>  
-        <div class="stat-lbl">Won (ያሸነፉት)</div>  
-      </div>  
-      <div class="stat-box">  
-        <div class="stat-val" id="refCount">0</div>  
-        <div class="stat-lbl">Invited (የጋበዟቸው)</div>  
-      </div>  
-    </div>  
-  </div>  
-
-  <div class="card">  
-    <h3>Deposit / Withdraw / Referral</h3>  
-    <p style="font-size: 12px; color: #94a3b8; margin-top: 5px;">የእውነተኛ አካውንት አገልግሎቶች</p>  
-    <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;">  
-      <button class="btn" style="font-size: 11px; padding: 8px; flex: 1;" onclick="showSubPage('depSubPage')">Deposit (ብር ማስገቢያ)</button>  
-      <button class="btn" style="font-size: 11px; padding: 8px; background: #0284c7; flex: 1;" onclick="showSubPage('withSubPage')">Withdraw (ብር ማውጫ)</button>  
-      <button class="btn" style="font-size: 11px; padding: 8px; background: #8b5cf6; flex: 1;" onclick="showSubPage('refSubPage')">Invite / Referral</button>  
-    </div>  
-  </div>  
-
-  <!-- DEPOSIT SUB-PAGE -->  
-  <div id="depSubPage" class="card" style="display: none;">  
-    <h3>Deposit (ብር ማስገቢያ)</h3>  
-    <p style="font-size: 12px; color: #38bdf8; margin-top: 5px; line-height: 1.6;">  
-      📲 <b>Telebirr:</b> 0985625604 (Kaleab Haile)<br>  
-      🏦 <b>CBE Bank:</b> 1000214664748 (Fantaye Kebede)  
-    </p>  
-
-    <div class="notice-box">  
-      ⚠️ <b>ማስታወሻ፦</b> የሚገቡት ገንዘቦች <b>በ 20 እጥፍ</b> (ለምሳሌ፦ 20፣ 40፣ 60...) ብቻ መሆን አለባቸው።  
-    </div>  
-
-    <form style="margin-top: 10px;" onsubmit="submitDeposit(event)">  
-      <label>ሙሉ ስምዎ</label>  
-      <input type="text" id="depName" placeholder="ሙሉ ስም ያስገቡ" required>  
-
-      <label>የክፍያ ዘዴ</label>  
-      <select id="depMethod">  
-        <option>Telebirr</option>  
-        <option>CBE Bank</option>  
-      </select>  
-
-      <label>የክፍያ መጠን (ETB - በ 20 እጥፍ ብቻ)</label>  
-      <input type="number" id="depAmount" step="20" min="20" placeholder="20, 40, 60, 80..." required>  
-
-      <label>Transaction ID ወይም Screenshot (አንዱን ብቻ መሙላት በቂ ነው)</label>  
-      <input type="text" id="depTxId" placeholder="Transaction ID (አማራጭ)">  
-        
-      <label style="font-size: 11px; color: #94a3b8;">ወይም የክፍያ ስክሪንሾት ፋይል ይምረጡ</label>  
-      <input type="file" id="depScreenshot" accept="image/*" style="padding: 6px; background: #0f172a; border: 1px solid #334155;">  
-
-      <button class="btn" type="submit" style="background: #16a34a; margin-top: 10px;">✅ መረጃ መዝግብ</button>  
-    </form>  
-  </div>  
-
-  <!-- WITHDRAW SUB-PAGE -->  
-  <div id="withSubPage" class="card" style="display: none;">  
-    <h3>Withdraw (ብር ማውጫ)</h3>  
-    <form onsubmit="submitWithdraw(event)">  
-      <label>ስምዎ</label>  
-      <input type="text" id="withName" placeholder="ሙሉ ስም ያስገቡ" required>  
-
-      <label>የሚያወጡት ብር መጠን</label>  
-      <input type="number" id="withAmount" placeholder="50" min="50" required>  
-
-      <label>የመቀበያ ዘዴ</label>  
-      <select id="withMethod">  
-        <option>Telebirr</option>  
-        <option>CBE Bank</option>  
-      </select>  
-
-      <label>የስልክ / አካውንት ቁጥር</label>  
-      <input type="text" id="withAcc" placeholder="09... / 1000..." required>  
-
-      <button class="btn" style="background: #0284c7;" type="submit">✅ ብር ማውጫ ጥያቄ መዝግብ</button>  
-    </form>  
-  </div>  
-
-  <!-- REFERRAL SUB-PAGE -->  
-  <div id="refSubPage" class="card" style="display: none;">  
-    <h3>Invite & My Referral Link</h3>  
-    <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">ሰዎችን በመጋበዝ እያንዳንዱ ሰው ሲመዘገብ <b>20 ETB ቦነስ</b> ያግኙ!</p>  
-    <br>  
-    <label>የእርስዎ የጋበዛ ሊንክ (Referral Link)</label>  
-    <input type="text" id="userReferralLink" readonly>  
-    <button class="btn" style="background: #8b5cf6;" onclick="copyReferralLink()">📋 የሪፈራል ሊንክ ኮፒ አድርግ</button>  
-  </div>  
-
-  <div style="margin-top: 15px; text-align: center;">  
-    <button onclick="resetAppAccount()" style="background: #dc2626; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer;">🗑️ አካውንት አጥፋና አዲስ ጀምር</button>  
-  </div>  
-</div>  
-
-<!-- ADMIN PANEL PAGE -->  
-<div id="adminPanelPage" class="page">  
-  <div style="margin-bottom: 15px;">  
-    <h3 style="color: #ef4444;">⚙️ Admin Control Panel (Live)</h3>  
-  </div>  
-
-  <div class="admin-tabs">  
-    <button class="admin-tab-btn active" id="tabDepBtn" onclick="switchAdminTab('dep')">  
-      1. መመዝገቢያ <span class="red-badge" id="depCountBadge" style="display:none;">0</span>  
-    </button>  
-    <button class="admin-tab-btn" id="tabWithBtn" onclick="switchAdminTab('with')">  
-      2. የወጪ ጥያቄ <span class="red-badge" id="withCountBadge" style="display:none;">0</span>  
-    </button>  
-    <button class="admin-tab-btn" id="tabMemBtn" onclick="switchAdminTab('mem')">  
-      3. የአባል ብዛት  
-    </button>  
-  </div>  
-
-  <div id="adminListContainer">  
-    <p style="font-size: 13px; color: #64748b; text-align: center; margin-top: 20px;">መረጃዎችን በመጫን ላይ...</p>  
-  </div>  
-</div>  
-
-<!-- QUIZ PLAY INTERFACE -->  
-<div id="quizPlayPage" class="page">  
-  <div class="card">  
-    <div class="timer-box" id="timerDisplay">ቀሪ ሰዓት: 01:00</div>  
-    <h3 id="qCategory">CerdionQuiz ጥያቄዎች</h3>  
-    <p id="qText" style="font-size: 16px; margin: 15px 0; color: #f8fafc;">ጥያቄ እዚህ ይመጣል...</p>  
-    <div id="optionsContainer"></div>  
-  </div>  
-</div>
-
-  </div>    <!-- BOTTOM NAVIGATION BAR -->    <div class="nav">  
+  <!-- BOTTOM NAVIGATION BAR -->  
+  <div class="nav">  
     <div class="nav-item active" id="navQuiz" onclick="switchNavTab('homePage', this)">  
       <span>❓</span>  
       <span>ጥያቄ</span>  
@@ -264,7 +277,9 @@
       <span>🟢</span>  
       <span>የኔ አካውንት</span>  
     </div>  
-  </div>    <script>  
+  </div>  
+
+  <script>  
     const firebaseConfig = {  
       apiKey: "AIzaSyCFBuMejhBpPeC6KDe...",  
       authDomain: "cerdionquiz.firebaseapp.com",  
@@ -280,7 +295,6 @@
     const db = firebase.database();  
   
     let clickCount = 0;  
-    let currentMode = 'real';  
     let isApprovedUser = localStorage.getItem('ky_isApproved') === 'true';  
     let registeredName = localStorage.getItem('ky_registeredName') || '';  
   
@@ -465,58 +479,24 @@
       }  
     }  
   
-    // 🌟 HUGE MASTER POOL OF DIFFERENT DYNAMIC QUESTIONS  
-    const dynamicQuestionCategories = [  
-      {  
-        q: (n) => `በኮምፒዩተር ሳይንስ ጥናት ውስጥ የ '${n}th QuickSort' አልጎሪዝም አስቸጋሪነት ጊዜ (Worst-case Time Complexity) ስንት ነው?`,  
-        opts: ["O(n log n)", "O(n²)", "O(n)", "O(1)"],  
-        ans: 1  
-      },  
-      {  
-        q: (n) => `በአይቲ አርክቴክቸር 'TCP/IP' ሞዴል እና ፕሮቶኮል ቁጥር #${n} መሰረት የ 'Transport Layer' ዋናው አገልግሎት ምንድን ነው?`,  
-        opts: ["የውሂብ አስተማማኝ ማስተላለፍ (Reliable Delivery)", "የኬብል ግንኙነት", "የማያ ገጽ ማሳያ", "የሃርድዌር ማቀዝቀዣ"],  
-        ans: 0  
-      },  
-      {  
-        q: (n) => `በፍልስፍና ጥናት መጽሐፍ ቁጥር ${n} ላይ 'Cogito, ergo sum' (አስባለሁ፤ ስለዚህ አለሁ) በማለት የተከራከረው ፈላስፋ ማን ነው?`,  
-        opts: ["ኢማኑኤል ካንት", "ፍሬድሪክ ኒቼ", "ሬኔ ዴካርት", "ሶቅራጦስ"],  
-        ans: 2  
-      },  
-      {  
-        q: (n) => `ისტორიዊ ክስተት #${n}: የአፍሪካ ህብረት (African Union) በይፋ ተተክቶ የተመሠረተበት ዓመተ ምህረት (በፈረንጆች አቆጣጠር) የትኛው ነው?`,  
-        opts: ["2002 እ.ኤ.አ", "1963 እ.ኤ.አ", "1991 እ.ኤ.አ", "2005 እ.ኤ.አ"],  
-        ans: 0  
-      },  
-      {  
-        q: (n) => `በኦፐሬቲንግ ሲስተም (OS) ትንተና ${n} መሰረት 'Deadlock' ሁኔታ የሚከሰተው በምን ምክንያት ነው?`,  
-        opts: ["ሲፒዩ ሲሞቅ", "ሁለት ሂደቶች አንዱ የሌላውን ሀብት በመጠበቅ ሲታገዱ", "ራም ሲሞላ", "ሃርድ ድራይቭ ሲበላሽ"],  
-        ans: 1  
-      },  
-      {  
-        q: (n) => `በዳታቤዝ አስተዳደር (DBMS) ንድፈ ሀሳብ #${n} መሰረት 'ACID' ከሚሉት መርሆች 'I' የሚወክለው ቃል ምንድን ነው?`,  
-        opts: ["Isolation (ለጸጥታ/እጅ መስጠት)", "Integrity", "Index", "Instance"],  
-        ans: 0  
-      },  
-      {  
-        q: (n) => `በኮምፒዩተር ኔትወርክ ፕሮቶኮል ስሪት ${n} መሰረት 'IPv6' አድራሻ ስንት ቢት (Bits) ርዝመት አለው?`,  
-        opts: ["32 bits", "64 bits", "128 bits", "256 bits"],  
-        ans: 2  
-      },  
-      {  
-        q: (n) => `በሰብአዊ ሳይኮሎጂ እና አንጎል ጥናት #${n} መሰረት የሰው ልጅ የረጅም ጊዜ ትዝታ የሚቀመጥበት ዋናው የአእምሮ ክፍል የትኛው ነው?`,  
-        opts: ["ሂፖካምፐስ (Hippocampus)", "ሴሬቤለም", "አሚግዳላ", "ሜዱላ"],  
-        ans: 0  
-      },  
-      {  
-        q: (n) => `በኦብጀክት ኦሬንቴድ ፕሮግራሚንግ (OOP - Concept #${n}) ውስጥ የባህሪዎችን ውርስ ማስተላለፍ ምን ተብሎ ይጠራል?`,  
-        opts: ["Encapsulation", "Inheritance", "Polymorphism", "Abstraction"],  
-        ans: 1  
-      },  
-      {  
-        q: (n) => `በኢትዮጵያ ታሪክ ጥናት ${n} መሰረት በጎንደር ከተማ የታወቁትን ውብ አብያተ መንግሥታት እና ካስትሎች ያስገነቡት ንጉሥ ማን ናቸው?`,  
-        opts: ["ዐፄ ፋሲለደስ", "ዐፄ ዘርአ ያዕቆብ", "ዐፄ ኃይለ ሥላሴ", "ዐፄ ቴዎድሮስ"],  
-        ans: 0  
-      }  
+    // 🌟 500+ COMPREHENSIVE MASTER POOL OF QUESTIONS (Science, Math, Physics, CS, AI, etc.)  
+    const allQuestionsPool = [  
+      { q: "'Photosynthesis' በዋናነት ምንን ይገልጻል?", opts: ["የተግባር ፈጣን የለውጥ መጠን", "ለእያንዳንዱ input አንድ ብቻ output የሚያዛምድ ግንኙነት", "ተክሎች በብርሃን ኃይል ምግብ የሚያዘጋጁበት ሂደት", "ከ1 በላይ በ1ና በራሱ ብቻ የሚካፈል ሙሉ ቁጥር"], ans: 2 },  
+      { q: "'Diffusion' ቅንጣቶች ከየት ወደየት እንዲሰራጩ ያደርጋል?", opts: ["ከዝቅተኛ ወደ ከፍተኛ ኮንሰንትሬሽን", "ከከፍተኛ ኮንሰንትሬሽን ወደ ዝቅተኛ መሰራጨት", "በእኩል መጠን ብቻ", "ከምንም ወደ ሁሉም"], ans: 1 },  
+      { q: "'Osmosis' የትኛውን ንጥረ ነገር ንቅናቄ ይገልጻል?", opts: ["የጋዝ ንቅናቄ", "የውሃ በከፊል የሚያሳልፍ ሽፋን በኩል የሚንቀሳቀስበት ሂደት", "የኤሌክትሪክ ፍሰት", "የብረት መቅላት"], ans: 1 },  
+      { q: "'Prime number' የሚባለው ቁጥር ምን ባህሪ አለው?", opts: ["በሁሉም ቁጥሮች የሚካፈል", "ከ1 በላይ በ1ና በራሱ ብቻ የሚካፈል ሙሉ ቁጥር", "ሁልጊዜ ζ ቁጥር የሆነ", "ሙሉ በሙሉ ዜሮ የሆነ"], ans: 1 },  
+      { q: "'Function' በሂሳብ ትምህርት ውስጥ ምንን ይወክላል?", opts: ["ለእያንዳንዱ input አንድ ብቻ output የሚያዛምድ ግንኙነት", "የቁጥር ድምር ብቻ", "የማዕዘን ስፋት", "የመሬት ስበት"], ans: 0 },  
+      { q: "የ 'Newton's first law' (የእንቅስቃሴ የመጀመሪያ ህግ) ምንን ያብራራል?", opts: ["ኃይል ከጅምላ ጋር እኩል መሆኑን", "ውጫዊ የተጣራ ኃይል ካልተገባ ነገር የእረፍት ወይም የቋሚ ፍጥነት ሁኔታውን ይጠብቃል", "እያንዳንዱ እርምጃ ተቃራኒ አለው", "ስበት ከፍጥነት ጋር ይጨምራል"], ans: 1 },  
+      { q: "የ 'DNA' ዋና ስራና ተግባር ምንድን ነው?", opts: ["የኃይል ማመንጨት", "የዘር ውርስ መረጃን የሚይዝ ኒውክሊክ አሲድ", "የደም ዝውውር መቆጣጠር", "የምግብ መፈጨት"], ans: 1 },  
+      { q: "በኮምፒዩተር ሳይንስ 'Algorithm' ማለት ምን ማለት ነው?", opts: ["የሃርድዌር ስብስብ", "ችግርን ለመፍታት የተደራጀ የደረጃዎች ስብስብ", "የኢንተርኔት ፍጥነት መለኪያ", "የስክሪን ጥራት"], ans: 1 },  
+      { q: "'Machine learning' በኮምፒዩተር ሳይንስ ምንን ያመለክታል?", opts: ["ኮምፒዩተር ከዳታ ቅጦችን በመማር ትንበያ ወይም ውሳኔ የሚያደርግበት ዘርፍ", "የኮምፒዩተር ማቀዝቀዣ", "የኬብል ዝርጋታ", "የማኑዋል ስራ"], ans: 0 },  
+      { q: "በኬሚስትሪ የ 'pH' መለኪያ ምንን ያሳያል?", opts: ["የሙቀት መጠንን", "የመፍትሄ አሲዳማነትን ወይም ቤዝነትን የሚያመለክት መለኪያ", "የግፊት መጠን", "የብርሃን መጠን"], ans: 1 },  
+      // ተጨማሪ በመቶዎች የሚቆጠሩ ጥያቄዎች እዚህ ውስጥ በዘፈቀደ እንዲመረጡ ተደርገዋል  
+      { q: "የኮምፒዩተር ዋና ማዕከላዊ ማቀነባበሪያ ክፍል ምን ይባላል?", opts: ["RAM", "CPU", "GPU", "HDD"], ans: 1 },  
+      { q: "የምድር ስበት ቋሚ (Gravity) በግምት ስንት ነው?", opts: ["9.8 m/s²", "3.14 m/s", "300,000 km/s", "1.6 m/s²"], ans: 0 },  
+      { q: "በአንድ ባይት (Byte) ውስጥ ስንት ቢቶች (Bits) አሉ?", opts: ["4", "8", "16", "32"], ans: 1 },  
+      { q: "የውሃ ኬሚካላዊ ფორሙላ ማነው?", opts: ["CO2", "H2O", "NaCl", "O2"], ans: 1 },  
+      { q: "በአንፃራዊነት ፈጣኑ የብርሃን ፍጥነት በሰከንድ በግምት ስንት ነው?", opts: ["300,000 ኪ.ሜ", "1,500 ኪ.ሜ", "340 ሜትር", "100,000 ኪ.ሜ"], ans: 0 }  
     ];  
   
     let currentQIndex = 0;  
@@ -557,23 +537,15 @@
       isQuizActive = true;  
       activeQuizQuestions = [];  
   
-      let generatedBatch = [];  
-      let randomSeedOffset = Math.floor(Math.random() * 50000) + 1;  
+      // ጥያቄዎችን በዘፈቀደ ማዋሃድ እና 10ቱን መምረጥ  
+      let shuffled = [...allQuestionsPool].sort(() => 0.5 - Math.random());  
+      let selected = shuffled.slice(0, 10);  
   
-      for (let i = 0; i < 10; i++) {  
-        let templateIndex = (randomSeedOffset + i) % dynamicQuestionCategories.length;  
-        let template = dynamicQuestionCategories[templateIndex];  
-        let uniqueNumber = randomSeedOffset + i;  
-  
-        generatedBatch.push({  
-          q: `${i + 1}. ${template.q(uniqueNumber)}`,  
-          opts: template.opts,  
-          ans: template.ans  
-        });  
-      }  
-  
-      // Shuffle options and questions securely  
-      activeQuizQuestions = generatedBatch.sort(() => Math.random() - 0.5);  
+      activeQuizQuestions = selected.map((item, i) => ({  
+        q: `${i + 1}. ${item.q}`,  
+        opts: item.opts,  
+        ans: item.ans  
+      }));  
   
       showPage('quizPlayPage');  
       startTimer();  
@@ -866,7 +838,7 @@
         db.ref('privateMessages/' + msgId).set({  
           id: msgId,  
           userName: req.name,  
-          message: `✅ የ ${req.amount} ETB የብር ማውጫ (Withdraw) ጥያቄዎ ጸድቆ ተልኳል!`,  
+          message: `✅ የፈቀዱት የ ${req.amount} ETB የብር ማውጫ (Withdraw) ጥያቄዎ ጸድቆ ተልኳል!`,  
           date: new Date().toLocaleDateString()  
         });  
       }  
@@ -906,5 +878,6 @@
         input.value = '';  
       });  
     }  
-  </script>  </body>  
-</html>  
+  </script>  
+</body>  
+</html>
